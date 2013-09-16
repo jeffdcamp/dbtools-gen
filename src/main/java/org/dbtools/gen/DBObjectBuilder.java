@@ -1,0 +1,55 @@
+/*
+ * DBObjectBuilder.java
+ *
+ * Created on April 13, 2002
+ *
+ * Copyright 2006 Jeff Campbell. All rights reserved. Unauthorized reproduction 
+ * is a violation of applicable law. This material contains certain 
+ * confidential or proprietary information and trade secrets of Jeff Campbell.
+ */
+
+package org.dbtools.gen;
+
+
+import org.dbtools.schema.SchemaDatabase;
+import org.dbtools.schema.SchemaTable;
+
+import java.io.PrintStream;
+import java.util.List;
+
+/**
+ * @author Jeff
+ */
+public interface DBObjectBuilder {
+    public String getName();
+
+    public boolean build();
+
+    public int getNumberFilesGenerated();
+
+    public List<String> getFilesGenerated();
+
+    public void setIncludeXMLSupport(boolean b);
+
+    public void setUseDateTime(boolean b);
+
+    public void setSpringSupport(boolean b);
+
+    public void setDatabase(SchemaDatabase schemaDatabase);
+
+    public void setTable(SchemaTable table);
+
+    public void setPackageName(String packageName);
+
+    public void setSourceOutputDir(String outDir);
+
+    public void setTestOutputDir(String outDir);
+
+    public void setLogPrintStream(PrintStream psLog);
+
+    public void setAuthor(String author);
+
+    public void setVersion(String version);
+
+    public void setProperty(String key, Object value);
+}

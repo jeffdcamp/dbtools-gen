@@ -1,0 +1,52 @@
+<!--
+ * Copyright 2006 Jeff Campbell. All rights reserved. Unauthorized reproduction 
+ * is a violation of applicable law. This material contains certain 
+ * confidential or proprietary information and trade secrets of Jeff Campbell.
+-->
+<!ELEMENT dbmappings (type-mappings?)>
+
+<!ELEMENT datasource (#PCDATA)>
+
+<!ELEMENT default-type-mapping (#PCDATA)>
+
+<!ELEMENT debug (#PCDATA)>
+
+<!ELEMENT default-entity (create-table, remove-table, tuned-updates, read-only, pk-constraint?, select-for-update?, time-out)>
+<!ELEMENT create-table (#PCDATA)>
+<!ELEMENT remove-table (#PCDATA)>
+<!ELEMENT tuned-updates (#PCDATA)>
+<!ELEMENT read-only (#PCDATA)>
+<!ELEMENT pk-constraint (#PCDATA)>
+<!ELEMENT select-for-update (#PCDATA)>
+<!ELEMENT time-out (#PCDATA)>
+
+<!ELEMENT enterprise-beans (entity*)>
+
+<!ELEMENT entity (ejb-name,cmp-field*,finder*,read-ahead?,read-only?,
+                  table-name?,tuned-updates?,create-table?,remove-table?,select-for-update?,time-out?,pk-constraint?)>
+
+<!ELEMENT ejb-name (#PCDATA)>
+
+<!ELEMENT cmp-field (field-name, column-name)>
+<!ELEMENT field-name (#PCDATA)>
+<!ELEMENT column-name (#PCDATA)>
+
+<!ELEMENT finder (name,query,order?,read-ahead?)>
+
+<!ELEMENT name (#PCDATA)>
+
+<!ELEMENT query (#PCDATA)>
+
+<!ELEMENT order (#PCDATA)>
+<!ELEMENT read-ahead (#PCDATA)>
+
+<!ELEMENT table-name (#PCDATA)>
+
+<!ELEMENT type-mappings (type-mapping*)>
+<!ELEMENT type-mapping (name, mapping*)>
+<!ELEMENT mapping (java-type, jdbc-type, sql-type)>
+<!ELEMENT java-type (#PCDATA)>
+<!ELEMENT jdbc-type (#PCDATA)>
+
+
+<!ELEMENT sql-type (#PCDATA)>

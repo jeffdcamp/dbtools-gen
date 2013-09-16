@@ -1,0 +1,21 @@
+# Temp files
+*~
+
+# NetBeans
+nb-configuration.xml
+# nbactions.xml
+
+# Eclipse
+.settings
+.classpath
+.project
+.mymetadata
+
+# IDEA
+*.ipr
+*.iml
+*.iws
+.idea/
+
+# Maven
+target/
