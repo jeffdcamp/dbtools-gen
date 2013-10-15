@@ -35,6 +35,8 @@ public class AndroidBaseRecordClassRenderer {
     private boolean useDateTime = false; // use joda datetime or jsr 310
     private boolean dateTimeHelperMethodsAdded = false;
 
+    public static final String PRIMARY_KEY_COLUMN = "PRIMARY_KEY_COLUMN";
+
     /**
      * Creates a new instance of AndroidBaseRecordClassRenderer.
      */
@@ -173,12 +175,10 @@ public class AndroidBaseRecordClassRenderer {
             keys.add(fieldKey);
 
             if (primaryKey) {
-                myClass.addImport("android.provider.BaseColumns");
-                myClass.addConstant("String", fieldKey, "BaseColumns._ID", false); // do not format the var because it is set to a static Class var
-            } else {
-                myClass.addConstant("String", fieldKey, fieldName);
+                myClass.addConstant("String", PRIMARY_KEY_COLUMN, fieldName); // add a reference to this column
             }
 
+            myClass.addConstant("String", fieldKey, fieldName);
             myClass.addConstant("String", "FULL_C_" + constName, tableName + "." + fieldName);
 
             // skip some types of variables at this point (so that we still get the column name and the property name)
@@ -209,12 +209,12 @@ public class AndroidBaseRecordClassRenderer {
             if (primaryKey && !myClass.isEnum()) {
                 myClass.addMethod(Access.PUBLIC, "String", "getRowIDKey", "return " + fieldKey + ";").addAnnotation("Override");
 
-                // add vanilla getID() / setID(...) for the primary key
-                myClass.addMethod(Access.PUBLIC, field.getJavaTypeText(), "getID", "return " + fieldNameJavaStyle + ";").addAnnotation("Override");
+                // add vanilla getPrimaryKeyID() / setPrimaryKeyID(...) for the primary key
+                myClass.addMethod(Access.PUBLIC, field.getJavaTypeText(), "getPrimaryKeyID", "return " + fieldNameJavaStyle + ";").addAnnotation("Override");
 
                 List<JavaVariable> setIDParams = new ArrayList<JavaVariable>();
                 setIDParams.add(new JavaVariable(newVariable.getDataType(), "id"));
-                myClass.addMethod(Access.PUBLIC, "void", "setID", setIDParams, fieldNameJavaStyle + " = id;").addAnnotation("Override");
+                myClass.addMethod(Access.PUBLIC, "void", "setPrimaryKeyID", setIDParams, "this." + fieldNameJavaStyle + " = id;").addAnnotation("Override");
             }
 
 
@@ -309,7 +309,7 @@ public class AndroidBaseRecordClassRenderer {
             toStringMethod.addAnnotation("Override");
 
             // new record check
-            myClass.addMethod(Access.PUBLIC, "boolean", "isNewRecord", "return getID() <= 0;");
+            myClass.addMethod(Access.PUBLIC, "boolean", "isNewRecord", "return getPrimaryKeyID() <= 0;");
 
             // testing methods
             JavaMethod toStringTestMethod = myTestClass.addMethod(Access.PUBLIC, "void", "testToString", "assertNotNull(testRecord.toString());");
@@ -654,7 +654,7 @@ public class AndroidBaseRecordClassRenderer {
                         removeMethodContent += TAB + TAB + "break;\n";
                         removeMethodContent += TAB + "}\n";
                         removeMethodContent += TAB + "if (!itr.hasNext()) {\n";
-                        removeMethodContent += TAB + TAB + "throw new IllegalStateException(\"deleteItem failed: Cannot find itemID \"+ " + fkTableVarName + ".getID());\n";
+                        removeMethodContent += TAB + TAB + "throw new IllegalStateException(\"deleteItem failed: Cannot find itemID \"+ " + fkTableVarName + ".getPrimaryKeyID());\n";
                         removeMethodContent += TAB + "}\n";
                         removeMethodContent += "}";
 
