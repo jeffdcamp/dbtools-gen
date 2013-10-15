@@ -156,7 +156,7 @@ public class SchemaRenderer implements Runnable {
         // may need to try to load from the jar
         InputStream xmlMappingInputStream = null;
         if (xmlMappingFile == null) {
-            System.out.println("Failed to find mapping file: [" + typesFilename + "]... loading default one from classpath...");
+//            System.out.println("Failed to find mapping file: [" + typesFilename + "]... loading default one from classpath...");
             xmlMappingInputStream = classLoaderClass.getResourceAsStream(DEFAULT_TYPE_MAPPING_FILE);
         }
 
@@ -166,7 +166,7 @@ public class SchemaRenderer implements Runnable {
         }
 
         try {
-            System.out.println("Loading database datatypes...");
+//            System.out.println("Loading database datatypes...");
 
             // prepare the xml file for reading...
             SAXReader xmlReader = new SAXReader(false);  // use a DTD
@@ -192,7 +192,7 @@ public class SchemaRenderer implements Runnable {
                 // is this it?
                 String dbMapping = typeMappingElement.element("name").getText();
                 if (dbMapping.equalsIgnoreCase(dbVendorName)) {
-                    System.out.println("Found requested dbMapping: [" + dbMapping + "]. Loading jdbc types...");
+//                    System.out.println("Found requested dbMapping: [" + dbMapping + "]. Loading jdbc types...");
                     found = true;
 
                     Iterator<Element> mappingItr = typeMappingElement.elementIterator("mapping");
@@ -208,7 +208,7 @@ public class SchemaRenderer implements Runnable {
                         types.put(jdbcType, sqlType);
                     }
 
-                    System.out.println("Complete");
+//                    System.out.println("Complete");
                 }
             }
 

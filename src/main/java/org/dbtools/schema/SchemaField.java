@@ -63,10 +63,10 @@ public class SchemaField {
     public static final String TYPE_TIME = "TIME";
     public static final String TYPE_TIMESTAMP = "TIMESTAMP";
     public static final String TYPE_JAVA_OBJECT = "JAVA_OBJECT";
-    public static final String TYPE_MONEY = "MONEY"; // Custom type
+//    public static final String TYPE_MONEY = "MONEY"; // Custom type
     public static final String TYPE_DECIMAL = "DECIMAL";
     public static final String TYPE_NUMERIC = "NUMERIC";
-    public static final String TYPE_FRACTION = "FRACTION"; // Custom type
+//    public static final String TYPE_FRACTION = "FRACTION"; // Custom type
     public static final String TYPE_BLOB = "BLOB";
     public static final String TYPE_CLOB = "CLOB";
 
@@ -196,13 +196,13 @@ public class SchemaField {
 
         // size
         if (size > 0) {
-            if (jdbcType.equals(TYPE_VARCHAR) || jdbcType.equals(TYPE_DECIMAL) || jdbcType.equals(TYPE_NUMERIC) || jdbcType.equals(TYPE_DOUBLE) || jdbcType.equals(TYPE_MONEY)) {
+            if (jdbcType.equals(TYPE_VARCHAR) || jdbcType.equals(TYPE_DECIMAL) || jdbcType.equals(TYPE_NUMERIC) || jdbcType.equals(TYPE_DOUBLE)) { // || jdbcType.equals(TYPE_MONEY)) {
                 element.addAttribute("size", Integer.toString(size));
             }
         }
 
         if (decimals > 0) {
-            if (jdbcType.equals(TYPE_DECIMAL) || jdbcType.equals(TYPE_NUMERIC) || jdbcType.equals(TYPE_DOUBLE) || jdbcType.equals(TYPE_MONEY)) {
+            if (jdbcType.equals(TYPE_DECIMAL) || jdbcType.equals(TYPE_NUMERIC) || jdbcType.equals(TYPE_DOUBLE)) { // || jdbcType.equals(TYPE_MONEY)) {
                 element.addAttribute("decimals", Integer.toString(decimals));
             }
         }
@@ -224,7 +224,7 @@ public class SchemaField {
             element.addAttribute("increment", "true");
         }
         if (incrementInitialValue > 0) {
-            if (jdbcType.equals(TYPE_DECIMAL) || jdbcType.equals(TYPE_NUMERIC) || jdbcType.equals(TYPE_DOUBLE) || jdbcType.equals(TYPE_MONEY)) {
+            if (jdbcType.equals(TYPE_DECIMAL) || jdbcType.equals(TYPE_NUMERIC) || jdbcType.equals(TYPE_DOUBLE)) { // || jdbcType.equals(TYPE_MONEY)) {
                 element.addAttribute("incrementInitialValue", Integer.toString(incrementInitialValue));
             }
         }
@@ -234,7 +234,7 @@ public class SchemaField {
         }
 
         if (sequencerStartValue > 0) {
-            if (jdbcType.equals(TYPE_VARCHAR) || jdbcType.equals(TYPE_DECIMAL) || jdbcType.equals(TYPE_NUMERIC) || jdbcType.equals(TYPE_DOUBLE) || jdbcType.equals(TYPE_MONEY)) {
+            if (jdbcType.equals(TYPE_VARCHAR) || jdbcType.equals(TYPE_DECIMAL) || jdbcType.equals(TYPE_NUMERIC) || jdbcType.equals(TYPE_DOUBLE)) { // || jdbcType.equals(TYPE_MONEY)) {
                 element.addAttribute("sequencerStartValue", Integer.toString(sequencerStartValue));
             }
         }
@@ -734,9 +734,9 @@ public class SchemaField {
                 || jdbcType.equals(TYPE_REAL)
                 || jdbcType.equals(TYPE_SMALLINT)
                 || jdbcType.equals(TYPE_BIGINT)
-                || jdbcType.equals(TYPE_TINYINT)
-                || jdbcType.equals(TYPE_MONEY)
-                || jdbcType.equals(TYPE_FRACTION);
+                || jdbcType.equals(TYPE_TINYINT);
+//                || jdbcType.equals(TYPE_MONEY)
+//                || jdbcType.equals(TYPE_FRACTION);
     }
 
     public boolean isEnumeration() {

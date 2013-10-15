@@ -72,7 +72,7 @@ public class AndroidBaseRecordManager {
             myClass.setExtends("BaseManager<" + recordClassName + ">");
             myClass.addMethod(Access.PUBLIC, "String", "getDatabaseName", "return " + recordClassName + ".DATABASE;");
             myClass.addMethod(Access.PUBLIC, "String", "getTableName", "return " + recordClassName + ".TABLE;");
-            myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return " + recordClassName + ".KEY_ID;");
+            myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return " + recordClassName + ".C_ID;");
             myClass.addMethod(Access.PUBLIC, "String[]", "getAllKeys", "return " + recordClassName + ".ALL_KEYS;");
             myClass.addMethod(Access.PUBLIC, "String", "getDropTableSQL", "return " + recordClassName + ".DROP_TABLE;");
             myClass.addMethod(Access.PUBLIC, "String", "getCreateTableSQL", "return " + recordClassName + ".CREATE_TABLE;");
@@ -103,7 +103,7 @@ public class AndroidBaseRecordManager {
             updateParams3.add(new JavaVariable("ContentValues", "values"));
             updateParams3.add(new JavaVariable("long", "rowID"));
             myClass.addMethod(Access.PUBLIC, "int", "update", updateParams3,
-                    "return " + baseManagerCall + "update(" + dbParam + recordClassName + ".TABLE, values, " + recordClassName + ".KEY_ID, rowID);").setStatic(!injectionSupport);
+                    "return " + baseManagerCall + "update(" + dbParam + recordClassName + ".TABLE, values, " + recordClassName + ".C_ID, rowID);").setStatic(!injectionSupport);
 
             List<JavaVariable> updateParams4 = new ArrayList<JavaVariable>();
             if (!injectionSupport) {
@@ -122,7 +122,7 @@ public class AndroidBaseRecordManager {
             }
             deleteParams2.add(new JavaVariable("long", "rowID"));
             myClass.addMethod(Access.PUBLIC, "long", "delete", deleteParams2,
-                    "return " + baseManagerCall + "delete(" + dbParam + recordClassName + ".TABLE, " + recordClassName + ".KEY_ID, rowID);").setStatic(!injectionSupport);
+                    "return " + baseManagerCall + "delete(" + dbParam + recordClassName + ".TABLE, " + recordClassName + ".C_ID, rowID);").setStatic(!injectionSupport);
 
             List<JavaVariable> deleteParams3 = new ArrayList<JavaVariable>();
             if (!injectionSupport) {
@@ -158,7 +158,7 @@ public class AndroidBaseRecordManager {
             myClass.addMethod(Access.PUBLIC, "Cursor", "findCursorBySelection", findParams, findCursorBySelectionContent).setStatic(!injectionSupport);
 
             // FIND BY ROW ID
-            String selectionByRowID = recordClassName + ".KEY_ID + \"=\" + rowID";
+            String selectionByRowID = recordClassName + ".C_ID + \"=\" + rowID";
 
             String findCursorByRowIDContent = "return findCursorBySelection(" + dbParam + selectionByRowID + ", null);";
 

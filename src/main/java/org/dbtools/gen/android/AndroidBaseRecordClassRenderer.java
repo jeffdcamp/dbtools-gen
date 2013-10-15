@@ -169,19 +169,16 @@ public class AndroidBaseRecordClassRenderer {
 
             // constants
             String constName = JavaClass.formatConstant(fieldNameJavaStyle);
-            String fieldKey = "KEY_" + constName;
+            String fieldKey = "C_" + constName;
             keys.add(fieldKey);
 
             if (primaryKey) {
                 myClass.addImport("android.provider.BaseColumns");
                 myClass.addConstant("String", fieldKey, "BaseColumns._ID", false); // do not format the var because it is set to a static Class var
-
-
             } else {
                 myClass.addConstant("String", fieldKey, fieldName);
             }
 
-            myClass.addConstant("String", "C_" + constName, fieldName);
             myClass.addConstant("String", "FULL_C_" + constName, tableName + "." + fieldName);
 
             // skip some types of variables at this point (so that we still get the column name and the property name)
@@ -334,44 +331,6 @@ public class AndroidBaseRecordClassRenderer {
 
     }
 
-    private void addDateTimeHelperMethods() {
-        final String TAB = JavaClass.getTab();
-
-        if (!dateTimeHelperMethodsAdded) {
-            dateTimeHelperMethodsAdded = true;
-
-            myClass.addConstant("String", "DB_DATE_FORMAT", "yyyy-MM-dd HH:mm:ss.sss");
-            myClass.addConstant("org.joda.time.format.DateTimeFormatter", "DB_DATE_FORMATTER", "org.joda.time.format.DateTimeFormat.forPattern(DB_DATE_FORMAT)");
-
-            // Date to String
-            String content = "if (d != null) {\n" +
-                    TAB + "return d.toString(DB_DATE_FORMAT);\n" +
-                    "} else {\n" +
-                    TAB + "return null;\n" +
-                    "}\n";
-
-            List<JavaVariable> variables = new ArrayList<JavaVariable>();
-            variables.add(new JavaVariable("org.joda.time.DateTime", "d"));
-            myClass.addMethod(Access.PUBLIC, "String", "dateTimeToDBString", variables, content);
-
-
-            // String To Date
-            String content2 =
-                    "if (text != null && text.length() > 0 && !text.equals(\"null\")) {\n" +
-                            TAB + "try {\n" +
-                            TAB + TAB + "return DB_DATE_FORMATTER.parseDateTime(text);\n" +
-                            TAB + "} catch (Exception ex) {\n" +
-                            TAB + TAB + "throw new IllegalArgumentException(\"Cannot parse date text: \" + text, ex);\n" +
-                            TAB + "}\n" +
-                            "} else {\n" +
-                            TAB + "return null;\n" +
-                            "}\n";
-
-            List<JavaVariable> variables2 = new ArrayList<JavaVariable>();
-            variables2.add(new JavaVariable("String", "text"));
-            myClass.addMethod(Access.PUBLIC, "org.joda.time.DateTime", "dbStringToDateTime", variables2, content2);
-        }
-    }
 
     /**
      * For method setContent(ContentValues values).
@@ -393,7 +352,6 @@ public class AndroidBaseRecordClassRenderer {
         } else if (type == Date.class) {
             if (field.getJdbcType().equals("DATE")) {
                 if (useDateTime) {
-                    addDateTimeHelperMethods();
                     return "dbStringToDateTime(values.getAsString(" + paramValue + "))";
                 } else {
                     return "dbStringToDate(values.getAsString(" + paramValue + "))";
@@ -405,9 +363,8 @@ public class AndroidBaseRecordClassRenderer {
                     return "new java.util.Date(values.getAsLong(" + paramValue + "))";
                 }
             }
-//        } else if (type == float.class || type == Float.class ||
-//                type == Fraction.class || type == Money.class) {
-//            return "values.getAsFloat(" + paramValue + ")";
+        } else if (type == float.class || type == Float.class) { // || type == Fraction.class || type == Money.class) {
+            return "values.getAsFloat(" + paramValue + ")";
         } else if (type == double.class || type == Double.class) {
             return "values.getAsDouble(" + paramValue + ")";
         } else {
@@ -440,7 +397,6 @@ public class AndroidBaseRecordClassRenderer {
         } else if (type == Date.class) {
             if (field.getJdbcType().equals("DATE")) {
                 if (useDateTime) {
-                    addDateTimeHelperMethods();
                     return "dbStringToDateTime(cursor.getString(cursor.getColumnIndex(" + paramValue + ")))";
                 } else {
                     return "dbStringToDate(cursor.getString(cursor.getColumnIndex(" + paramValue + ")))";
@@ -452,9 +408,8 @@ public class AndroidBaseRecordClassRenderer {
                     return "!cursor.isNull(cursor.getColumnIndex(" + paramValue + ")) ? new java.util.Date(cursor.getLong(cursor.getColumnIndex(" + paramValue + "))) : null";
                 }
             }
-//        } else if (type == float.class || type == Float.class ||
-//                type == Fraction.class || type == Money.class) {
-//            return "cursor.getFloat(cursor.getColumnIndex(" + paramValue + "))";
+        } else if (type == float.class || type == Float.class) { // || type == Fraction.class || type == Money.class) {
+            return "cursor.getFloat(cursor.getColumnIndex(" + paramValue + "))";
         } else if (type == double.class || type == Double.class) {
             return "cursor.getDouble(cursor.getColumnIndex(" + paramValue + "))";
         } else {
@@ -534,26 +489,26 @@ public class AndroidBaseRecordClassRenderer {
         String typeText = field.getJavaTypeText();
         String defaultValue = field.getFormattedClassDefaultValue();
 
-        boolean fractionType = typeText.endsWith("Fraction");
-        boolean moneyType = typeText.endsWith("Money");
+//        boolean fractionType = typeText.endsWith("Fraction");
+//        boolean moneyType = typeText.endsWith("Money");
         boolean dateType = typeText.endsWith("Date");
 
         // Special handling for Fraction and Money
-        if (!field.isJavaTypePrimative() && (fractionType || moneyType)) {
-            // both Money and Fraction are both float at the core
-            String dataType = "float";
-            newVariable = new JavaVariable(dataType, fieldNameJavaStyle);
-
-            // custom setters and getters to change primative to Fraction or Money
-            JavaMethod setterMethod = new JavaMethod(Access.PUBLIC, "void", newVariable.getSetterMethodName());
-            setterMethod.addParameter(new JavaVariable(typeText, newVariable.getName()));
-            setterMethod.setContent("this." + newVariable.getName() + " = " + newVariable.getName() + ".floatValue();");
-            myClass.addMethod(setterMethod);
-
-            JavaMethod getterMethod = new JavaMethod(Access.PUBLIC, typeText, newVariable.getGetterMethodName());
-            getterMethod.setContent("return new " + typeText + "(" + newVariable.getName() + ");");
-            myClass.addMethod(getterMethod);
-        } else {
+//        if (!field.isJavaTypePrimative() && (fractionType || moneyType)) {
+//            // both Money and Fraction are both float at the core
+//            String dataType = "float";
+//            newVariable = new JavaVariable(dataType, fieldNameJavaStyle);
+//
+//            // custom setters and getters to change primative to Fraction or Money
+//            JavaMethod setterMethod = new JavaMethod(Access.PUBLIC, "void", newVariable.getSetterMethodName());
+//            setterMethod.addParameter(new JavaVariable(typeText, newVariable.getName()));
+//            setterMethod.setContent("this." + newVariable.getName() + " = " + newVariable.getName() + ".floatValue();");
+//            myClass.addMethod(setterMethod);
+//
+//            JavaMethod getterMethod = new JavaMethod(Access.PUBLIC, typeText, newVariable.getGetterMethodName());
+//            getterMethod.setContent("return new " + typeText + "(" + newVariable.getName() + ");");
+//            myClass.addMethod(getterMethod);
+//        } else {
             if (dateType && useDateTime) {
                 newVariable = new JavaVariable("org.joda.time.DateTime", fieldNameJavaStyle);
             } else {
@@ -568,7 +523,7 @@ public class AndroidBaseRecordClassRenderer {
 
             newVariable.setGenerateSetterGetter(true);
             addSetterGetterTest(newVariable);
-        }
+//        }
 
         newVariable.setDefaultValue(defaultValue);
 

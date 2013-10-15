@@ -423,11 +423,11 @@ public class JPABaseRecordClassRenderer {
         String typeText = field.getJavaTypeText();
         String defaultValue = field.getFormattedClassDefaultValue();
 
-        boolean fractionType = typeText.endsWith("Fraction");
-        boolean moneyType = typeText.endsWith("Money");
+//        boolean fractionType = typeText.endsWith("Fraction");
+//        boolean moneyType = typeText.endsWith("Money");
 
         // Special handling for Fraction and Money
-        if (!field.isJavaTypePrimative() && (fractionType || moneyType)) {
+        if (!field.isJavaTypePrimative()) { // && (fractionType || moneyType)) {
             // both Money and Fraction are both float at the core of JPA
             String dataType = "float";
             newVariable = new JavaVariable(dataType, fieldNameJavaStyle);
