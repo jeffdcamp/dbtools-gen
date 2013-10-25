@@ -824,8 +824,8 @@ public class SchemaField {
                 retValue = inValue + 'l';
             }
         } else if (c == Double.class) {
-            if (!inValue.endsWith("f")) {
-                retValue = inValue + 'f';
+            if (!inValue.endsWith("d")) {
+                retValue = inValue + 'd';
             }
         }
 
