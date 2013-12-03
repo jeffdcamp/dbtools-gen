@@ -301,7 +301,10 @@ public class AndroidBaseRecordClassRenderer {
         // add method to cleanup many-to-one left-overs
         if (!myClass.isEnum()) {
             List<JavaVariable> orphanParams = new ArrayList<JavaVariable>();
-            myClass.addMethod(Access.PROTECTED, "void", CLEANUP_ORPHANS_METHODNAME, orphanParams, cleanupOrphansContent.toString());
+
+            if (cleanupOrphansContent.length() > 0) {
+                myClass.addMethod(Access.PROTECTED, "void", CLEANUP_ORPHANS_METHODNAME, orphanParams, cleanupOrphansContent.toString());
+            }
 
             // to String method
             toStringContent.append("return text;\n");

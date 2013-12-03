@@ -38,18 +38,18 @@ public class JavaInnerEnum {
         String accessText = JavaClass.getAccessString(getAccess());
         enumStr += accessText;
 
-        enumStr += " static enum " + getName() + "{";
+        enumStr += " static enum " + getName() + " {\n        "; // includes 2 TABS for the next line
 
         int numItems = 0;
         for (String enumItem : values) {
             numItems++;
             if (numItems > 1) {
-                enumStr += ",";
+                enumStr += ", ";
             }
             enumStr += enumItem;
         }
 
-        enumStr += "};";
+        enumStr += "\n    }";
 
         return enumStr;
     }

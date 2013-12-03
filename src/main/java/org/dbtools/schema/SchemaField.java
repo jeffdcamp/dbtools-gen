@@ -440,7 +440,11 @@ public class SchemaField {
                             i++;
                             currentChar = nameToConvert.charAt(i);
 
-                            javaFieldNameStyleName += Character.toString(currentChar).toUpperCase();
+                            if (!javaFieldNameStyleName.isEmpty()) {
+                                javaFieldNameStyleName += Character.toString(currentChar).toUpperCase();
+                            } else {
+                                javaFieldNameStyleName += Character.toString(currentChar);
+                            }
                             break;
                         default:
                             javaFieldNameStyleName += currentChar;

@@ -60,8 +60,6 @@ public class AndroidBaseRecordManager {
         // constructor
         myClass.setCreateDefaultConstructor(true);
 
-        myClass.addImport("android.content.ContentValues");
-        myClass.addImport("android.database.Cursor");
         myClass.addImport(packageName.substring(0, packageName.lastIndexOf('.')) + ".BaseManager");
 
         String baseManagerCall = injectionSupport ? "" : "BaseManager.";
@@ -78,6 +76,9 @@ public class AndroidBaseRecordManager {
             myClass.addMethod(Access.PUBLIC, "String", "getCreateTableSQL", "return " + recordClassName + ".CREATE_TABLE;");
             myClass.addMethod(Access.PUBLIC, recordClassName, "newRecord", "return new " + recordClassName + "();");
         } else {
+            myClass.addImport("android.content.ContentValues");
+            myClass.addImport("android.database.Cursor");
+
             String dbParam = "db, ";
             myClass.addImport("android.database.sqlite.SQLiteDatabase"); // removed to allow easier swapping out of SQLiteDatabase
             List<JavaVariable> sqliteParams = new ArrayList<JavaVariable>();
