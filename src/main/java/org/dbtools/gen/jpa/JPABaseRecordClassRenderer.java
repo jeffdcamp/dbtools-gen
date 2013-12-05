@@ -427,21 +427,21 @@ public class JPABaseRecordClassRenderer {
 //        boolean moneyType = typeText.endsWith("Money");
 
         // Special handling for Fraction and Money
-        if (!field.isJavaTypePrimative()) { // && (fractionType || moneyType)) {
-            // both Money and Fraction are both float at the core of JPA
-            String dataType = "float";
-            newVariable = new JavaVariable(dataType, fieldNameJavaStyle);
-
-            // custom setters and getters to change primative to Fraction or Money
-            JavaMethod setterMethod = new JavaMethod(Access.PUBLIC, "void", newVariable.getSetterMethodName());
-            setterMethod.addParameter(new JavaVariable(typeText, newVariable.getName()));
-            setterMethod.setContent("this." + newVariable.getName() + " = " + newVariable.getName() + ".floatValue();");
-            myClass.addMethod(setterMethod);
-
-            JavaMethod getterMethod = new JavaMethod(Access.PUBLIC, typeText, newVariable.getGetterMethodName());
-            getterMethod.setContent("return new " + typeText + "(" + newVariable.getName() + ");");
-            myClass.addMethod(getterMethod);
-        } else {
+//        if (!field.isJavaTypePrimative()) { // && (fractionType || moneyType)) {
+//            // both Money and Fraction are both float at the core of JPA
+//            String dataType = "float";
+//            newVariable = new JavaVariable(dataType, fieldNameJavaStyle);
+//
+//            // custom setters and getters to change primative to Fraction or Money
+//            JavaMethod setterMethod = new JavaMethod(Access.PUBLIC, "void", newVariable.getSetterMethodName());
+//            setterMethod.addParameter(new JavaVariable(typeText, newVariable.getName()));
+//            setterMethod.setContent("this." + newVariable.getName() + " = " + newVariable.getName() + ".floatValue();");
+//            myClass.addMethod(setterMethod);
+//
+//            JavaMethod getterMethod = new JavaMethod(Access.PUBLIC, typeText, newVariable.getGetterMethodName());
+//            getterMethod.setContent("return new " + typeText + "(" + newVariable.getName() + ");");
+//            myClass.addMethod(getterMethod);
+//        } else {
             newVariable = new JavaVariable(typeText, fieldNameJavaStyle);
 
             if (!field.isJavaTypePrimative() && !field.isJavaTypeImmutable()) {
@@ -450,7 +450,7 @@ public class JPABaseRecordClassRenderer {
 
             newVariable.setGenerateSetterGetter(true);
             addSetterGetterTest(newVariable);
-        }
+//        }
 
         newVariable.setDefaultValue(defaultValue);
 
