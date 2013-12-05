@@ -52,7 +52,7 @@ public class JPAJSEBaseRecordManager {
         myClass.setFileHeaderComment(fileHeaderComment);
 
         // Since this is generated code.... suppress all warnings
-        myClass.addAnnotation("@SuppressWarnings({\"unused\",\"PMD\"})");
+        myClass.addAnnotation("@SuppressWarnings(\"all\")");
 
         // constructor
         myClass.setCreateDefaultConstructor(false);

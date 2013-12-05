@@ -121,7 +121,7 @@ public class JPABaseRecordClassRenderer {
         myClass.setFileHeaderComment(fileHeaderComment);
 
         // Since this is generated code.... suppress all warnings
-        myClass.addAnnotation("@SuppressWarnings(\"PMD\")");
+        myClass.addAnnotation("@SuppressWarnings(\"all\")");
 
         // JPA
         if (!myClass.isEnum()) {

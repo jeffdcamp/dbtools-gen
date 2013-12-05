@@ -5,7 +5,7 @@
     <xsd:element name="dbSchema">
         <xsd:complexType>
             <xsd:sequence>
-                <xsd:element name="database">
+                <xsd:element name="database" minOccurs="1" maxOccurs="unbounded">
                     <xsd:complexType>
                         <xsd:sequence>
                             <xsd:element name="comment" minOccurs="0">

@@ -88,7 +88,7 @@ public class JPAJEEBaseRecordManager {
         myClass.setFileHeaderComment(fileHeaderComment);
 
         // Since this is generated code.... suppress all warnings
-        myClass.addAnnotation("@SuppressWarnings(\"PMD\")");
+        myClass.addAnnotation("@SuppressWarnings(\"all\")");
 
         // constructor(s)
         List<JavaVariable> constParams = new ArrayList<JavaVariable>();

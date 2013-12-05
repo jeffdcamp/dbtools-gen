@@ -54,6 +54,10 @@ public class GroupObjectBuilder {
         setOutputBaseDir(outputBaseDir);
     }
 
+    private void resetData() {
+        tables = null;
+    }
+
     private boolean validate() {
         if (tables.size() == 0) {
             throw new IllegalStateException("No tables specified");
@@ -75,6 +79,7 @@ public class GroupObjectBuilder {
 
     private boolean buildAllDatabases() {
         for (SchemaDatabase database : schemaRenderer.getDbSchema().getSchemaDatabases()) {
+            resetData(); // prepare for new database
             if (!build(database)) {
                 return false;
             }

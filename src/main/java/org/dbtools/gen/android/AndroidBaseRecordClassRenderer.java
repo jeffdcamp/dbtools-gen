@@ -121,7 +121,7 @@ public class AndroidBaseRecordClassRenderer {
         myClass.setFileHeaderComment(fileHeaderComment);
 
         // Since this is generated code.... suppress all warnings
-        myClass.addAnnotation("@SuppressWarnings(\"PMD\")");
+        myClass.addAnnotation("@SuppressWarnings(\"all\")");
 
         final String TAB = JavaClass.getTab();
 
