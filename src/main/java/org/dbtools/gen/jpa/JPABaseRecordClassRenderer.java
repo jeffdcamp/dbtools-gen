@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public class JPABaseRecordClassRenderer {
 
-    private String DATEFORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
     private JavaClass myClass;
     private JavaClass myTestClass;
@@ -39,9 +39,8 @@ public class JPABaseRecordClassRenderer {
     private StringBuilder toStringContent;
     private StringBuilder cleanupOrphansContent;
 
-    private StringBuffer methodToXMLExt = new StringBuffer();
     private boolean includeXML = false;
-    private boolean useDateTime = false; // use joda datetime or jsr 310 // TODO IMPLEMENT SUPPORT
+    private boolean useDateTime = false; // use joda datetime or jsr 310
     private boolean useInnerEnums = true;
 
     public static final String CLEANUP_ORPHANS_METHODNAME = "cleanupOrphans";
@@ -130,18 +129,14 @@ public class JPABaseRecordClassRenderer {
         }
         String TAB = JavaClass.getTab();
 
-        if (psLog == null) {
-            psLog = System.out;
-        }
-
-        StringBuffer constructorElement = new StringBuffer();
+        StringBuilder constructorElement = new StringBuilder();
         constructorElement.append("try {\n");
-        StringBuffer methodToXML = new StringBuffer();
-        methodToXMLExt = new StringBuffer();
+        StringBuilder methodToXML = new StringBuilder();
+        StringBuilder methodToXMLExt = new StringBuilder();
 
         methodToXML.append("Element element = parent.addElement(TABLE);\n");
         StringBuffer dtd = new StringBuffer();
-        dtd.append("<!ELEMENT " + table.getClassName() + " EMPTY>\n        <!ATTLIST " + table.getClassName() + "\n");
+        dtd.append("<!ELEMENT ").append(table.getClassName()).append(" EMPTY>\n        <!ATTLIST ").append(table.getClassName()).append("\n");
         boolean primaryKeyAdded = false;
 
         // imports
@@ -246,21 +241,29 @@ public class JPABaseRecordClassRenderer {
                 String temporalImport = "javax.persistence.Temporal";
                 String temporalTypeImport = "javax.persistence.TemporalType";
                 String temporalAnnotation = "@Temporal(value = TemporalType.{0})";
-                if (field.getJdbcType().equals(SchemaField.TYPE_TIMESTAMP)) {
+                if (!useDateTime && field.getJdbcType().equals(SchemaField.TYPE_TIMESTAMP)) {
                     myClass.addImport(temporalImport);
                     myClass.addImport(temporalTypeImport);
 
                     newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "TIMESTAMP"));
-                } else if (field.getJdbcType().equals(SchemaField.TYPE_DATE)) {
+                } else if (!useDateTime && field.getJdbcType().equals(SchemaField.TYPE_DATE)) {
                     myClass.addImport(temporalImport);
                     myClass.addImport(temporalTypeImport);
 
                     newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "DATE"));
-                } else if (field.getJdbcType().equals(SchemaField.TYPE_TIMESTAMP)) {
+                } else if (!useDateTime && field.getJdbcType().equals(SchemaField.TYPE_TIMESTAMP)) {
                     myClass.addImport(temporalImport);
                     myClass.addImport(temporalTypeImport);
 
                     newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "TIMESTAMP"));
+                }
+
+                if (useDateTime && newVariable.getDataType().endsWith("DateTime")) {
+                    myClass.addImport("org.hibernate.annotations.Type");
+                    myClass.addImport("org.springframework.format.annotation.DateTimeFormat");
+
+                    newVariable.addAnnotation("@Type(type=\"org.jadira.usertype.dateandtime.joda.PersistentDateTime\")");
+                    newVariable.addAnnotation("@DateTimeFormat(style=\"SS\")");
                 }
             } // end of JPA stuff
 
@@ -276,7 +279,7 @@ public class JPABaseRecordClassRenderer {
         // constructors
         if (includeXML && !myClass.isEnum()) {
             constructorElement.append("} catch (Exception e) {\n");
-            constructorElement.append(TAB + "e.printStackTrace();\n");
+            constructorElement.append(TAB).append("e.printStackTrace();\n");
             constructorElement.append("}\n");
 //            constructorElement.append("// dtd \n/*\n");
 //            constructorElement.append("").append(dtd.toString());
@@ -349,7 +352,7 @@ public class JPABaseRecordClassRenderer {
         String fieldType = field.getJdbcType();
         if (!fieldType.equals(SchemaField.TYPE_BLOB) && !fieldType.equals(SchemaField.TYPE_CLOB)) {
             // toString
-            toStringContent.append("text += \"" + fieldNameJavaStyle + " = \"+ " + fieldNameJavaStyle + " +\"\\n\";\n");
+            toStringContent.append("text += \"").append(fieldNameJavaStyle).append(" = \"+ ").append(fieldNameJavaStyle).append(" +\"\\n\";\n");
         }
     }
 
@@ -418,13 +421,14 @@ public class JPABaseRecordClassRenderer {
     }
 
     private JavaVariable generateFieldVariable(String fieldNameJavaStyle, SchemaField field) {
-        JavaVariable newVariable = null;
+        JavaVariable newVariable;
 
         String typeText = field.getJavaTypeText();
         String defaultValue = field.getFormattedClassDefaultValue();
 
 //        boolean fractionType = typeText.endsWith("Fraction");
 //        boolean moneyType = typeText.endsWith("Money");
+        boolean dateType = typeText.endsWith("Date");
 
         // Special handling for Fraction and Money
 //        if (!field.isJavaTypePrimative()) { // && (fractionType || moneyType)) {
@@ -442,14 +446,19 @@ public class JPABaseRecordClassRenderer {
 //            getterMethod.setContent("return new " + typeText + "(" + newVariable.getName() + ");");
 //            myClass.addMethod(getterMethod);
 //        } else {
+        if (dateType && useDateTime) {
+            newVariable = new JavaVariable("org.joda.time.DateTime", fieldNameJavaStyle);
+        } else {
             newVariable = new JavaVariable(typeText, fieldNameJavaStyle);
+        }
 
-            if (!field.isJavaTypePrimative() && !field.isJavaTypeImmutable()) {
-                newVariable.setCloneSetterGetterVar(true);
-            }
+        boolean immutableDate = field.getJavaClassType() == Date.class && useDateTime; // org.joda.time.DateTime IS immutable
+        if (!field.isJavaTypePrimative() && !field.isJavaTypeImmutable() && !immutableDate) {
+            newVariable.setCloneSetterGetterVar(true);
+        }
 
-            newVariable.setGenerateSetterGetter(true);
-            addSetterGetterTest(newVariable);
+        newVariable.setGenerateSetterGetter(true);
+        addSetterGetterTest(newVariable);
 //        }
 
         newVariable.setDefaultValue(defaultValue);
@@ -553,7 +562,7 @@ public class JPABaseRecordClassRenderer {
         myClass.addVariable(oneToOneVar, true);
     }
 
-    private void generateXMLCode(final SchemaDatabase dbSchema, final StringBuffer constructorElement, final StringBuffer methodToXML, final StringBuffer dtd, final String TAB, final SchemaField field, final String constName) {
+    private void generateXMLCode(final SchemaDatabase dbSchema, final StringBuilder constructorElement, final StringBuilder methodToXML, final StringBuffer dtd, final String TAB, final SchemaField field, final String constName) {
 
         String fieldNameJavaStyle = field.getName(true);
 
@@ -561,7 +570,7 @@ public class JPABaseRecordClassRenderer {
         // xmlConstructor
         String attributeName = "C_" + constName;
         String elementPreGetter = "";
-        String elementGetter = "";
+        String elementGetter;
 
         Class fClass = field.getJavaClassType();
         if (!field.isEnumeration()) {
@@ -581,7 +590,7 @@ public class JPABaseRecordClassRenderer {
             } else if (fClass == Date.class) {
                 String tmpTextName = fieldNameJavaStyle + "Text";
                 elementPreGetter = "String " + tmpTextName + " = element.attributeValue(" + attributeName + ");";
-                elementGetter = tmpTextName + " != null ? (new java.text.SimpleDateFormat(\"" + DATEFORMAT + "\")).parse(" + tmpTextName + ")" +
+                elementGetter = tmpTextName + " != null ? (new java.text.SimpleDateFormat(\"" + DATE_FORMAT + "\")).parse(" + tmpTextName + ")" +
                         " : null";
 //            } else if (fClass == Fraction.class) {
 //                myClass.addImport("com.jdc.datatypes.Fraction");
@@ -615,9 +624,9 @@ public class JPABaseRecordClassRenderer {
             xmlSetterMethodName = JavaClass.createSetterMethodName(fieldNameJavaStyle);
         }
         if (!elementPreGetter.isEmpty()) {
-            constructorElement.append(TAB).append(elementPreGetter + "\n");
+            constructorElement.append(TAB).append(elementPreGetter).append("\n");
         }
-        constructorElement.append(TAB).append(xmlSetterMethodName).append("(" + elementGetter + ");\n");
+        constructorElement.append(TAB).append(xmlSetterMethodName).append("(").append(elementGetter).append(");\n");
 
 
         // toXML()
@@ -626,13 +635,13 @@ public class JPABaseRecordClassRenderer {
             if (fClass == int.class || fClass == float.class || fClass == double.class || fClass == long.class) {
                 String toStringSeg = "";
                 toStringSeg = field.getJavaType().getMatchingNonPrimativeClassText() + ".toString(";
-                methodToXML.append("element.addAttribute(").append("C_" + constName).append(", ").append(toStringSeg).append(getterMethodName).append("()));\n");// NOPMD
+                methodToXML.append("element.addAttribute(").append("C_").append(constName).append(", ").append(toStringSeg).append(getterMethodName).append("()));\n");// NOPMD
             } else {
                 if (fClass == String.class) {
-                    methodToXML.append("element.addAttribute(").append("C_" + constName).append(", ").append(getterMethodName).append("());\n");
+                    methodToXML.append("element.addAttribute(").append("C_").append(constName).append(", ").append(getterMethodName).append("());\n");
                 } else {
                     if (fClass.isPrimitive()) {
-                        methodToXML.append("element.addAttribute(").append("C_" + constName).append(", new " + field.getJavaType().getMatchingNonPrimativeClassText() + "(").append(getterMethodName).append("()).toString());\n");
+                        methodToXML.append("element.addAttribute(").append("C_").append(constName).append(", new ").append(field.getJavaType().getMatchingNonPrimativeClassText()).append("(").append(getterMethodName).append("()).toString());\n");
                     } else {
                         if (fClass == Date.class) {
                             String dateGetterMethod;
@@ -643,21 +652,21 @@ public class JPABaseRecordClassRenderer {
                             } else {
                                 dateGetterMethod = getterMethodName + "()";
                             }
-                            methodToXML.append("if (").append(dateGetterMethod + " != null) {\n");
+                            methodToXML.append("if (").append(dateGetterMethod).append(" != null) {\n");
 
-                            methodToXML.append("    java.text.SimpleDateFormat xmlDF = new java.text.SimpleDateFormat(\"" + DATEFORMAT + "\");\n");
-                            methodToXML.append("    element.addAttribute(").append("C_" + constName).append(", xmlDF.format(" + dateGetterMethod + "));\n");
+                            methodToXML.append("    java.text.SimpleDateFormat xmlDF = new java.text.SimpleDateFormat(\"" + DATE_FORMAT + "\");\n");
+                            methodToXML.append("    element.addAttribute(").append("C_").append(constName).append(", xmlDF.format(").append(dateGetterMethod).append("));\n");
 
                             methodToXML.append("}\n");
                         } else {
-                            methodToXML.append("element.addAttribute(").append("C_" + constName).append(", ").append(getterMethodName).append("().toString());\n");
+                            methodToXML.append("element.addAttribute(").append("C_").append(constName).append(", ").append(getterMethodName).append("().toString());\n");
                         }
                     }
                 }
             }
         } else {
             // enum
-            methodToXML.append("element.addAttribute(").append("C_" + constName).append(", ").append(getterMethodName).append("().toString());\n");
+            methodToXML.append("element.addAttribute(").append("C_").append(constName).append(", ").append(getterMethodName).append("().toString());\n");
         }
 
         // dtd
@@ -785,11 +794,11 @@ public class JPABaseRecordClassRenderer {
                         myClass.addMethod(removeMethod);
 
                         // add to cleanup orphans
-                        cleanupOrphansContent.append("for (" + fkTableClassName + " itemToDelete : " + itemsToDelete + ") {\n");
-                        cleanupOrphansContent.append(TAB + "try {\n");
-                        cleanupOrphansContent.append(TAB + TAB + "em.remove(itemToDelete);\n");
-                        cleanupOrphansContent.append(TAB + "} catch(RuntimeException e) {// do nothing... it is ok if it does not exist\n");
-                        cleanupOrphansContent.append(TAB + "}\n");
+                        cleanupOrphansContent.append("for (").append(fkTableClassName).append(" itemToDelete : ").append(itemsToDelete).append(") {\n");
+                        cleanupOrphansContent.append(TAB).append("try {\n");
+                        cleanupOrphansContent.append(TAB).append(TAB).append("em.remove(itemToDelete);\n");
+                        cleanupOrphansContent.append(TAB).append("} catch(RuntimeException e) {// do nothing... it is ok if it does not exist\n");
+                        cleanupOrphansContent.append(TAB).append("}\n");
                         cleanupOrphansContent.append("}\n\n");
                         break;
                     case ONETOONE:
@@ -809,10 +818,6 @@ public class JPABaseRecordClassRenderer {
         } else {
             return table.getClassName() + "BaseRecord";
         }
-    }
-
-    public String getFilename() {
-        return myClass.getFilename();
     }
 
     public void writeToFile(String directoryname) {
@@ -886,38 +891,38 @@ public class JPABaseRecordClassRenderer {
         switch (dataType) {
             case STRING:
                 testContent.append("String testData = \"abc\";\n");
-                testContent.append("testRecord." + newVariable.getSetterMethodName() + "(testData);\n");
-                testContent.append("String recordData = testRecord." + newVariable.getGetterMethodName() + "();\n");
+                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
+                testContent.append("String recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
                 testContent.append("assertEquals(testData, recordData);");
                 break;
             case CHAR:
                 testContent.append("char testData = 'z';\n");
-                testContent.append("testRecord." + newVariable.getSetterMethodName() + "(testData);\n");
-                testContent.append("char recordData = testRecord." + newVariable.getGetterMethodName() + "();\n");
+                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
+                testContent.append("char recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
                 testContent.append("assertEquals(testData, recordData);");
                 break;
             case BOOLEAN:
                 testContent.append("boolean testData = false;\n");
-                testContent.append("testRecord." + newVariable.getSetterMethodName() + "(testData);\n");
-                testContent.append("boolean recordData = testRecord." + newVariable.getGetterMethodName() + "();\n");
+                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
+                testContent.append("boolean recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
                 testContent.append("assertEquals(testData, recordData);");
                 break;
             case INT:
                 testContent.append("int testData = 123;\n");
-                testContent.append("testRecord." + newVariable.getSetterMethodName() + "(testData);\n");
-                testContent.append("int recordData = testRecord." + newVariable.getGetterMethodName() + "();\n");
+                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
+                testContent.append("int recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
                 testContent.append("assertEquals(testData, recordData);");
                 break;
             case FLOAT:
                 testContent.append("float testData = 123.56f;\n");
-                testContent.append("testRecord." + newVariable.getSetterMethodName() + "(testData);\n");
-                testContent.append("float recordData = testRecord." + newVariable.getGetterMethodName() + "();\n");
+                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
+                testContent.append("float recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
                 testContent.append("assertEquals(testData, recordData, 0);");
                 break;
             case DOUBLE:
                 testContent.append("double testData = 123.56;\n");
-                testContent.append("testRecord." + newVariable.getSetterMethodName() + "(testData);\n");
-                testContent.append("double recordData = testRecord." + newVariable.getGetterMethodName() + "();\n");
+                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
+                testContent.append("double recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
                 testContent.append("assertEquals(testData, recordData, 0);");
                 break;
             case DATE:
@@ -928,8 +933,8 @@ public class JPABaseRecordClassRenderer {
                 testContent.append("int testMonth = 2;\n");
                 testContent.append("int testDay = 1;\n");
                 testContent.append("testData.set(1980, 2, 1);\n");
-                testContent.append("testRecord." + newVariable.getSetterMethodName() + "(testData.getTime());\n");
-                testContent.append("Date recordDataDate = testRecord." + newVariable.getGetterMethodName() + "();\n");
+                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData.getTime());\n");
+                testContent.append("Date recordDataDate = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
                 testContent.append("Calendar recordData = Calendar.getInstance();\n");
                 testContent.append("recordData.setTime(recordDataDate);\n");
                 testContent.append("int year = recordData.get(Calendar.YEAR);\n");
@@ -952,31 +957,11 @@ public class JPABaseRecordClassRenderer {
         myTestClass.addMethod(testMethod);
     }
 
-    public boolean isIncludeXML() {
-        return includeXML;
-    }
-
     public void setIncludeXML(boolean includeXML) {
         this.includeXML = includeXML;
-    }
-
-    public boolean isUseInnerEnums() {
-        return useInnerEnums;
-    }
-
-    public void setUseInnerEnums(boolean useInnerEnums) {
-        this.useInnerEnums = useInnerEnums;
-    }
-
-    public boolean isUseDateTime() {
-        return useDateTime;
     }
 
     public void setUseDateTime(boolean useDateTime) {
         this.useDateTime = useDateTime;
     }
-
-    //    private String buildCascadeString(String cascadeString) {
-//        return cascadeString;
-//    }
 }
