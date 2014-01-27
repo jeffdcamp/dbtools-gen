@@ -62,8 +62,8 @@ public class JPARecordClassRenderer {
         // JPA
         myClass.addAnnotation("@javax.persistence.Entity()");
         //myClass.addImplements("java.io.Serializable");
-        myClass.addImport("javax.persistence.SchemaTable");
-        myClass.addAnnotation("@SchemaTable(name=" + baseClassName + ".TABLE)");
+        myClass.addImport("javax.persistence.Table");
+        myClass.addAnnotation("@Table(name=" + baseClassName + ".TABLE)");
 
 //        psLog.println("Generation complete!");
     }
