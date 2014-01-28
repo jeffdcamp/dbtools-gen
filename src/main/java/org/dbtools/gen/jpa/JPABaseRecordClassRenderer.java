@@ -560,6 +560,12 @@ public class JPABaseRecordClassRenderer {
         }
 
         myClass.addVariable(oneToOneVar, true);
+
+        if (field.isPrimaryKey() && !myClass.isEnum()) {
+            JavaMethod getIDMethod = new JavaMethod(Access.PUBLIC, field.getJavaTypeText(), "getID");
+            getIDMethod.setContent("return " + varName + ".getID();");
+            myClass.addMethod(getIDMethod);
+        }
     }
 
     private void generateXMLCode(final SchemaDatabase dbSchema, final StringBuilder constructorElement, final StringBuilder methodToXML, final StringBuffer dtd, final String TAB, final SchemaField field, final String constName) {
