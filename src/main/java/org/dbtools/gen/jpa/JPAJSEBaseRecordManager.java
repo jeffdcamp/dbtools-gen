@@ -127,10 +127,24 @@ public class JPAJSEBaseRecordManager {
         findParams.add(new JavaVariable("Object", "pk"));
         myClass.addMethod(Access.PUBLIC, recordClassName, "find", findParams, "return (" + recordClassName + ") entityManager.find(" + recordClassName + ".class, pk);");
 
+        addFindAllMethod(myClass, recordClassName);
+        addFindCountMethod(myClass, recordClassName);
+    }
+
+    public static void addFindCountMethod(JavaClass myClass, String recordClassName) {
         myClass.addImport("javax.persistence.Query");
-        String findCountContent = "Query q = getEntityManager().createNativeQuery(\"SELECT count(0) FROM \" + " + recordClassName + ".TABLE);\n"
+        String content = "Query q = getEntityManager().createNativeQuery(\"SELECT count(0) FROM \" + " + recordClassName + ".TABLE);\n"
                 + "return ((Number) q.getSingleResult()).longValue();\n";
-        myClass.addMethod(Access.PUBLIC, "long", "findCount", findCountContent);
+        myClass.addMethod(Access.PUBLIC, "long", "findCount", content);
+    }
+
+    public static void addFindAllMethod(JavaClass myClass, String recordClassName) {
+        myClass.addImport("javax.persistence.Query");
+        String content = "Query q = getEntityManager().createQuery(\"SELECT o FROM \" + " + recordClassName + ".TABLE + \" o\");\n"
+                + "return q.getResultList();\n";
+
+        myClass.addImport("java.util.List");
+        myClass.addMethod(Access.PUBLIC, "List<" + recordClassName + ">", "findAll", content);
     }
 
     private void addSpringSupport(JavaMethod method) {
