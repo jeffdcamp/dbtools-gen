@@ -10,15 +10,15 @@ public class SchemaDatabase {
     private String name;
 
     //    private List<RefDatabaseSchema> referenceSchemas = new ArrayList<RefDatabaseSchema>();
-    private List<SchemaTable> tables = new ArrayList<SchemaTable>();
-    private Map<String, SchemaTable> tablesByName = new TreeMap<String, SchemaTable>();
-    private List<SchemaView> views = new ArrayList<SchemaView>();
-    private Map<String, SchemaView> viewsByName = new TreeMap<String, SchemaView>();
-    private Map<String, String> tableClassNames = new HashMap<String, String>();  // key:
+    private List<SchemaTable> tables = new ArrayList<>();
+    private Map<String, SchemaTable> tablesByName = new TreeMap<>();
+    private List<SchemaView> views = new ArrayList<>();
+    private Map<String, SchemaView> viewsByName = new TreeMap<>();
+    private Map<String, String> tableClassNames = new HashMap<>();  // key:
     private List<String> postSQLScriptFiles = null;
 
     // error checking
-    private Set<String> sequenceNameSet = new HashSet<String>();
+    private Set<String> sequenceNameSet = new HashSet<>();
 
 
     public SchemaDatabase(String schemaFilename, String dbVendorName, boolean schemaXMLFilenameIsAResource, Element dbElement) {
@@ -56,7 +56,7 @@ public class SchemaDatabase {
 
         // get all inserts
         // remove any existing
-        postSQLScriptFiles = new ArrayList<String>();
+        postSQLScriptFiles = new ArrayList<>();
 
         // add inserts...
         for (Element postSQLScriptElement : (List<Element>) dbElement.elements("postSQLScriptFile")) {
@@ -123,8 +123,8 @@ public class SchemaDatabase {
     }
 
     private void removeAllTables() {
-        tables = new ArrayList<SchemaTable>();
-        tablesByName = new HashMap<String, SchemaTable>();
+        tables = new ArrayList<>();
+        tablesByName = new HashMap<>();
     }
 
     private boolean addView(Element viewElement) {
@@ -142,8 +142,8 @@ public class SchemaDatabase {
     }
 
     private void removeAllViews() {
-        views = new ArrayList<SchemaView>();
-        viewsByName = new HashMap<String, SchemaView>();
+        views = new ArrayList<>();
+        viewsByName = new HashMap<>();
     }
 
     /**

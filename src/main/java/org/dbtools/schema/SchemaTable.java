@@ -41,7 +41,7 @@ public class SchemaTable {
         if (classNameAttr != null) {
             this.className = classNameAttr.getValue();
         } else {
-            this.className = createJavaStyleName(name);
+            this.className = ClassInfo.createJavaStyleName(name);
         }
 
         // get table parameters
@@ -194,50 +194,7 @@ public class SchemaTable {
         return className;
     }
 
-    public static String createJavaStyleName(String tableName) {
-        String javaClassnameStyleName = "";
-        // check to see if all letters are uppercase
-        boolean isAllUppercase = false;
-        for (char currentChar : tableName.toCharArray()) {
-            if (Character.isUpperCase(currentChar) && Character.isLetter(currentChar)) {
-                isAllUppercase = true;
-            } else if (Character.isLetter(currentChar)) {
-                isAllUppercase = false;
-                break;
-            }
-        }
 
-        String nameToConvert;
-        // if all uppercase force lowercase on all letter
-        if (isAllUppercase) {
-            nameToConvert = tableName.toLowerCase();
-        } else {
-            nameToConvert = tableName;
-        }
-
-        for (int i = 0; i < nameToConvert.length(); i++) {
-            char currentChar = nameToConvert.charAt(i);
-
-            // ALWAYS Upper-case the first letter
-            if (i == 0) {
-                javaClassnameStyleName += Character.toString(currentChar).toUpperCase();
-            } else {
-                // REMOVE _ and replace next letter with an uppercase letter
-                switch (currentChar) {
-                    case '_':
-                        // move to the next letter
-                        i++;
-                        currentChar = nameToConvert.charAt(i);
-
-                        javaClassnameStyleName += Character.toString(currentChar).toUpperCase();
-                        break;
-                    default:
-                        javaClassnameStyleName += currentChar;
-                }
-            }
-        }
-        return javaClassnameStyleName;
-    }
 
     /**
      * Getter for property primaryKey.
