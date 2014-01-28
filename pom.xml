@@ -47,7 +47,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <target.jdk>1.6</target.jdk>
+        <target.jdk>1.7</target.jdk>
     </properties>
 
     <prerequisites>
