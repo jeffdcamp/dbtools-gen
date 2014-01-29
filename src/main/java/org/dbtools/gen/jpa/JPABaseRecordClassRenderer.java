@@ -727,7 +727,10 @@ public class JPABaseRecordClassRenderer {
                         myClass.addMethod(Access.PUBLIC, listType, JavaVariable.getGetterMethodName(listType, items), "return java.util.Collections.unmodifiableSet(" + items + ");");
 
                         ClassInfo mappedByClassInfo = dbSchema.getTableClassInfo(fkField.getForeignKeyTable());
-                        String mappedByVarName = JavaClass.formatToJavaVariable(mappedByClassInfo.getClassName());
+                        String mappedByVarName = fkField.getCustomVarName();
+                        if (mappedByVarName == null || mappedByVarName.isEmpty()) {
+                            mappedByVarName = JavaClass.formatToJavaVariable(mappedByClassInfo.getClassName());
+                        }
 
                         myClass.addImport("javax.persistence.FetchType");
 
