@@ -140,7 +140,7 @@ public class JPAJSEBaseRecordManager {
 
     public static void addFindAllMethod(JavaClass myClass, String recordClassName) {
         myClass.addImport("javax.persistence.Query");
-        String content = "Query q = getEntityManager().createQuery(\"SELECT o FROM \" + " + recordClassName + ".TABLE + \" o\");\n"
+        String content = "Query q = getEntityManager().createQuery(\"SELECT o FROM \" + " + recordClassName + ".TABLE_CLASSNAME + \" o\");\n"
                 + "return q.getResultList();\n";
 
         myClass.addImport("java.util.List");
