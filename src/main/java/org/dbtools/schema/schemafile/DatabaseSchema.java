@@ -1,4 +1,4 @@
-package org.dbtools.schema.xmlfile;
+package org.dbtools.schema.schemafile;
 
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.ElementList;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Root
-public class DBSchema {
+public class DatabaseSchema {
     @Attribute(required = false)
     private String schemaLocation;
 
@@ -26,6 +26,41 @@ public class DBSchema {
         this.databases = databases;
     }
 
+    public SchemaDatabase getDatabase(String name) {
+        for (SchemaDatabase database : databases) {
+            if (database.getName().equals(name)) {
+                return database;
+            }
+        }
+
+        return null;
+    }
+
+    public void validate() {
+        for (SchemaDatabase database : databases) {
+            database.validate();
+        }
+    }
+
+    public static DatabaseSchema readXMLSchema(String path) {
+        DatabaseSchema schema = null;
+
+        // read schema xml file
+        try {
+            Serializer serializer = new Persister();
+            File source = new File(path);
+            schema = serializer.read(DatabaseSchema.class, source);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // validate
+        if (schema != null) {
+            schema.validate();
+        }
+
+        return schema;
+    }
 
     public static void main(String[] args) {
 //        javaToXml();
@@ -34,7 +69,7 @@ public class DBSchema {
 
     public static void javaToXml() {
         try {
-            DBSchema schema = new DBSchema();
+            DatabaseSchema schema = new DatabaseSchema();
 
             List<SchemaDatabase> databases = new ArrayList<SchemaDatabase>();
 
@@ -68,7 +103,7 @@ public class DBSchema {
         try {
             Serializer serializer = new Persister();
             File source = new File("/home/jcampbell/src/ldschurch/android/ldstools/LDSToolsAndroid/src/main/database/schema.xml");
-            DBSchema schema = serializer.read(DBSchema.class, source);
+            DatabaseSchema schema = serializer.read(DatabaseSchema.class, source);
 
             if (schema != null) {
                 System.out.println("SUCCESS");

@@ -1,11 +1,15 @@
-package org.dbtools.schema.xmlfile;
+package org.dbtools.schema.schemafile;
 
-import org.simpleframework.xml.Attribute;
+import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 
+/**
+ * User: jcampbell
+ * Date: 1/25/14
+ */
 @Root
-public class SchemaView {
-    @Attribute(required = false)
+public class SchemaUniqueField {
+    @Element
     private String name;
 
     public String getName() {

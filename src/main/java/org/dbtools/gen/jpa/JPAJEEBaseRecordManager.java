@@ -11,7 +11,7 @@
 package org.dbtools.gen.jpa;
 
 import org.dbtools.codegen.*;
-import org.dbtools.schema.SchemaTable;
+import org.dbtools.schema.schemafile.SchemaTable;
 
 import java.io.PrintStream;
 import java.util.ArrayList;

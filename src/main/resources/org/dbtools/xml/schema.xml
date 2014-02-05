@@ -1,20 +1,449 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <dbSchema xmlns='https://github.com/jeffdcamp/dbtools-gen'
           xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
-          xsi:schemaLocation='https://github.com/jeffdcamp/dbtools-gen dbschema.xsd'>
-    <database name="main">
+          xsi:schemaLocation='http://www.soupbowl.net/schema/dbtools/dbschema-1.0.xsd dbschema.xsd'>
+    <database name="ldstoolz">
+        <table name="DATABASE_METADATA_TYPE" className="DatabaseMetadataType" enumerations="UNKNOWN,VIEWS_VERSION">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true" unique="true"/>
+        </table>
+
+        <table name="DATABASE_METADATA">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="DATABASE_METADATA_TYPE_ID" jdbcDataType="INTEGER" varName="databaseMetaDataType" foreignKeyTable="DATABASE_METADATA_TYPE" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="UNKNOWN" index="true"/>
+            <field name="INT_VALUE" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="TEXT_VALUE" jdbcDataType="VARCHAR" size="255"/>
+        </table>
+
+        <table name="IMAGE_STATUS" className="ImageStatus" enumerations="NO_IMAGE,DOWNLOADED,AWAITING_UPLOAD,UPLOADED">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
+        </table>
+
+        <table name="UNIT">
+            <field name="_id" jdbcDataType="BIGINT" primaryKey="true" notNull="true" /> <!-- LDS Unit ID (assigned... not incremented) -->
+            <field name="LDS_AREA_ID" jdbcDataType="BIGINT" notNull="true"/> <!-- LDS Area ID -->
+            <field name="LDS_STAKE_ID" jdbcDataType="BIGINT" notNull="true"/> <!-- LDS Stake ID -->
+            <field name="UNIT_NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
+            <field name="UNIT_TYPE" jdbcDataType="INTEGER" enumerations="STAKE,WARD,BRANCH" enumerationDefault="WARD"/>
+            <field name="USER_WARD" jdbcDataType="BOOLEAN" defaultValue="false"/>
+            <field name="USER_HAS_CALLING_IN_UNIT" jdbcDataType="BOOLEAN" defaultValue="false"/>
+            <field name="USER_STAKE_ADMIN_RIGHTS" jdbcDataType="BOOLEAN" defaultValue="false"/>
+            <field name="USER_WARD_ADMIN_RIGHTS" jdbcDataType="BOOLEAN" defaultValue="false"/>
+        </table>
+
+        <table name="HOUSEHOLD">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="UNIT_ID" jdbcDataType="BIGINT" foreignKeyTable="UNIT" foreignKeyField="_id" notNull="true"/>
+            <field name="HEAD_INDIVIDUAL_ID" jdbcDataType="BIGINT"/> <!-- Not foreign key to avoid circular dependency -->
+            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
+            <field name="COUPLE_NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
+            <field name="PHONE" jdbcDataType="VARCHAR" size="255"/>
+            <field name="PHONE_LOOKUP" jdbcDataType="VARCHAR" size="255"/>
+            <field name="EMAIL" jdbcDataType="VARCHAR" size="255"/>
+            <field name="LAT" jdbcDataType="DOUBLE" defaultValue="0"/>
+            <field name="LNG" jdbcDataType="DOUBLE" defaultValue="0"/>
+            <field name="ADDRESS1" jdbcDataType="VARCHAR" size="255"/>
+            <field name="ADDRESS2" jdbcDataType="VARCHAR" size="255"/>
+            <field name="ADDRESS3" jdbcDataType="VARCHAR" size="255"/>
+            <field name="ADDRESS4" jdbcDataType="VARCHAR" size="255"/>
+            <field name="CITY" jdbcDataType="VARCHAR" size="255"/>
+            <field name="STATE" jdbcDataType="VARCHAR" size="255"/>
+            <field name="POSTAL" jdbcDataType="VARCHAR" size="255"/>
+            <field name="IMAGE_ID" jdbcDataType="VARCHAR" size="255"/> <!-- given from photo web service -->
+            <field name="IMAGE_SUBMITTED_DATE_ID" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/> <!-- hash of date given from photo web service -->
+            <field name="IMAGE_LAST_UPDATE" jdbcDataType="TIMESTAMP"/> <!-- date last checked for image -->
+            <field name="IMAGE_STATUS_ID" jdbcDataType="INTEGER" varName="imageStatus" foreignKeyTable="IMAGE_STATUS" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="NO_IMAGE"/>
+        </table>
+
         <table name="INDIVIDUAL_TYPE" className="IndividualType" enumerations="HEAD,SPOUSE,CHILD">
             <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
             <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true" unique="true"/>
         </table>
 
-        <table name="INDIVIDUAL">
+        <table name="GENDER" className="Gender" enumerations="UNKNOWN,MALE,FEMALE">
             <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
-            <field name="INDIVIDUAL_TYPE_ID" jdbcDataType="INTEGER" varName="individualType" foreignKeyTable="INDIVIDUAL_TYPE" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="HEAD"/>
-            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
-            <field name="BIRTH_DATE" jdbcDataType="DATE"/>
-            <field name="PHONE" jdbcDataType="VARCHAR" size="255"/>
-            <field name="EMAIL" jdbcDataType="VARCHAR" size="255"/>
+            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true" unique="true"/>
         </table>
+
+        <table name="INDIVIDUAL">
+            <field name="_id" jdbcDataType="BIGINT" primaryKey="true" increment="true" notNull="true"/>
+            <field name="LDS_INDIVIDUAL_ID" jdbcDataType="BIGINT" notNull="true" index="true"/> <!-- LDS Individual ID -->
+            <field name="HOUSEHOLD_ID" jdbcDataType="BIGINT" foreignKeyTable="HOUSEHOLD" foreignKeyField="_id" notNull="true"/>
+            <field name="INDIVIDUAL_TYPE_ID" jdbcDataType="INTEGER" varName="individualType" foreignKeyTable="INDIVIDUAL_TYPE" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="HEAD"/>
+            <field name="HOUSEHOLD_ORDER" jdbcDataType="INTEGER" notNull="true"/>
+            <field name="PREFERRED_NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
+            <field name="FULL_NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
+            <field name="BIRTH_DATE" jdbcDataType="TIMESTAMP"/>
+            <field name="BIRTH_DAY" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/> <!-- for birthday report -->
+            <field name="BIRTH_MONTH" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/> <!-- for birthday report -->
+            <field name="BIRTH_LOCATION" jdbcDataType="VARCHAR" size="255"/>
+            <field name="BIRTH_COUNTRY" jdbcDataType="VARCHAR" size="255"/>
+            <field name="GENDER" jdbcDataType="INTEGER" varName="gender" foreignKeyTable="GENDER" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="UNKNOWN"/>
+            <field name="MRN" jdbcDataType="VARCHAR" size="255"/>
+            <field name="PHONE" jdbcDataType="VARCHAR" size="255"/>
+            <field name="PHONE_LOOKUP" jdbcDataType="VARCHAR" size="255"/>
+            <field name="EMAIL" jdbcDataType="VARCHAR" size="255"/>
+            <field name="IMAGE_ID" jdbcDataType="VARCHAR" size="255"/> <!-- given from photo web service -->
+            <field name="IMAGE_SUBMITTED_DATE_ID" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/> <!-- hash of date given from photo web service -->
+            <field name="IMAGE_LAST_UPDATE" jdbcDataType="TIMESTAMP"/> <!-- date last checked for image -->
+            <field name="IMAGE_STATUS_ID" jdbcDataType="INTEGER" varName="imageStatus" foreignKeyTable="IMAGE_STATUS" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="NO_IMAGE"/>
+
+            <field name="MARRIAGE_ID" jdbcDataType="BIGINT" foreignKeyTable="MARRIAGE" foreignKeyField="_id" notNull="true"/>
+            <field name="MAIDEN_NAME" jdbcDataType="VARCHAR" size="255"/>
+
+            <field name="FATHER_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="FATHER_BIRTH_DATE" jdbcDataType="TIMESTAMP"/>
+            <field name="MOTHER_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="MOTHER_BIRTH_DATE" jdbcDataType="TIMESTAMP"/>
+
+            <field name="MISSION_LOCATION" jdbcDataType="VARCHAR" size="255"/>
+            <field name="MISSION_LANGUAGE" jdbcDataType="VARCHAR" size="255"/>
+
+            <field name="PRIOR_UNIT_NUMBER" jdbcDataType="BIGINT"/>
+            <field name="PRIOR_UNIT_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="PRIOR_UNIT_LAST_DATE" jdbcDataType="TIMESTAMP"/> <!-- Last date in prior unit -->
+
+            <field name="RECORDS_MOVED_IN_DATE" jdbcDataType="TIMESTAMP"/> <!-- From Members Moved In Report -->
+            <field name="UNKNOWN_PRIOR_UNIT" jdbcDataType="BOOLEAN" defaultValue="false"/> <!-- From Members Moved In Report... records moved in from a "unknown" unit? -->
+
+            <field name="BORN_IN_COVENANT" jdbcDataType="BOOLEAN" defaultValue="false"/>
+        </table>
+
+        <table name="PRIESTHOOD_OFFICE" className="PriesthoodOffice" enumerations="UNKNOWN,DEACON,TEACHER,PRIEST,ELDER,SEVENTY,HIGH_PRIEST">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true" unique="true"/>
+        </table>
+
+        <table name="ORDINANCE_TYPE" className="OrdinanceType" enumerations="UNKNOWN,SEAL_PARENT,BAPTISM,CONFIRMATION,ENDOWMENT,SEAL_SPOUSE,ORD_DEACON,ORD_TEACHER,ORD_PRIEST,ORD_ELDER,ORD_HP,ORD_SEVENTY">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true" unique="true"/>
+        </table>
+
+        <table name="ORDINANCE">
+            <field name="_id" jdbcDataType="BIGINT" primaryKey="true" increment="true" notNull="true"/>
+            <field name="TYPE_ID" jdbcDataType="INTEGER" varName="ordinanceType" foreignKeyTable="ORDINANCE_TYPE" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="UNKNOWN"/>
+            <field name="INDIVIDUAL_ID" jdbcDataType="BIGINT" foreignKeyTable="INDIVIDUAL" foreignKeyField="_id" notNull="true"/>
+            <field name="PERFORMED_DATE" jdbcDataType="TIMESTAMP"/>
+            <field name="PERFORMED_BY" jdbcDataType="VARCHAR" size="255"/>
+            <field name="RATIFIED" jdbcDataType="BOOLEAN" defaultValue="true"/>
+        </table>
+
+        <table name="TEMPLE_RECOMMEND_STATUS" className="TempleRecommendStatus" enumerations="UNKNOWN,ACTIVE,EXPIRED,LOST_OR_STOLEN,CANCELED">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true" unique="true"/>
+        </table>
+
+        <table name="TEMPLE_RECOMMEND">
+            <field name="_id" jdbcDataType="BIGINT" primaryKey="true" increment="true" notNull="true"/>
+            <field name="INDIVIDUAL_ID" jdbcDataType="BIGINT" foreignKeyTable="INDIVIDUAL" foreignKeyField="_id" notNull="true"/>
+            <field name="STATUS_TYPE_ID" jdbcDataType="INTEGER" varName="status" foreignKeyTable="TEMPLE_RECOMMEND_STATUS" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="UNKNOWN"/>
+            <field name="EXPIRATION_DATE" jdbcDataType="TIMESTAMP"/>
+        </table>
+
+        <table name="MARRIAGE">
+            <field name="_id" jdbcDataType="BIGINT" primaryKey="true" increment="true" notNull="true"/>
+            <field name="SPOUSE_MRN" jdbcDataType="VARCHAR" size="255"/>
+            <field name="PERFORMED_DATE" jdbcDataType="TIMESTAMP"/>
+            <field name="LOCATION" jdbcDataType="VARCHAR" size="255"/>
+            <field name="SPOUSE_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="SPOUSE_MEMBER" jdbcDataType="BOOLEAN" defaultValue="true"/>
+            <field name="SPOUSE_BIRTH_DATE" jdbcDataType="TIMESTAMP"/>
+            <field name="SPOUSE_DECEASED" jdbcDataType="BOOLEAN" defaultValue="false"/>
+        </table>
+
+        <table name="POSITION_GROUP">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="UNIT_ID" jdbcDataType="BIGINT" foreignKeyTable="UNIT" foreignKeyField="_id" notNull="true"/>
+            <field name="PARENT_ORG_TYPE_ID" jdbcDataType="INTEGER" defaultValue="0"/>
+            <field name="ORG_TYPE_ID" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="GROUP_ORDER" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
+        </table>
+
+        <table name="POSITION">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="LDS_INDIVIDUAL_ID" jdbcDataType="BIGINT" index="true"/> <!-- NOT Individual ID, so that we can show positions, on an individual, across units -->
+            <field name="UNIT_ID" jdbcDataType="BIGINT" foreignKeyTable="UNIT" foreignKeyField="_id" notNull="true"/>
+            <field name="POSITION_TYPE_ID" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="POSITION_GROUP_ID" jdbcDataType="BIGINT" foreignKeyTable="POSITION_GROUP" foreignKeyField="_id"/>
+            <field name="POSITION_ORDER" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
+            <field name="ACTIVE_DATE" jdbcDataType="TIMESTAMP"/>
+            <field name="SET_APART" jdbcDataType="BOOLEAN" defaultValue="false"/>
+        </table>
+
+        <table name="CALENDAR_COLOR">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="COLOR" jdbcDataType="VARCHAR" size="255"/>
+        </table>
+
+        <table name="CALENDAR">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="CALENDAR_LDS_ID" jdbcDataType="BIGINT" notNull="true" index="true"/> <!-- LDS Calendar ID -->
+            <field name="NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="COLOR" jdbcDataType="VARCHAR" size="255"/>
+            <field name="ENABLED" jdbcDataType="BOOLEAN" defaultValue="true"/>
+        </table>
+
+        <table name="CALENDAR_OCCURRENCE_TYPE" className="CalendarOccurrenceType" enumerations="ONE_TIME,RECURRING">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true" unique="true"/>
+        </table>
+
+        <table name="CALENDAR_EVENT">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="EVENT_LDS_ID" jdbcDataType="BIGINT"/>
+            <field name="CALENDAR_LDS_ID" jdbcDataType="BIGINT"/>
+            <field name="CALENDAR_OCCURRENCE_TYPE_ID" jdbcDataType="INTEGER" varName="occurrenceType" foreignKeyTable="CALENDAR_OCCURRENCE_TYPE" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="ONE_TIME"/>
+            <field name="CONTACT_LDS_INDIVIDUAL_ID" jdbcDataType="BIGINT" index="true"/> <!-- LDS Individual ID (NOT Individual ID, because this individual may not exist in LDS Tools)-->
+            <field name="DATE_START" jdbcDataType="TIMESTAMP"/>
+            <field name="DATE_END" jdbcDataType="TIMESTAMP"/>
+            <field name="NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="DESCRIPTION" jdbcDataType="VARCHAR" size="255"/>
+            <field name="LOCATION" jdbcDataType="VARCHAR" size="255"/>
+            <field name="LAT" jdbcDataType="DOUBLE" defaultValue="0"/>
+            <field name="LNG" jdbcDataType="DOUBLE" defaultValue="0"/>
+            <field name="ALL_DAY_EVENT" jdbcDataType="BOOLEAN" defaultValue="false"/>
+        </table>
+
+        <table name="CALENDAR_EVENT_ASSET">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="CALENDAR_EVENT_ID" jdbcDataType="BIGINT" foreignKeyTable="CALENDAR_EVENT" foreignKeyField="_id" notNull="true"/>
+            <field name="ASSET_LDS_ID" jdbcDataType="BIGINT"/>
+            <field name="NAME" jdbcDataType="VARCHAR" size="255"/>
+        </table>
+
+        <table name="USER_POSITION">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="POSITION_ID" jdbcDataType="BIGINT"/>
+            <field name="UNIT_ID" jdbcDataType="BIGINT" foreignKeyTable="UNIT" foreignKeyField="_id" notNull="true"/>
+        </table>
+
+        <table name="LEADER_ACCESS">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="POSITION_ID" jdbcDataType="BIGINT"/>
+            <field name="FEATURE_GROUP_ID" jdbcDataType="BIGINT"/>
+            <field name="FEATURE_ID" jdbcDataType="BIGINT"/>
+        </table>
+
+        <!-- Reports -->
+        <table name="REPORT_TYPE" className="ReportType"
+               enumerations="UNKNOWN,ACTION_INTERVIEW,BIRTHDAY,MEMBERS_MOVED_IN,MEMBERS_WITH_CALLINGS,MEMBERS_WITHOUT_CALLINGS,TEMPLE_REC_STATUS,UNIT_STATISTICS">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true" unique="true"/>
+        </table>
+        <table name="REPORT_AVAILABLE">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="REPORT_TYPE_ID" jdbcDataType="INTEGER" varName="reportType" foreignKeyTable="REPORT_TYPE" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="UNKNOWN"/>
+            <field name="UNIT_ID" jdbcDataType="BIGINT" notNull="true"/>
+            <field name="REPORT_ORDER" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+        </table>
+
+        <!-- Action Interview -->
+        <table name="ACTION_INTERVIEW_PERSON">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="ACTION_INTERVIEW_SECTION_ID" jdbcDataType="BIGINT" foreignKeyTable="ACTION_INTERVIEW_SECTION" foreignKeyField="_id" notNull="true"/>
+            <field name="SECTION_SUB_ID" jdbcDataType="BIGINT"/>
+            <field name="SECTION_SUBTITLE" jdbcDataType="VARCHAR" size="255"/>
+            <field name="SECTION_ORDER" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="INDIVIDUAL_ID" jdbcDataType="BIGINT" foreignKeyTable="INDIVIDUAL" foreignKeyField="_id" notNull="true"/>
+            <field name="ACTION" jdbcDataType="VARCHAR" size="255"/>
+            <field name="STATUS" jdbcDataType="VARCHAR" size="255"/>
+        </table>
+        <table name="ACTION_INTERVIEW_SECTION_GROUP_TYPE" className="ActionInterviewSectionGroupType"
+               enumerations="UNKNOWN,BAPTISM,OVERDUE_ORDINATION,YOUTH,MISSION">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true" unique="true"/>
+        </table>
+        <table name="ACTION_INTERVIEW_SECTION_TYPE" className="ActionInterviewSectionType"
+               enumerations="UNKNOWN,CHILDREN_APPROACHING_BAPTISM,BAPTIZED_NOT_CONFIRMED,UNBAPTIZED_MEMBERS,OVERDUE_AARONIC_ORDINATIONS,YM_APPROACHING_MISSION,MEN_NO_MISSION,POTENTIAL_MISSIONARY_COUPLE,BISHOP_YOUTH_INTERVIEW,COUNSELOR_YOUTH_INTERVIEW,YSA_INTERVIEW">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true" unique="true"/>
+        </table>
+        <table name="ACTION_INTERVIEW_SECTION">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="SECTION_GROUP_TYPE_ID" jdbcDataType="INTEGER" varName="groupType" foreignKeyTable="ACTION_INTERVIEW_SECTION_GROUP_TYPE" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="UNKNOWN"/>
+            <field name="SECTION_TYPE_ID" jdbcDataType="INTEGER" varName="type" foreignKeyTable="ACTION_INTERVIEW_SECTION_TYPE" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="UNKNOWN"/>
+            <field name="STAKE_UNIT_ID" jdbcDataType="BIGINT" foreignKeyTable="UNIT" foreignKeyField="_id" notNull="true"/>
+            <field name="UNIT_ID" jdbcDataType="BIGINT" foreignKeyTable="UNIT" foreignKeyField="_id" notNull="true"/>
+            <field name="TITLE" jdbcDataType="VARCHAR" size="255"/>
+            <field name="DESCRIPTION" jdbcDataType="VARCHAR" size="255"/>
+            <field name="SECTION_ORDER" jdbcDataType="INTEGER" notNull="true"/>
+        </table>
+        <table name="UNIT_STATISTICS">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="UNIT_ID" jdbcDataType="BIGINT" foreignKeyTable="UNIT" foreignKeyField="_id" notNull="true"/>
+            <field name="TOTAL_MEMBERS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="MEN" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="HIGH_PRIESTS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="ELDERS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="PROSPECTIVE_ELDERS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="WOMEN" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="YOUNG_MEN" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="PRIESTS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="TEACHERS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="DEACONS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="YOUNG_WOMEN" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="LAURELS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="MIA_MAIDS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="BEEHIVE" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="CHILDREN" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="INFANTS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="HOUSEHOLDS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="HOUSEHOLDS_WITHOUT_MELCHIZEDEK_PRIESTHOOD_HOLDER" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="HOUSEHOLDS_WITH_YOUTH" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="HOUSEHOLDS_WITH_CHILDREN" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="HOUSEHOLDS_WITH_SINGLE_PARENT_AND_YOUTH_OR_CHILDREN" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="ADULTS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="MARRIED_ADULTS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="SINGLE_ADULTS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="YOUNG_SINGLE_ADULTS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="ENDOWED_ADULTS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="ENDOWED_WITH_RECOMMEND" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="ENDOWED_WITHOUT_RECOMMEND" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="RECENT_CONVERTS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="ADULT_MALE_RECENT_CONVERTS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="ADULT_FEMALE_RECENT_CONVERTS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="YOUNG_MEN_RECENT_CONVERTS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="YOUNG_WOMEN_RECENT_CONVERTS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="CHILDREN_AGE_8TO11_RECENT_CONVERTS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="RECENT_CONVERTS_ELIGIBLE_FOR_ORDINATION" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="ORDAINED_RECENT_CONVERTS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="UNORDAINED_RECENT_CONVERTS" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="INDIVIDUALS_NOT_INCLUDED" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="MEMBERS_OF_RECORD_AGE_9_OR_OLDER" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="BAPTIZED_NOT_CONFIRMED" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+            <field name="INVALID_BIRTHDATE" jdbcDataType="INTEGER" notNull="true" defaultValue="0"/>
+        </table>
+
+        <table name="CUSTOM_LIST">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="CREATED" jdbcDataType="TIMESTAMP"/>
+            <field name="LAST_UPDATE" jdbcDataType="TIMESTAMP"/>
+            <field name="LIST_ID" jdbcDataType="VARCHAR" size="255" index="true"/> <!-- unique id among ALL lists (guid) -->
+            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
+            <field name="LIST_ORDER" jdbcDataType="INTEGER" defaultValue="0"/>
+            <field name="DELETED" jdbcDataType="BOOLEAN" defaultValue="false"/>
+        </table>
+
+        <table name="CUSTOM_LIST_ITEM">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="CUSTOM_LIST_ID" jdbcDataType="BIGINT" foreignKeyTable="CUSTOM_LIST" foreignKeyField="_id" notNull="true"/>
+            <field name="LDS_INDIVIDUAL_ID" jdbcDataType="BIGINT" notNull="true" index="true"/> <!-- LDS Individual ID -->
+            <field name="LIST_ITEM_ORDER" jdbcDataType="INTEGER" defaultValue="0" notNull="true"/>
+        </table>
+
+        <!-- VIEWS -->
+        <table name="CUSTOM_LIST_VIEW">
+            <field name="_id" jdbcDataType="BIGINT" primaryKey="true" notNull="true"/> <!-- Custom List ID -->
+            <field name="DELETED" jdbcDataType="BOOLEAN" defaultValue="false"/>
+            <field name="NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="LIST_ORDER" jdbcDataType="INTEGER" defaultValue="0"/>
+            <field name="ITEM_COUNT" jdbcDataType="INTEGER"/>
+        </table>
+        <table name="CUSTOM_LIST_ITEM_VIEW">
+            <field name="_id" jdbcDataType="BIGINT" primaryKey="true" notNull="true"/> <!-- Custom List Item ID -->
+            <field name="CUSTOM_LIST_ID" jdbcDataType="BIGINT"/>
+            <field name="LDS_INDIVIDUAL_ID" jdbcDataType="BIGINT"/> <!-- LDS Individual ID -->
+            <field name="LIST_ITEM_ORDER" jdbcDataType="INTEGER" defaultValue="0"/>
+            <field name="INDIVIDUAL_ID" jdbcDataType="BIGINT"/>
+            <field name="INDIVIDUAL_NAME" jdbcDataType="VARCHAR" size="255"/>
+        </table>
+        <table name="ACTION_INTERVIEW_SECTION_VIEW">
+            <field name="_id" jdbcDataType="BIGINT" primaryKey="true" notNull="true"/> <!-- Individual ID -->
+            <field name="SECTION_GROUP_TYPE_ID" jdbcDataType="INTEGER" varName="groupType" foreignKeyTable="ACTION_INTERVIEW_SECTION_GROUP_TYPE" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="UNKNOWN"/>
+            <field name="SECTION_TYPE_ID" jdbcDataType="INTEGER" varName="type" foreignKeyTable="ACTION_INTERVIEW_SECTION_TYPE" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="UNKNOWN"/>
+            <field name="STAKE_UNIT_ID" jdbcDataType="BIGINT" foreignKeyTable="UNIT" foreignKeyField="_id"/>
+            <field name="UNIT_ID" jdbcDataType="BIGINT" foreignKeyTable="UNIT" foreignKeyField="_id"/>
+            <field name="TITLE" jdbcDataType="VARCHAR" size="255"/>
+            <field name="DESCRIPTION" jdbcDataType="VARCHAR" size="255"/>
+            <field name="SECTION_ORDER" jdbcDataType="INTEGER"/>
+            <field name="SECTION_COUNT" jdbcDataType="INTEGER"/>
+        </table>
+        <table name="ACTION_INTERVIEW_PERSON_VIEW">
+            <field name="_id" jdbcDataType="BIGINT" primaryKey="true" notNull="true"/> <!-- Individual ID -->
+            <field name="STAKE_UNIT_ID" jdbcDataType="BIGINT"/>
+            <field name="UNIT_ID" jdbcDataType="BIGINT"/>
+            <field name="UNIT_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="SECTION_ID" jdbcDataType="BIGINT"/>
+            <field name="SECTION_TYPE_ID" jdbcDataType="INTEGER"/>
+            <field name="SECTION_SUB_ID" jdbcDataType="BIGINT"/>
+            <field name="SECTION_SUBTITLE" jdbcDataType="VARCHAR" size="255"/>
+            <field name="SECTION_ORDER" jdbcDataType="INTEGER"/>
+            <field name="INDIVIDUAL_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="GENDER" jdbcDataType="INTEGER" varName="gender" foreignKeyTable="GENDER" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="UNKNOWN"/>
+            <field name="BIRTH_DATE" jdbcDataType="TIMESTAMP"/>
+            <field name="ACTION" jdbcDataType="VARCHAR" size="255"/>
+            <field name="STATUS" jdbcDataType="VARCHAR" size="255"/>
+            <field name="INDIVIDUAL_PHONE" jdbcDataType="VARCHAR" size="255"/>
+            <field name="HOUSEHOLD_PHONE" jdbcDataType="VARCHAR" size="255"/>
+        </table>
+        <table name="BIRTHDAY_LIST_VIEW">
+            <field name="_id" jdbcDataType="BIGINT" primaryKey="true" notNull="true"/> <!-- Individual ID -->
+            <field name="STAKE_UNIT_ID" jdbcDataType="BIGINT"/>
+            <field name="UNIT_ID" jdbcDataType="BIGINT"/>
+            <field name="UNIT_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="INDIVIDUAL_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="BIRTH_DATE" jdbcDataType="TIMESTAMP"/>
+            <field name="BIRTH_DAY" jdbcDataType="INTEGER"/>
+            <field name="BIRTH_MONTH" jdbcDataType="INTEGER"/>
+        </table>
+        <table name="MEMBERS_WITH_CALLINGS_VIEW">
+            <field name="_id" jdbcDataType="BIGINT" primaryKey="true" notNull="true"/> <!-- Individual ID -->
+            <field name="STAKE_UNIT_ID" jdbcDataType="BIGINT"/>
+            <field name="UNIT_ID" jdbcDataType="BIGINT"/>
+            <field name="INDIVIDUAL_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="ORG_TYPE_ID" jdbcDataType="INTEGER" defaultValue="0"/>
+            <field name="POSITION_TYPE_ID" jdbcDataType="BIGINT"/>
+            <field name="POSITION_GROUP_ID" jdbcDataType="BIGINT"/>
+            <field name="POSITION_GROUP_ORDER" jdbcDataType="INTEGER"/>
+            <field name="POSITION_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="POSITION_GROUP_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="ACTIVE_DATE" jdbcDataType="TIMESTAMP"/>
+            <field name="SET_APART" jdbcDataType="BOOLEAN" defaultValue="false"/>
+        </table>
+        <table name="MEMBERS_WITHOUT_CALLINGS_VIEW">
+            <field name="_id" jdbcDataType="BIGINT" primaryKey="true" notNull="true"/> <!-- Individual ID -->
+            <field name="STAKE_UNIT_ID" jdbcDataType="BIGINT"/>
+            <field name="UNIT_ID" jdbcDataType="BIGINT"/>
+            <field name="UNIT_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="INDIVIDUAL_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="BIRTH_DATE" jdbcDataType="TIMESTAMP"/>
+            <field name="GENDER" jdbcDataType="INTEGER" varName="gender" foreignKeyTable="GENDER" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="UNKNOWN"/>
+        </table>
+        <table name="MEMBERS_MOVED_IN_VIEW">
+            <field name="_id" jdbcDataType="BIGINT" primaryKey="true" notNull="true"/> <!-- Individual ID -->
+            <field name="STAKE_UNIT_ID" jdbcDataType="BIGINT"/>
+            <field name="UNIT_ID" jdbcDataType="BIGINT"/>
+            <field name="UNIT_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="HOUSEHOLD_ID" jdbcDataType="BIGINT"/>
+            <field name="HOUSEHOLD_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="INDIVIDUAL_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="INDIVIDUAL_TYPE_ID" jdbcDataType="INTEGER" varName="individualType" foreignKeyTable="INDIVIDUAL_TYPE" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="HEAD"/>
+            <field name="BIRTH_DATE" jdbcDataType="TIMESTAMP"/>
+            <field name="MOVE_IN_DATE" jdbcDataType="TIMESTAMP"/> <!-- Move in date (not to be confused with prior unit date) -->
+            <field name="UNKNOWN_PRIOR_UNIT" jdbcDataType="BOOLEAN" defaultValue="false"/> <!-- From Members Moved In Report... records moved in from a "unknown" unit? -->
+        </table>
+        <table name="TEMPLE_RECOMMEND_STATUS_VIEW">
+            <field name="_id" jdbcDataType="BIGINT" primaryKey="true" notNull="true"/> <!-- Individual ID -->
+            <field name="STAKE_UNIT_ID" jdbcDataType="BIGINT"/>
+            <field name="UNIT_ID" jdbcDataType="BIGINT"/>
+            <field name="UNIT_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="INDIVIDUAL_NAME" jdbcDataType="VARCHAR" size="255"/>
+            <field name="STATUS_TYPE_ID" jdbcDataType="INTEGER" varName="status" foreignKeyTable="TEMPLE_RECOMMEND_STATUS" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="UNKNOWN"/>
+            <field name="EXPIRATION_DATE" jdbcDataType="TIMESTAMP"/>
+        </table>
+        <table name="HOUSEHOLD_MAP_ITEM_VIEW">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="UNIT_ID" jdbcDataType="BIGINT" foreignKeyTable="UNIT" foreignKeyField="_id" notNull="true"/>
+            <field name="HEAD_INDIVIDUAL_ID" jdbcDataType="BIGINT"/> <!-- Not foreign key to avoid circular dependency -->
+            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
+            <field name="COUPLE_NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
+            <field name="LAT" jdbcDataType="DOUBLE" defaultValue="0"/>
+            <field name="LNG" jdbcDataType="DOUBLE" defaultValue="0"/>
+            <field name="ADDRESS1" jdbcDataType="VARCHAR" size="255"/>
+        </table>
+
     </database>
 </dbSchema>

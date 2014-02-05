@@ -12,16 +12,13 @@ package org.dbtools.gen.jpa;
 
 import org.dbtools.codegen.*;
 import org.dbtools.schema.ClassInfo;
-import org.dbtools.schema.SchemaDatabase;
-import org.dbtools.schema.SchemaField;
-import org.dbtools.schema.SchemaTable;
+import org.dbtools.schema.schemafile.*;
 
 import java.io.PrintStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Jeff
@@ -58,11 +55,12 @@ public class JPABaseRecordClassRenderer {
 
         if (table.isEnumerationTable()) {
             String enumClassname = createClassName(table);
-            myClass = new JavaEnum(packageName, enumClassname, table.getEnumerations());
+            myClass = new JavaEnum(packageName, enumClassname, table.getTableEnumsText());
             myClass.setCreateDefaultConstructor(false);
             writeTestClass = false;
 
-            if (table.getEnumValues().size() > 0) {
+            List<TableEnum> tableEnums = table.getTableEnums();
+            if (tableEnums.size() > 0) {
                 // private static Map<ScheduleType, String> enumStringMap = new HashMap<ScheduleType, String>();
                 myClass.addImport("java.util.Map");
                 myClass.addImport("java.util.HashMap");
@@ -75,14 +73,12 @@ public class JPABaseRecordClassRenderer {
                 JavaVariable stringListVar = myClass.addVariable("List<String>", "stringList", "new ArrayList<String>()");
                 stringListVar.setStatic(true);
 
-                Map<String, String> enumValues = table.getEnumValues();
-                for (String enumItem : table.getEnumerations()) {
+                for (TableEnum enumItem : tableEnums) {
                     //enumStringMap.put(DRINK, "Drink");
                     //stringList.add("Breakfast");
 
-                    String enumValue = enumValues.get(enumItem);
-                    myClass.appendStaticInitializer("enumStringMap.put(" + enumItem + ", \"" + enumValue + "\");");
-                    myClass.appendStaticInitializer("stringList.add(\"" + enumValue + "\");");
+                    myClass.appendStaticInitializer("enumStringMap.put(" + enumItem.getName() + ", \"" + enumItem.getValue() + "\");");
+                    myClass.appendStaticInitializer("stringList.add(\"" + enumItem.getValue() + "\");");
                     myClass.appendStaticInitializer("");
                 }
 
@@ -204,11 +200,12 @@ public class JPABaseRecordClassRenderer {
 
             // JPA stuff
             // JPA @Column
+            SchemaFieldType fieldType = field.getJdbcDataType();
             if (!myClass.isEnum()) {
                 myClass.addImport("javax.persistence.Column");
                 String columnAnnotation = "@Column(name=\"" + field.getName() + "\"";
 
-                if (field.getJdbcType().equals(SchemaField.TYPE_BLOB) || field.getJdbcType().equals(SchemaField.TYPE_CLOB)) {
+                if (fieldType == SchemaFieldType.BLOB || fieldType == SchemaFieldType.CLOB) {
                     myClass.addImport("javax.persistence.Basic");
                     myClass.addImport("javax.persistence.FetchType");
                     newVariable.addAnnotation("Basic(fetch=FetchType.LAZY)");
@@ -241,17 +238,17 @@ public class JPABaseRecordClassRenderer {
                 String temporalImport = "javax.persistence.Temporal";
                 String temporalTypeImport = "javax.persistence.TemporalType";
                 String temporalAnnotation = "@Temporal(value = TemporalType.{0})";
-                if (!useDateTime && field.getJdbcType().equals(SchemaField.TYPE_TIMESTAMP)) {
+                if (!useDateTime && fieldType == SchemaFieldType.TIMESTAMP) {
                     myClass.addImport(temporalImport);
                     myClass.addImport(temporalTypeImport);
 
                     newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "TIMESTAMP"));
-                } else if (!useDateTime && field.getJdbcType().equals(SchemaField.TYPE_DATE)) {
+                } else if (!useDateTime && fieldType == SchemaFieldType.DATE) {
                     myClass.addImport(temporalImport);
                     myClass.addImport(temporalTypeImport);
 
                     newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "DATE"));
-                } else if (!useDateTime && field.getJdbcType().equals(SchemaField.TYPE_TIMESTAMP)) {
+                } else if (!useDateTime && fieldType == SchemaFieldType.TIMESTAMP) {
                     myClass.addImport(temporalImport);
                     myClass.addImport(temporalTypeImport);
 
@@ -349,8 +346,8 @@ public class JPABaseRecordClassRenderer {
 
     private void createToStringMethodContent(final SchemaField field, final String fieldNameJavaStyle) {
 
-        String fieldType = field.getJdbcType();
-        if (!fieldType.equals(SchemaField.TYPE_BLOB) && !fieldType.equals(SchemaField.TYPE_CLOB)) {
+        SchemaFieldType fieldType = field.getJdbcDataType();
+        if (fieldType != SchemaFieldType.BLOB && fieldType != SchemaFieldType.CLOB) {
             // toString
             toStringContent.append("text += \"").append(fieldNameJavaStyle).append(" = \"+ ").append(fieldNameJavaStyle).append(" +\"\\n\";\n");
         }
@@ -359,16 +356,16 @@ public class JPABaseRecordClassRenderer {
     private JavaVariable generateEnumeration(SchemaField field, String fieldNameJavaStyle, String packageName, JavaVariable newVariable, SchemaDatabase dbSchema) {
         myClass.addImport("javax.persistence.Enumerated");
         myClass.addImport("javax.persistence.EnumType");
-        if (field.isNumberDataType()) {
+        if (field.getJdbcDataType().isNumberDataType()) {
             if (field.getForeignKeyTable().length() > 0) {
                 // define name of enum
                 ClassInfo enumClassInfo = dbSchema.getTableClassInfo(field.getForeignKeyTable());
                 String enumName = enumClassInfo.getClassName();
 
                 // local definition of enumeration?
-                List<String> localEnumerations = field.getEnumerations();
+                List<String> localEnumerations = field.getEnumValues();
                 if (localEnumerations != null && localEnumerations.size() > 0) {
-                    myClass.addEnum(enumName, field.getEnumerations());
+                    myClass.addEnum(enumName, field.getEnumValues());
                 } else {
                     // we must import the enum
                     String enumPackage = enumClassInfo.getPackageName(packageName) + "." + enumName;
@@ -399,9 +396,9 @@ public class JPABaseRecordClassRenderer {
                 String enumName = firstChar + javaStyleFieldName.substring(1);
 
                 if (useInnerEnums) {
-                    myClass.addEnum(enumName, field.getEnumerations());
+                    myClass.addEnum(enumName, field.getEnumValues());
                 } else {
-                    enumerationClasses.add(new JavaEnum(enumName, field.getEnumerations()));
+                    enumerationClasses.add(new JavaEnum(enumName, field.getEnumValues()));
                 }
 
                 newVariable = new JavaVariable(enumName, fieldNameJavaStyle);
@@ -452,8 +449,9 @@ public class JPABaseRecordClassRenderer {
             newVariable = new JavaVariable(typeText, fieldNameJavaStyle);
         }
 
+        SchemaFieldType fieldType = field.getJdbcDataType();
         boolean immutableDate = field.getJavaClassType() == Date.class && useDateTime; // org.joda.time.DateTime IS immutable
-        if (!field.isJavaTypePrimative() && !field.isJavaTypeImmutable() && !immutableDate) {
+        if (!fieldType.isJavaTypePrimative() && !fieldType.isJavaTypeImmutable() && !immutableDate) {
             newVariable.setCloneSetterGetterVar(true);
         }
 
@@ -470,7 +468,7 @@ public class JPABaseRecordClassRenderer {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = schemaDatabase.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
-        String varName = field.getCustomVarName();
+        String varName = field.getVarName();
         if (varName.equals("")) {
             varName = JavaClass.formatToJavaVariable(fkTableClassName);
         }
@@ -499,7 +497,7 @@ public class JPABaseRecordClassRenderer {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = dbSchema.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
-        String varName = field.getCustomVarName();
+        String varName = field.getVarName();
         if (varName.equals("")) {
             varName = JavaClass.formatToJavaVariable(fkTableClassName);
         }
@@ -528,7 +526,7 @@ public class JPABaseRecordClassRenderer {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = dbSchema.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
-        String varName = field.getCustomVarName();
+        String varName = field.getVarName();
         if (varName.equals("")) {
             varName = JavaClass.formatToJavaVariable(fkTableClassName);
         }
@@ -563,126 +561,127 @@ public class JPABaseRecordClassRenderer {
     }
 
     private void generateXMLCode(final SchemaDatabase dbSchema, final StringBuilder constructorElement, final StringBuilder methodToXML, final StringBuffer dtd, final String TAB, final SchemaField field, final String constName) {
-
-        String fieldNameJavaStyle = field.getName(true);
-
-        // XML methods
-        // xmlConstructor
-        String attributeName = "C_" + constName;
-        String elementPreGetter = "";
-        String elementGetter;
-
-        Class fClass = field.getJavaClassType();
-        if (!field.isEnumeration()) {
-            if (fClass == String.class) {
-                //elementGetter = "XMLUtil.getAttribute(element, "+ attributeName +", false, \"\")";
-                elementGetter = "element.attributeValue(" + attributeName + ", \"\")";
-            } else if (fClass == int.class || fClass == Integer.class) {
-                elementGetter = "Integer.parseInt(element.attributeValue(" + attributeName + ", \"0\"))";
-            } else if (fClass == float.class || fClass == Float.class) {
-                elementGetter = "Float.parseFloat(element.attributeValue(" + attributeName + ", \"0.0\"))";
-            } else if (fClass == boolean.class || fClass == Boolean.class) {
-                elementGetter = "Boolean.parseBoolean(element.attributeValue(" + attributeName + ", \"false\"))";
-            } else if (fClass == double.class || fClass == Double.class) {
-                elementGetter = "Double.parseDouble(element.attributeValue(" + attributeName + ", \"0.0\"))";
-            } else if (fClass == long.class || fClass == Long.class) {
-                elementGetter = "Long.parseLong(element.attributeValue(" + attributeName + ", \"0\"))";
-            } else if (fClass == Date.class) {
-                String tmpTextName = fieldNameJavaStyle + "Text";
-                elementPreGetter = "String " + tmpTextName + " = element.attributeValue(" + attributeName + ");";
-                elementGetter = tmpTextName + " != null ? (new java.text.SimpleDateFormat(\"" + DATE_FORMAT + "\")).parse(" + tmpTextName + ")" +
-                        " : null";
-//            } else if (fClass == Fraction.class) {
-//                myClass.addImport("com.jdc.datatypes.Fraction");
-//                myClass.addImport("com.jdc.util.XMLUtil");
-//                elementGetter = "XMLUtil.getAttributeFraction(element, "+ attributeName +", false, null)";
-//            } else if (fClass == Money.class) {
-//                myClass.addImport("com.jdc.datatypes.Money");
-//                myClass.addImport("com.jdc.util.XMLUtil");
-//                elementGetter = "XMLUtil.getAttributeMoney(element, "+ attributeName +", false, null)";
-            } else {
-                elementGetter = "element.attributeValue(" + attributeName + ", null)";
-            }
-
-        } else {
-            // Enum
-            ClassInfo myTableClassInfo = dbSchema.getTableClassInfo(field.getForeignKeyTable());
-            String enumClassName = myTableClassInfo.getClassName();
-
-            String tmpTextName = fieldNameJavaStyle + "Text";
-            elementPreGetter = "String " + tmpTextName + " = element.attributeValue(" + attributeName + ");";
-            elementGetter = tmpTextName + " != null ? " + enumClassName + ".valueOf(" + tmpTextName + ")"
-                    + " : " + enumClassName + "." + field.getEnumerationDefault() + "";
-        }
-
-        String xmlSetterMethodName;
-        if (field.isCreatedTimeStampField()) {
-            xmlSetterMethodName = "setCreatedDate";
-        } else if (field.isLastModifiedTimeStampField()) {
-            xmlSetterMethodName = "setLastModifiedDate";
-        } else {
-            xmlSetterMethodName = JavaClass.createSetterMethodName(fieldNameJavaStyle);
-        }
-        if (!elementPreGetter.isEmpty()) {
-            constructorElement.append(TAB).append(elementPreGetter).append("\n");
-        }
-        constructorElement.append(TAB).append(xmlSetterMethodName).append("(").append(elementGetter).append(");\n");
-
-
-        // toXML()
-        String getterMethodName = JavaClass.createGetterMethodName(fClass, fieldNameJavaStyle);
-        if (!field.isEnumeration()) {
-            if (fClass == int.class || fClass == float.class || fClass == double.class || fClass == long.class) {
-                String toStringSeg = "";
-                toStringSeg = field.getJavaType().getMatchingNonPrimativeClassText() + ".toString(";
-                methodToXML.append("element.addAttribute(").append("C_").append(constName).append(", ").append(toStringSeg).append(getterMethodName).append("()));\n");// NOPMD
-            } else {
-                if (fClass == String.class) {
-                    methodToXML.append("element.addAttribute(").append("C_").append(constName).append(", ").append(getterMethodName).append("());\n");
-                } else {
-                    if (fClass.isPrimitive()) {
-                        methodToXML.append("element.addAttribute(").append("C_").append(constName).append(", new ").append(field.getJavaType().getMatchingNonPrimativeClassText()).append("(").append(getterMethodName).append("()).toString());\n");
-                    } else {
-                        if (fClass == Date.class) {
-                            String dateGetterMethod;
-                            if (field.isCreatedTimeStampField()) {
-                                dateGetterMethod = "getCreatedDate()";
-                            } else if (field.isLastModifiedTimeStampField()) {
-                                dateGetterMethod = "getLastModifiedDate()";
-                            } else {
-                                dateGetterMethod = getterMethodName + "()";
-                            }
-                            methodToXML.append("if (").append(dateGetterMethod).append(" != null) {\n");
-
-                            methodToXML.append("    java.text.SimpleDateFormat xmlDF = new java.text.SimpleDateFormat(\"" + DATE_FORMAT + "\");\n");
-                            methodToXML.append("    element.addAttribute(").append("C_").append(constName).append(", xmlDF.format(").append(dateGetterMethod).append("));\n");
-
-                            methodToXML.append("}\n");
-                        } else {
-                            methodToXML.append("element.addAttribute(").append("C_").append(constName).append(", ").append(getterMethodName).append("().toString());\n");
-                        }
-                    }
-                }
-            }
-        } else {
-            // enum
-            methodToXML.append("element.addAttribute(").append("C_").append(constName).append(", ").append(getterMethodName).append("().toString());\n");
-        }
-
-        // dtd
-        // default (String type)
-        String dtdType = " CDATA ";
-        String dtdDefault = " \"\"";
-
-        if (fClass == int.class || fClass == float.class || fClass == double.class || fClass == long.class || fClass == Date.class) {
-            dtdType = " NMTOKEN ";
-            dtdDefault = " \"0\"";
-        } else if (fClass == boolean.class) {
-            dtdType = " (true | false) ";
-            dtdDefault = " \"false\"";
-        }
-
-        dtd.append(TAB).append(fieldNameJavaStyle).append(dtdType).append(dtdDefault).append("\n");
+//
+//        String fieldNameJavaStyle = field.getName(true);
+//
+//        // XML methods
+//        // xmlConstructor
+//        String attributeName = "C_" + constName;
+//        String elementPreGetter = "";
+//        String elementGetter;
+//
+//        SchemaFieldType fieldType = field.getJdbcDataType();
+//        Class fClass = fieldType.getJavaClassType();
+//        if (!field.isEnumeration()) {
+//            if (fClass == String.class) {
+//                //elementGetter = "XMLUtil.getAttribute(element, "+ attributeName +", false, \"\")";
+//                elementGetter = "element.attributeValue(" + attributeName + ", \"\")";
+//            } else if (fClass == int.class || fClass == Integer.class) {
+//                elementGetter = "Integer.parseInt(element.attributeValue(" + attributeName + ", \"0\"))";
+//            } else if (fClass == float.class || fClass == Float.class) {
+//                elementGetter = "Float.parseFloat(element.attributeValue(" + attributeName + ", \"0.0\"))";
+//            } else if (fClass == boolean.class || fClass == Boolean.class) {
+//                elementGetter = "Boolean.parseBoolean(element.attributeValue(" + attributeName + ", \"false\"))";
+//            } else if (fClass == double.class || fClass == Double.class) {
+//                elementGetter = "Double.parseDouble(element.attributeValue(" + attributeName + ", \"0.0\"))";
+//            } else if (fClass == long.class || fClass == Long.class) {
+//                elementGetter = "Long.parseLong(element.attributeValue(" + attributeName + ", \"0\"))";
+//            } else if (fClass == Date.class) {
+//                String tmpTextName = fieldNameJavaStyle + "Text";
+//                elementPreGetter = "String " + tmpTextName + " = element.attributeValue(" + attributeName + ");";
+//                elementGetter = tmpTextName + " != null ? (new java.text.SimpleDateFormat(\"" + DATE_FORMAT + "\")).parse(" + tmpTextName + ")" +
+//                        " : null";
+////            } else if (fClass == Fraction.class) {
+////                myClass.addImport("com.jdc.datatypes.Fraction");
+////                myClass.addImport("com.jdc.util.XMLUtil");
+////                elementGetter = "XMLUtil.getAttributeFraction(element, "+ attributeName +", false, null)";
+////            } else if (fClass == Money.class) {
+////                myClass.addImport("com.jdc.datatypes.Money");
+////                myClass.addImport("com.jdc.util.XMLUtil");
+////                elementGetter = "XMLUtil.getAttributeMoney(element, "+ attributeName +", false, null)";
+//            } else {
+//                elementGetter = "element.attributeValue(" + attributeName + ", null)";
+//            }
+//
+//        } else {
+//            // Enum
+//            ClassInfo myTableClassInfo = dbSchema.getTableClassInfo(field.getForeignKeyTable());
+//            String enumClassName = myTableClassInfo.getClassName();
+//
+//            String tmpTextName = fieldNameJavaStyle + "Text";
+//            elementPreGetter = "String " + tmpTextName + " = element.attributeValue(" + attributeName + ");";
+//            elementGetter = tmpTextName + " != null ? " + enumClassName + ".valueOf(" + tmpTextName + ")"
+//                    + " : " + enumClassName + "." + field.getEnumerationDefault() + "";
+//        }
+//
+//        String xmlSetterMethodName;
+////        if (field.isCreatedTimeStampField()) {
+////            xmlSetterMethodName = "setCreatedDate";
+////        } else if (field.isLastModifiedTimeStampField()) {
+////            xmlSetterMethodName = "setLastModifiedDate";
+////        } else {
+//            xmlSetterMethodName = JavaClass.createSetterMethodName(fieldNameJavaStyle);
+////        }
+//        if (!elementPreGetter.isEmpty()) {
+//            constructorElement.append(TAB).append(elementPreGetter).append("\n");
+//        }
+//        constructorElement.append(TAB).append(xmlSetterMethodName).append("(").append(elementGetter).append(");\n");
+//
+//
+//        // toXML()
+//        String getterMethodName = JavaClass.createGetterMethodName(fClass, fieldNameJavaStyle);
+//        if (!field.isEnumeration()) {
+//            if (fClass == int.class || fClass == float.class || fClass == double.class || fClass == long.class) {
+//                String toStringSeg = "";
+//                toStringSeg = field.getJavaType().getMatchingNonPrimativeClassText() + ".toString(";
+//                methodToXML.append("element.addAttribute(").append("C_").append(constName).append(", ").append(toStringSeg).append(getterMethodName).append("()));\n");// NOPMD
+//            } else {
+//                if (fClass == String.class) {
+//                    methodToXML.append("element.addAttribute(").append("C_").append(constName).append(", ").append(getterMethodName).append("());\n");
+//                } else {
+//                    if (fClass.isPrimitive()) {
+//                        methodToXML.append("element.addAttribute(").append("C_").append(constName).append(", new ").append(field.getJavaType().getMatchingNonPrimativeClassText()).append("(").append(getterMethodName).append("()).toString());\n");
+//                    } else {
+//                        if (fClass == Date.class) {
+//                            String dateGetterMethod;
+//                            if (field.isCreatedTimeStampField()) {
+//                                dateGetterMethod = "getCreatedDate()";
+//                            } else if (field.isLastModifiedTimeStampField()) {
+//                                dateGetterMethod = "getLastModifiedDate()";
+//                            } else {
+//                                dateGetterMethod = getterMethodName + "()";
+//                            }
+//                            methodToXML.append("if (").append(dateGetterMethod).append(" != null) {\n");
+//
+//                            methodToXML.append("    java.text.SimpleDateFormat xmlDF = new java.text.SimpleDateFormat(\"" + DATE_FORMAT + "\");\n");
+//                            methodToXML.append("    element.addAttribute(").append("C_").append(constName).append(", xmlDF.format(").append(dateGetterMethod).append("));\n");
+//
+//                            methodToXML.append("}\n");
+//                        } else {
+//                            methodToXML.append("element.addAttribute(").append("C_").append(constName).append(", ").append(getterMethodName).append("().toString());\n");
+//                        }
+//                    }
+//                }
+//            }
+//        } else {
+//            // enum
+//            methodToXML.append("element.addAttribute(").append("C_").append(constName).append(", ").append(getterMethodName).append("().toString());\n");
+//        }
+//
+//        // dtd
+//        // default (String type)
+//        String dtdType = " CDATA ";
+//        String dtdDefault = " \"\"";
+//
+//        if (fClass == int.class || fClass == float.class || fClass == double.class || fClass == long.class || fClass == Date.class) {
+//            dtdType = " NMTOKEN ";
+//            dtdDefault = " \"0\"";
+//        } else if (fClass == boolean.class) {
+//            dtdType = " (true | false) ";
+//            dtdDefault = " \"false\"";
+//        }
+//
+//        dtd.append(TAB).append(fieldNameJavaStyle).append(dtdType).append(dtdDefault).append("\n");
     }
 
     private void addForgeignKeyData(SchemaDatabase dbSchema, SchemaTable table, String packageName) {
@@ -748,7 +747,7 @@ public class JPABaseRecordClassRenderer {
                         String tableClassName = myTableClassInfo.getClassName();
 
 
-                        String fieldName = fkField.getCustomVarName();
+                        String fieldName = fkField.getVarName();
                         if (fieldName == null || fieldName.length() == 0) {
                             fieldName = tableClassName;
                         }

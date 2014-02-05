@@ -13,6 +13,8 @@
  */
 package org.dbtools.schema;
 
+import org.dbtools.schema.schemafile.*;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -40,7 +42,7 @@ public class FireBirdRenderer extends SchemaRenderer {
     public String generateSchema(SchemaDatabase database, String[] tablesToGenerate, String[] viewsToGenerate, boolean dropTables, boolean createInserts) {
         showProgress("Generating SQL schema using FireBird renderer ...", true);
         StringBuilder schema = new StringBuilder();
-        List<ForeignKey> foreignKeysToCreate = new ArrayList<ForeignKey>();
+        List<ForeignKey> foreignKeysToCreate = new ArrayList<>();
         SchemaField incrementField = null;
 
         List<SchemaTable> requestedTables = getTablesToGenerate(database, tablesToGenerate);
@@ -55,7 +57,7 @@ public class FireBirdRenderer extends SchemaRenderer {
         for (SchemaTable table : requestedTables) {
             // add table header
             // reset values for new table
-            List<SchemaField> indexFields = new ArrayList<SchemaField>();
+            List<SchemaField> indexFields = new ArrayList<>();
 
             schema.append("CREATE TABLE ");
             schema.append(table.getName());
@@ -67,7 +69,7 @@ public class FireBirdRenderer extends SchemaRenderer {
             SchemaField enumValueField = null;
 
             for (int j = 0; j < fields.size(); j++) {
-                SchemaField field = (SchemaField) fields.get(j);
+                SchemaField field = fields.get(j);
 
                 // add field
                 // name
@@ -76,7 +78,7 @@ public class FireBirdRenderer extends SchemaRenderer {
 
                 // datatype
                 schema.append(" ");
-                schema.append(getTypes().get(field.getJdbcType()));
+                schema.append(getSqlType(field.getJdbcDataType()));
 
                 //check for size for datatype
                 if (field.getSize() > 0) {
@@ -150,27 +152,28 @@ public class FireBirdRenderer extends SchemaRenderer {
                 if (enumPKField == null && field.isPrimaryKey()) {
                     enumPKField = field;
                 }
-                if (enumValueField == null && field.getJdbcType().equals(SchemaField.TYPE_VARCHAR)) {
+                if (enumValueField == null && field.getJdbcDataType() == SchemaFieldType.VARCHAR) {
                     enumValueField = field;
                 }
             }
 
             // check for uniqueDeclarations
             List uniqueDeclarations = table.getUniqueDeclarations();
-            for (int j = 0; j < uniqueDeclarations.size(); j++) {
+            for (Object uniqueDeclaration : uniqueDeclarations) {
                 String uniqueFieldString = "";
 
-                List uniqueFields = (List) uniqueDeclarations.get(j);
-                for (int k = 0; k < uniqueFields.size(); k++) {
-                    String uniqueField = (String) uniqueFields.get(k);
+                List uniqueFieldsCombo = (List) uniqueDeclaration;
+                for (int k = 0; k < uniqueFieldsCombo.size(); k++) {
+                    String uniqueField = (String) uniqueFieldsCombo.get(k);
 
                     if (k > 0) {
                         uniqueFieldString += ", ";
                     }
+
                     uniqueFieldString += uniqueField;
                 }
 
-                schema.append(",\n\tUNIQUE(" + uniqueFieldString + ")");
+                schema.append(",\n\tUNIQUE(").append(uniqueFieldString).append(")");
             }
 
             String tableType = table.getParameter("tableType");
@@ -190,9 +193,7 @@ public class FireBirdRenderer extends SchemaRenderer {
             }
 
             // add index fields
-            for (int k = 0; k < indexFields.size(); k++) {
-                SchemaField iField = (SchemaField) indexFields.get(k);
-
+            for (SchemaField iField : indexFields) {
                 // create the unique index name... limit it to 25 characters
 //                int MAXLENGTH = 16;
 //                String indexName = table.getName()+iField.getName();
@@ -218,44 +219,41 @@ public class FireBirdRenderer extends SchemaRenderer {
         }
 
         // create views
-        Iterator<SchemaView> viewItr = requestedViews.iterator();
-        while (viewItr.hasNext()) {
-            SchemaView view = viewItr.next();
-
-            // header
-            schema.append("CREATE VIEW " + view.getName() + " ");
-
-            // get fields
-            String aliases = "";
-            String selectItems = "";
-
-            Iterator vfItr = view.getViewFields().iterator();
-            while (vfItr.hasNext()) {
-                SchemaViewField viewField = (SchemaViewField) vfItr.next();
-
-                aliases += viewField.getName();
-                selectItems += "\t" + viewField.getExpression();
-
-                if (vfItr.hasNext()) {
-                    aliases += ", ";
-                    selectItems += ",\n";
-                } else {
-                    selectItems += "\n";
-                }
-            }
-
-            // aliases
-            schema.append("(" + aliases + ")");
-
-            // AS SELECT
-            schema.append(" AS\n  SELECT \n" + selectItems);
-
-            // POSTSELECT
-            schema.append("  " + view.getViewPostSelectClause() + ";");
-
-            // end
-            schema.append("\n\n");
-        } // end of views
+//        for (SchemaView view : requestedViews) {
+//            // header
+//            schema.append("CREATE VIEW " + view.getName() + " ");
+//
+//            // get fields
+//            String aliases = "";
+//            String selectItems = "";
+//
+//            Iterator vfItr = view.getViewFields().iterator();
+//            while (vfItr.hasNext()) {
+//                SchemaViewField viewField = (SchemaViewField) vfItr.next();
+//
+//                aliases += viewField.getName();
+//                selectItems += "\t" + viewField.getExpression();
+//
+//                if (vfItr.hasNext()) {
+//                    aliases += ", ";
+//                    selectItems += ",\n";
+//                } else {
+//                    selectItems += "\n";
+//                }
+//            }
+//
+//            // aliases
+//            schema.append("(" + aliases + ")");
+//
+//            // AS SELECT
+//            schema.append(" AS\n  SELECT \n" + selectItems);
+//
+//            // POSTSELECT
+//            schema.append("  " + view.getViewPostSelectClause() + ";");
+//
+//            // end
+//            schema.append("\n\n");
+//        } // end of views
 
 
         return schema.toString();

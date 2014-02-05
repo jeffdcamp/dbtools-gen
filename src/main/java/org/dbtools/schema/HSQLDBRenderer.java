@@ -13,9 +13,10 @@
  */
 package org.dbtools.schema;
 
+import org.dbtools.schema.schemafile.*;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -73,7 +74,7 @@ public class HSQLDBRenderer extends SchemaRenderer {
             SchemaField enumValueField = null;
 
             for (int j = 0; j < fields.size(); j++) {
-                SchemaField field = (SchemaField) fields.get(j);
+                SchemaField field = fields.get(j);
 
                 // add field
                 // name
@@ -82,7 +83,7 @@ public class HSQLDBRenderer extends SchemaRenderer {
 
                 // datatype
                 schema.append(" ");
-                schema.append(getTypes().get(field.getJdbcType()));
+                schema.append(getSqlType(field.getJdbcDataType()));
 
                 //check for size for datatype
                 if (field.getSize() > 0) {
@@ -176,7 +177,7 @@ public class HSQLDBRenderer extends SchemaRenderer {
                 if (enumPKField == null && field.isPrimaryKey()) {
                     enumPKField = field;
                 }
-                if (enumValueField == null && field.getJdbcType().equals(SchemaField.TYPE_VARCHAR)) {
+                if (enumValueField == null && field.getJdbcDataType() == SchemaFieldType.VARCHAR) {
                     enumValueField = field;
                 }
             }
@@ -223,31 +224,31 @@ public class HSQLDBRenderer extends SchemaRenderer {
         }
 
         // create views
-        for (SchemaView view : requestedViews) {
-            // header
-            schema.append("CREATE VIEW ").append(view.getName()).append(" AS \n");
-
-            // SELECT
-            schema.append("  SELECT \n");
-
-            Iterator vfItr = view.getViewFields().iterator();
-            while (vfItr.hasNext()) {
-                SchemaViewField viewField = (SchemaViewField) vfItr.next();
-
-                schema.append("\t").append(viewField.getExpression()).append(" ").append(viewField.getName());
-
-                if (vfItr.hasNext()) {
-                    schema.append(",\n");
-                } else {
-                    schema.append("\n");
-                }
-            }
-
-            schema.append("  ").append(view.getViewPostSelectClause()).append(";");
-
-            // end
-            schema.append("\n\n");
-        } // end of views
+//        for (SchemaView view : requestedViews) {
+//            // header
+//            schema.append("CREATE VIEW ").append(view.getName()).append(" AS \n");
+//
+//            // SELECT
+//            schema.append("  SELECT \n");
+//
+//            Iterator vfItr = view.getViewFields().iterator();
+//            while (vfItr.hasNext()) {
+//                SchemaViewField viewField = (SchemaViewField) vfItr.next();
+//
+//                schema.append("\t").append(viewField.getExpression()).append(" ").append(viewField.getName());
+//
+//                if (vfItr.hasNext()) {
+//                    schema.append(",\n");
+//                } else {
+//                    schema.append("\n");
+//                }
+//            }
+//
+//            schema.append("  ").append(view.getViewPostSelectClause()).append(";");
+//
+//            // end
+//            schema.append("\n\n");
+//        } // end of views
 
         // return 
         return schema.toString();
@@ -256,7 +257,7 @@ public class HSQLDBRenderer extends SchemaRenderer {
     @Override
     public String formatDefaultValue(SchemaField field) {
         String defaultValue = field.getDefaultValue();
-        String newDefaultValue = "";
+        String newDefaultValue;
 
         Class javaType = field.getJavaClassType();
         if (javaType == boolean.class) {

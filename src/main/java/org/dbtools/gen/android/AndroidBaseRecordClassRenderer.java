@@ -10,7 +10,11 @@
 package org.dbtools.gen.android;
 
 import org.dbtools.codegen.*;
-import org.dbtools.schema.*;
+import org.dbtools.schema.ClassInfo;
+import org.dbtools.schema.SchemaRenderer;
+import org.dbtools.schema.SqliteRenderer;
+import org.dbtools.schema.dbmappings.DatabaseMapping;
+import org.dbtools.schema.schemafile.*;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -47,16 +51,13 @@ public class AndroidBaseRecordClassRenderer {
         String className = createClassName(table);
 
         // sqlite table field types
-        Map<String, String> sqlDataTypes = new HashMap<String, String>();
-        Map<String, String> javaTypes = new HashMap<String, String>();
-        SchemaRenderer.readXMLTypes(this.getClass(), SchemaRenderer.DEFAULT_TYPE_MAPPING_FILENAME, "sqlite", sqlDataTypes, javaTypes);
-
+        DatabaseMapping databaseMapping = SchemaRenderer.readXMLTypes(this.getClass(), SchemaRenderer.DEFAULT_TYPE_MAPPING_FILENAME, "sqlite");
 
         if (table.isEnumerationTable()) {
             String enumClassname = createClassName(table);
-            List<String> enums = table.getEnumerations();
+            List<TableEnum> enums = table.getTableEnums();
 
-            myClass = new JavaEnum(packageName, enumClassname, enums);
+            myClass = new JavaEnum(packageName, enumClassname, table.getTableEnumsText());
             myClass.setCreateDefaultConstructor(false);
             writeTestClass = false;
 
@@ -72,15 +73,10 @@ public class AndroidBaseRecordClassRenderer {
                 JavaVariable stringListVar = myClass.addVariable("List<String>", "stringList", "new ArrayList<String>()");
                 stringListVar.setStatic(true);
 
-                Map<String, String> enumValues = table.getEnumValues();
-
-                for (String enumItem : enums) {
-                    String enumValue = enumValues.get(enumItem);
-                    if (enumValue != null) {
-                        myClass.appendStaticInitializer("enumStringMap.put(" + enumItem + ", \"" + enumValue + "\");");
-                        myClass.appendStaticInitializer("stringList.add(\"" + enumValue + "\");");
-                        myClass.appendStaticInitializer("");
-                    }
+                for (TableEnum enumItem : enums) {
+                    myClass.appendStaticInitializer("enumStringMap.put(" + enumItem.getName() + ", \"" + enumItem.getValue() + "\");");
+                    myClass.appendStaticInitializer("stringList.add(\"" + enumItem.getValue() + "\");");
+                    myClass.appendStaticInitializer("");
                 }
 
                 List<JavaVariable> getStringMParam = new ArrayList<JavaVariable>();
@@ -225,10 +221,11 @@ public class AndroidBaseRecordClassRenderer {
             // method values
             if (!(primaryKey && field.isIncrement())) {
                 String value = fieldNameJavaStyle;
+                SchemaFieldType fieldType = field.getJdbcDataType();
                 if (field.isEnumeration()) {
                     value = newVariable.getName() + ".ordinal()";
-                } else if (field.getJavaClassType() == Date.class) {
-                    if (field.getJdbcType().equals("DATE")) {
+                } else if (fieldType == SchemaFieldType.DATE || fieldType == SchemaFieldType.TIMESTAMP || fieldType == SchemaFieldType.TIME) {
+                    if (!useDateTime) {
                         String methodName = useDateTime ? "dateTimeToDBString" : "dateToDBString";
                         value = methodName + "(" + fieldNameJavaStyle + ")";
                     } else {
@@ -247,7 +244,7 @@ public class AndroidBaseRecordClassRenderer {
 
         // SchemaDatabase variables
 
-        String createTable = SqliteRenderer.generateTableSchema(table, sqlDataTypes);
+        String createTable = SqliteRenderer.generateTableSchema(table, databaseMapping);
         createTable = createTable.replace("\n", "\" + \n" + TAB + TAB + "\"");
         createTable = createTable.replace("\t", ""); // remove tabs
 //        createTable = createTable.replace(";", ""); // remove last ;
@@ -353,7 +350,8 @@ public class AndroidBaseRecordClassRenderer {
         } else if (type == boolean.class || type == Boolean.class) {
             return "values.getAsBoolean(" + paramValue + ")";
         } else if (type == Date.class) {
-            if (field.getJdbcType().equals("DATE")) {
+            SchemaFieldType fieldType = field.getJdbcDataType();
+            if (fieldType == SchemaFieldType.DATE) {
                 if (useDateTime) {
                     return "dbStringToDateTime(values.getAsString(" + paramValue + "))";
                 } else {
@@ -398,7 +396,8 @@ public class AndroidBaseRecordClassRenderer {
         } else if (type == boolean.class || type == Boolean.class) {
             return "cursor.getInt(cursor.getColumnIndex(" + paramValue + ")) != 0 ? true : false";
         } else if (type == Date.class) {
-            if (field.getJdbcType().equals("DATE")) {
+            SchemaFieldType fieldType = field.getJdbcDataType();
+            if (fieldType == SchemaFieldType.DATE) {
                 if (useDateTime) {
                     return "dbStringToDateTime(cursor.getString(cursor.getColumnIndex(" + paramValue + ")))";
                 } else {
@@ -422,8 +421,8 @@ public class AndroidBaseRecordClassRenderer {
 
     private void createToStringMethodContent(final SchemaField field, final String fieldNameJavaStyle) {
 
-        String fieldType = field.getJdbcType();
-        if (!fieldType.equals(SchemaField.TYPE_BLOB) && !fieldType.equals(SchemaField.TYPE_CLOB)) {
+        SchemaFieldType fieldType = field.getJdbcDataType();
+        if (field.getJdbcDataType() != SchemaFieldType.BLOB && field.getJdbcDataType() != SchemaFieldType.CLOB) {
             // toString
             toStringContent.append("text += \"").append(fieldNameJavaStyle).append(" = \"+ ").append(fieldNameJavaStyle).append(" +\"\\n\";\n");
         }
@@ -431,16 +430,16 @@ public class AndroidBaseRecordClassRenderer {
 
     private JavaVariable generateEnumeration(SchemaField field, String fieldNameJavaStyle, String packageName, SchemaDatabase database) {
         JavaVariable newVariable;
-        if (field.isNumberDataType()) {
+        if (field.getJdbcDataType().isNumberDataType()) {
             if (field.getForeignKeyTable().length() > 0) {
                 // define name of enum
                 ClassInfo enumClassInfo = database.getTableClassInfo(field.getForeignKeyTable());
                 String enumName = enumClassInfo.getClassName();
 
                 // local definition of enumeration?
-                List<String> localEnumerations = field.getEnumerations();
+                List<String> localEnumerations = field.getEnumValues();
                 if (localEnumerations != null && localEnumerations.size() > 0) {
-                    myClass.addEnum(enumName, field.getEnumerations());
+                    myClass.addEnum(enumName, field.getEnumValues());
                 } else {
                     // we must import the enum
                     String enumPackage = enumClassInfo.getPackageName(packageName) + "." + enumName;
@@ -468,9 +467,9 @@ public class AndroidBaseRecordClassRenderer {
                 String enumName = firstChar + javaStyleFieldName.substring(1);
 
                 if (useInnerEnums) {
-                    myClass.addEnum(enumName, field.getEnumerations());
+                    myClass.addEnum(enumName, field.getEnumValues());
                 } else {
-                    enumerationClasses.add(new JavaEnum(enumName, field.getEnumerations()));
+                    enumerationClasses.add(new JavaEnum(enumName, field.getEnumValues()));
                 }
 
                 newVariable = new JavaVariable(enumName, fieldNameJavaStyle);
@@ -512,20 +511,21 @@ public class AndroidBaseRecordClassRenderer {
 //            getterMethod.setContent("return new " + typeText + "(" + newVariable.getName() + ");");
 //            myClass.addMethod(getterMethod);
 //        } else {
-            if (dateType && useDateTime) {
-                newVariable = new JavaVariable("org.joda.time.DateTime", fieldNameJavaStyle);
-            } else {
-                newVariable = new JavaVariable(typeText, fieldNameJavaStyle);
-            }
+        if (dateType && useDateTime) {
+            newVariable = new JavaVariable("org.joda.time.DateTime", fieldNameJavaStyle);
+        } else {
+            newVariable = new JavaVariable(typeText, fieldNameJavaStyle);
+        }
 
-            boolean immutableDate = field.getJavaClassType() == Date.class && useDateTime; // org.joda.time.DateTime IS immutable
-            if (!field.isJavaTypePrimative() && !field.isJavaTypeImmutable() && !immutableDate) {
-                newVariable.setCloneSetterGetterVar(true);
-            }
+        SchemaFieldType fieldType = field.getJdbcDataType();
+        boolean immutableDate = field.getJavaClassType() == Date.class && useDateTime; // org.joda.time.DateTime IS immutable
+        if (!fieldType.isJavaTypePrimative() && !fieldType.isJavaTypeImmutable() && !immutableDate) {
+            newVariable.setCloneSetterGetterVar(true);
+        }
 
 
-            newVariable.setGenerateSetterGetter(true);
-            addSetterGetterTest(newVariable);
+        newVariable.setGenerateSetterGetter(true);
+        addSetterGetterTest(newVariable);
 //        }
 
         newVariable.setDefaultValue(defaultValue);
@@ -537,7 +537,7 @@ public class AndroidBaseRecordClassRenderer {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = dbSchema.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
-        String varName = field.getCustomVarName();
+        String varName = field.getVarName();
         if (varName.equals("")) {
             varName = JavaClass.formatToJavaVariable(fkTableClassName);
         }
@@ -553,7 +553,7 @@ public class AndroidBaseRecordClassRenderer {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = database.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
-        String varName = field.getCustomVarName();
+        String varName = field.getVarName();
         if (varName.equals("")) {
             varName = JavaClass.formatToJavaVariable(fkTableClassName);
         }
@@ -569,7 +569,7 @@ public class AndroidBaseRecordClassRenderer {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = database.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
-        String varName = field.getCustomVarName();
+        String varName = field.getVarName();
         if (varName.equals("")) {
             varName = JavaClass.formatToJavaVariable(fkTableClassName);
         }
@@ -624,7 +624,7 @@ public class AndroidBaseRecordClassRenderer {
                         String tableClassName = myTableClassInfo.getClassName();
 
 
-                        String fieldName = fkField.getCustomVarName();
+                        String fieldName = fkField.getVarName();
                         if (fieldName == null || fieldName.length() == 0) {
                             fieldName = tableClassName;
                         }

@@ -9,6 +9,8 @@
  */
 package org.dbtools.schema;
 
+import org.dbtools.schema.schemafile.*;
+
 import java.io.PrintStream;
 import java.util.*;
 
@@ -88,7 +90,7 @@ public class Oracle9Renderer extends SchemaRenderer {
                 // datatype
                 schema.append(" ");
 
-                schema.append(getTypes().get(field.getJdbcType()));
+                schema.append(getSqlType(field.getJdbcDataType()));
 
                 //check for size for datatype
                 if (field.getSize() > 0) {
@@ -151,18 +153,19 @@ public class Oracle9Renderer extends SchemaRenderer {
                 if (enumPKField == null && field.isPrimaryKey()) {
                     enumPKField = field;
                 }
-                if (enumValueField == null && field.getJdbcType().equals(SchemaField.TYPE_VARCHAR)) {
+                if (enumValueField == null && field.getJdbcDataType() == SchemaFieldType.VARCHAR) {
                     enumValueField = field;
                 }
             }
 
             // check for uniqueDeclarations
-            List<List<String>> uniqueDeclarations = table.getUniqueDeclarations();
-            for (List<String> uniqueDeclaration : uniqueDeclarations) {
+            List uniqueDeclarations = table.getUniqueDeclarations();
+            for (Object uniqueDeclaration : uniqueDeclarations) {
                 String uniqueFieldString = "";
 
-                for (int k = 0; k < uniqueDeclaration.size(); k++) {
-                    String uniqueField = uniqueDeclaration.get(k);
+                List uniqueFieldsCombo = (List) uniqueDeclaration;
+                for (int k = 0; k < uniqueFieldsCombo.size(); k++) {
+                    String uniqueField = (String) uniqueFieldsCombo.get(k);
 
                     if (k > 0) {
                         uniqueFieldString += ", ";
@@ -187,7 +190,7 @@ public class Oracle9Renderer extends SchemaRenderer {
             // check to see if we need to create a sequence
             if (sequencerName != null && sequencerName.length() > 0) {
                 if (table.isEnumerationTable() && super.isCreateEnumInserts()) {
-                    schema.append("CREATE SEQUENCE ").append(sequencerName).append(" START WITH ").append(table.getEnumerations().size()).append(";\n");
+                    schema.append("CREATE SEQUENCE ").append(sequencerName).append(" START WITH ").append(table.getEnumerations().length()).append(";\n");
                 } else {
                     schema.append("CREATE SEQUENCE ").append(sequencerName).append(" START WITH ").append(sequencerStartValue).append(";\n");
                 }
@@ -228,42 +231,42 @@ public class Oracle9Renderer extends SchemaRenderer {
         }
 
         // create views
-        for (SchemaView view : requestedViews) {
-
-            // header
-            schema.append("CREATE VIEW ").append(view.getName()).append(" ");
-
-            // get fields
-            String aliases = "";
-            String selectItems = "";
-
-            Iterator vfItr = view.getViewFields().iterator();
-            while (vfItr.hasNext()) {
-                SchemaViewField viewField = (SchemaViewField) vfItr.next();
-
-                aliases += viewField.getName();
-                selectItems += "\t" + viewField.getExpression();
-
-                if (vfItr.hasNext()) {
-                    aliases += ", ";
-                    selectItems += ",\n";
-                } else {
-                    selectItems += "\n";
-                }
-            }
-
-            // aliases
-            schema.append("(").append(aliases).append(")");
-
-            // AS SELECT
-            schema.append(" AS\n  SELECT \n").append(selectItems);
-
-            // POSTSELECT
-            schema.append("  ").append(view.getViewPostSelectClause()).append(";");
-
-            // end
-            schema.append("\n\n");
-        } // end of views
+//        for (SchemaView view : requestedViews) {
+//
+//            // header
+//            schema.append("CREATE VIEW ").append(view.getName()).append(" ");
+//
+//            // get fields
+//            String aliases = "";
+//            String selectItems = "";
+//
+//            Iterator vfItr = view.getViewFields().iterator();
+//            while (vfItr.hasNext()) {
+//                SchemaViewField viewField = (SchemaViewField) vfItr.next();
+//
+//                aliases += viewField.getName();
+//                selectItems += "\t" + viewField.getExpression();
+//
+//                if (vfItr.hasNext()) {
+//                    aliases += ", ";
+//                    selectItems += ",\n";
+//                } else {
+//                    selectItems += "\n";
+//                }
+//            }
+//
+//            // aliases
+//            schema.append("(").append(aliases).append(")");
+//
+//            // AS SELECT
+//            schema.append(" AS\n  SELECT \n").append(selectItems);
+//
+//            // POSTSELECT
+//            schema.append("  ").append(view.getViewPostSelectClause()).append(";");
+//
+//            // end
+//            schema.append("\n\n");
+//        } // end of views
 
         return schema.toString();
     }

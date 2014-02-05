@@ -11,8 +11,8 @@
 package org.dbtools.gen;
 
 
-import org.dbtools.schema.SchemaDatabase;
-import org.dbtools.schema.SchemaTable;
+import org.dbtools.schema.schemafile.SchemaDatabase;
+import org.dbtools.schema.schemafile.SchemaTable;
 
 import java.io.PrintStream;
 import java.util.List;

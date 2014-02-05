@@ -10,7 +10,9 @@
 package org.dbtools.gen;
 
 
-import org.dbtools.schema.*;
+import org.dbtools.schema.SchemaRenderer;
+import org.dbtools.schema.schemafile.SchemaDatabase;
+import org.dbtools.schema.schemafile.SchemaTable;
 import org.dbtools.util.PackageUtil;
 
 import java.io.File;
@@ -78,7 +80,7 @@ public class GroupObjectBuilder {
     }
 
     private boolean buildAllDatabases() {
-        for (SchemaDatabase database : schemaRenderer.getDbSchema().getSchemaDatabases()) {
+        for (SchemaDatabase database : schemaRenderer.getDbSchema().getDatabases()) {
             resetData(); // prepare for new database
             if (!build(database)) {
                 return false;
@@ -156,10 +158,7 @@ public class GroupObjectBuilder {
         String filename = xmlFilename;
         if (!filename.equals("")) {
             xmlFile = new File(filename);
-
-            if (xmlFile != null) {
-                schemaRenderer.readXMLSchema(xmlFile.getPath(), "");
-            }
+            schemaRenderer.readXMLSchema(xmlFile.getPath());
         }
     }
 

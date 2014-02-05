@@ -9,9 +9,10 @@
  */
 package org.dbtools.schema;
 
+import org.dbtools.schema.schemafile.*;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -37,7 +38,7 @@ public class PostgreSQLRenderer extends SchemaRenderer {
     public String generateSchema(SchemaDatabase database, String[] tablesToGenerate, String[] viewsToGenerate, boolean dropTables, boolean createInserts) {
         showProgress("Generating SQL schema using PostgreSQL renderer ...", true);
         StringBuilder schema = new StringBuilder();
-        List<ForeignKey> foreignKeysToCreate = new ArrayList<ForeignKey>();
+        List<ForeignKey> foreignKeysToCreate = new ArrayList<>();
 
         List<SchemaTable> requestedTables = getTablesToGenerate(database, tablesToGenerate);
         List<SchemaView> requestedViews = getViewsToGenerate(database, viewsToGenerate);
@@ -50,7 +51,7 @@ public class PostgreSQLRenderer extends SchemaRenderer {
         // create tables
         for (SchemaTable requestedTable : requestedTables) {
             // add table header
-            SchemaTable table = (SchemaTable) requestedTable;
+            SchemaTable table = requestedTable;
             List<SchemaField> fields = table.getFields();
 
             // determine sequence name
@@ -67,7 +68,7 @@ public class PostgreSQLRenderer extends SchemaRenderer {
 
             // reset values for new table
             SchemaField primaryKey = null;
-            List<SchemaField> indexFields = new ArrayList<SchemaField>();
+            List<SchemaField> indexFields = new ArrayList<>();
 
             schema.append("CREATE TABLE ");
             schema.append(table.getName());
@@ -92,7 +93,7 @@ public class PostgreSQLRenderer extends SchemaRenderer {
                 // datatype
                 schema.append(" ");
 
-                schema.append(getTypes().get(field.getJdbcType()));
+                schema.append(getSqlType(field.getJdbcDataType()));
 
                 //check for size for datatype
                 if (field.getSize() > 0) {
@@ -131,7 +132,7 @@ public class PostgreSQLRenderer extends SchemaRenderer {
 
                 // add foreign key
                 if (!field.getForeignKeyField().equals("")) {
-                    foreignKeysToCreate.add(new ForeignKey(table.getName(), field.getName(), field.getForeignKeyTable(), field.getForeignKeyField()));
+                    foreignKeysToCreate.add(new ForeignKey(requestedTable.getName(), field.getName(), field.getForeignKeyTable(), field.getForeignKeyField()));
                 }
 
                 schema.append("");
@@ -155,18 +156,19 @@ public class PostgreSQLRenderer extends SchemaRenderer {
                 if (enumPKField == null && field.isPrimaryKey()) {
                     enumPKField = field;
                 }
-                if (enumValueField == null && field.getJdbcType().equals(SchemaField.TYPE_VARCHAR)) {
+                if (enumValueField == null && field.getJdbcDataType() == SchemaFieldType.VARCHAR) {
                     enumValueField = field;
                 }
             }
 
             // check for uniqueDeclarations
-            List<List<String>> uniqueDeclarations = table.getUniqueDeclarations();
-            for (List<String> uniqueDeclaration : uniqueDeclarations) {
+            List uniqueDeclarations = table.getUniqueDeclarations();
+            for (Object uniqueDeclaration : uniqueDeclarations) {
                 String uniqueFieldString = "";
 
-                for (int k = 0; k < uniqueDeclaration.size(); k++) {
-                    String uniqueField = uniqueDeclaration.get(k);
+                List uniqueFieldsCombo = (List) uniqueDeclaration;
+                for (int k = 0; k < uniqueFieldsCombo.size(); k++) {
+                    String uniqueField = (String) uniqueFieldsCombo.get(k);
 
                     if (k > 0) {
                         uniqueFieldString += ", ";
@@ -183,15 +185,15 @@ public class PostgreSQLRenderer extends SchemaRenderer {
 
             // create indexes
             for (SchemaField indexField : indexFields) {
-                schema.append("\nCREATE INDEX ").append(table.getName()).append(indexField.getName()).append("_IDX ON ").append(table.getName()).append(" (").append(indexField.getName()).append(");");
+                schema.append("\nCREATE INDEX ").append(requestedTable.getName()).append(indexField.getName()).append("_IDX ON ").append(requestedTable.getName()).append(" (").append(indexField.getName()).append(");");
             }
             schema.append("\n");
-            generateEnumSchema(schema, table, getAlreadyCreatedEnum(), enumPKField, enumValueField, createInserts);
+            generateEnumSchema(schema, requestedTable, getAlreadyCreatedEnum(), enumPKField, enumValueField, createInserts);
 
             // check to see if we need to create a sequence
             if (sequencerName != null && sequencerName.length() > 0) {
-                if (table.isEnumerationTable() && super.isCreateEnumInserts()) {
-                    schema.append("CREATE SEQUENCE ").append(sequencerName).append(" START WITH ").append(table.getEnumerations().size()).append(";\n");
+                if (requestedTable.isEnumerationTable() && super.isCreateEnumInserts()) {
+                    schema.append("CREATE SEQUENCE ").append(sequencerName).append(" START WITH ").append(requestedTable.getEnumerations().length()).append(";\n");
                 } else {
                     schema.append("CREATE SEQUENCE ").append(sequencerName).append(" START WITH ").append(sequencerStartValue).append(";\n");
                 }
@@ -210,42 +212,42 @@ public class PostgreSQLRenderer extends SchemaRenderer {
         }
 
         // create views
-        for (SchemaView view : requestedViews) {
-
-            // header
-            schema.append("CREATE VIEW ").append(view.getName()).append(" AS \n");
-
-            // get fields
-            String aliases = "";
-            String selectItems = "";
-
-            Iterator vfItr = view.getViewFields().iterator();
-            while (vfItr.hasNext()) {
-                SchemaViewField viewField = (SchemaViewField) vfItr.next();
-
-                aliases += viewField.getName();
-                selectItems += "\t" + viewField.getExpression();
-
-                if (vfItr.hasNext()) {
-                    aliases += ", ";
-                    selectItems += ",\n";
-                } else {
-                    selectItems += "\n";
-                }
-            }
-
-            // aliases
-            schema.append("(").append(aliases).append(")");
-
-            // AS SELECT
-            schema.append(" AS\n  SELECT \n").append(selectItems);
-
-            // POSTSELECT
-            schema.append("  ").append(view.getViewPostSelectClause()).append(";");
-
-            // end
-            schema.append("\n\n");
-        } // end of views
+//        for (SchemaView view : requestedViews) {
+//
+//            // header
+//            schema.append("CREATE VIEW ").append(view.getName()).append(" AS \n");
+//
+//            // get fields
+//            String aliases = "";
+//            String selectItems = "";
+//
+//            Iterator vfItr = view.getViewFields().iterator();
+//            while (vfItr.hasNext()) {
+//                SchemaViewField viewField = (SchemaViewField) vfItr.next();
+//
+//                aliases += viewField.getName();
+//                selectItems += "\t" + viewField.getExpression();
+//
+//                if (vfItr.hasNext()) {
+//                    aliases += ", ";
+//                    selectItems += ",\n";
+//                } else {
+//                    selectItems += "\n";
+//                }
+//            }
+//
+//            // aliases
+//            schema.append("(").append(aliases).append(")");
+//
+//            // AS SELECT
+//            schema.append(" AS\n  SELECT \n").append(selectItems);
+//
+//            // POSTSELECT
+//            schema.append("  ").append(view.getViewPostSelectClause()).append(";");
+//
+//            // end
+//            schema.append("\n\n");
+//        } // end of views
 
         return schema.toString();
     }

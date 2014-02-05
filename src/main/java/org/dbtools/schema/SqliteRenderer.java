@@ -13,6 +13,9 @@
  */
 package org.dbtools.schema;
 
+import org.dbtools.schema.dbmappings.DatabaseMapping;
+import org.dbtools.schema.schemafile.*;
+
 import java.io.PrintStream;
 import java.util.*;
 
@@ -49,7 +52,7 @@ public class SqliteRenderer extends SchemaRenderer {
         // create tables
         for (SchemaTable table : requestedTables) {
             // reset values for new table
-            schema.append(generateTableSchema(table, getTypes()));
+            schema.append(generateTableSchema(table, getDatabaseMapping()));
         } // end of tables
 
         // create views
@@ -60,20 +63,21 @@ public class SqliteRenderer extends SchemaRenderer {
             // SELECT
             schema.append("  SELECT \n");
 
-            Iterator<SchemaViewField> vfItr = view.getViewFields().iterator();
-            while (vfItr.hasNext()) {
-                SchemaViewField viewField = vfItr.next();
-
-                schema.append("\t").append(viewField.getExpression()).append(" ").append(viewField.getName());
-
-                if (vfItr.hasNext()) {
-                    schema.append(",\n");
-                } else {
-                    schema.append("\n");
-                }
-            }
-
-            schema.append("  ").append(view.getViewPostSelectClause()).append(";");
+            // TODO
+//            Iterator<SchemaViewField> vfItr = view.getViewFields().iterator();
+//            while (vfItr.hasNext()) {
+//                SchemaViewField viewField = vfItr.next();
+//
+//                schema.append("\t").append(viewField.getExpression()).append(" ").append(viewField.getName());
+//
+//                if (vfItr.hasNext()) {
+//                    schema.append(",\n");
+//                } else {
+//                    schema.append("\n");
+//                }
+//            }
+//
+//            schema.append("  ").append(view.getViewPostSelectClause()).append(";");
 
             // end
             schema.append("\n\n");
@@ -121,7 +125,7 @@ public class SqliteRenderer extends SchemaRenderer {
         return postSchema.toString();
     }
 
-    public static String generateTableSchema(SchemaTable table, Map<String, String> types) {
+    public static String generateTableSchema(SchemaTable table, DatabaseMapping databaseMapping) {
         StringBuilder tableSchema = new StringBuilder();
 
         // add table header
@@ -148,7 +152,7 @@ public class SqliteRenderer extends SchemaRenderer {
 
             // datatype
             tableSchema.append(" ");
-            tableSchema.append(types.get(field.getJdbcType()));
+            tableSchema.append(databaseMapping.getSqlType(field.getJdbcDataType()));
 
             String defaultValue = field.getDefaultValue();
             if (defaultValue != null && !defaultValue.equals("")) {
@@ -206,23 +210,26 @@ public class SqliteRenderer extends SchemaRenderer {
             if (enumPKField == null && field.isPrimaryKey()) {
                 enumPKField = field;
             }
-            if (enumValueField == null && field.getJdbcType().equals(SchemaField.TYPE_VARCHAR)) {
+            if (enumValueField == null && field.getJdbcDataType() == SchemaFieldType.VARCHAR) {
                 enumValueField = field;
             }
         }
 
         // check for uniqueDeclarations
-        List<List<String>> uniqueDeclarations = table.getUniqueDeclarations();
-        for (List<String> uniqueDeclaration : uniqueDeclarations) {
+        List<SchemaTableUnique> uniqueDeclarations = table.getUniqueDeclarations();
+
+        for (SchemaTableUnique uniqueDeclaration : uniqueDeclarations) {
+
             String uniqueFieldString = "";
 
-            for (int k = 0; k < uniqueDeclaration.size(); k++) {
-                String uniqueField = uniqueDeclaration.get(k);
-
-                if (k > 0) {
+            int count = 0;
+            for (SchemaUniqueField uniqueField : uniqueDeclaration.getUniqueFields()) {
+                if (count > 0) {
                     uniqueFieldString += ", ";
                 }
-                uniqueFieldString += uniqueField;
+                uniqueFieldString += uniqueField.getName();
+
+                count++;
             }
 
             tableSchema.append(",\n\tUNIQUE(").append(uniqueFieldString).append(")");

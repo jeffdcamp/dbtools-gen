@@ -13,6 +13,8 @@
  */
 package org.dbtools.schema;
 
+import org.dbtools.schema.schemafile.*;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,7 +42,7 @@ public class DerbyRenderer extends SchemaRenderer {
     public String generateSchema(SchemaDatabase database, String[] tablesToGenerate, String[] viewsToGenerate, boolean dropTables, boolean createInserts) {
         showProgress("Generating SQL schema using Derby renderer ...", true);
         StringBuilder schema = new StringBuilder();
-        List<ForeignKey> foreignKeysToCreate = new ArrayList<ForeignKey>();
+        List<ForeignKey> foreignKeysToCreate = new ArrayList<>();
 
         List<SchemaTable> requestedTables = getTablesToGenerate(database, tablesToGenerate);
         List<SchemaView> requestedViews = getViewsToGenerate(database, viewsToGenerate);
@@ -54,8 +56,8 @@ public class DerbyRenderer extends SchemaRenderer {
         // create tables
         for (SchemaTable table : requestedTables) {
             // reset values for new table
-            List<SchemaField> indexFields = new ArrayList<SchemaField>();
-            List<SchemaField> uniqueFields = new ArrayList<SchemaField>();
+            List<SchemaField> indexFields = new ArrayList<>();
+            List<SchemaField> uniqueFields = new ArrayList<>();
 
             // add table header
             schema.append("CREATE TABLE ");
@@ -77,10 +79,10 @@ public class DerbyRenderer extends SchemaRenderer {
 
                 // datatype
                 schema.append(" ");
-                schema.append(getTypes().get(field.getJdbcType()));
+                schema.append(getSqlType(field.getJdbcDataType()));
 
                 //check for size for datatype
-                if (field.getSize() > 0 && field.getJdbcType().equals(SchemaField.TYPE_VARCHAR)) {
+                if (field.getSize() > 0 && field.getJdbcDataType() == SchemaFieldType.VARCHAR) {
                     schema.append("(");
                     schema.append(field.getSize());
 
@@ -150,23 +152,24 @@ public class DerbyRenderer extends SchemaRenderer {
                 if (enumPKField == null && field.isPrimaryKey()) {
                     enumPKField = field;
                 }
-                if (enumValueField == null && field.getJdbcType().equals(SchemaField.TYPE_VARCHAR)) {
+                if (enumValueField == null && field.getJdbcDataType() == SchemaFieldType.VARCHAR) {
                     enumValueField = field;
                 }
             }
 
             // check for uniqueDeclarations
-            List<List<String>> uniqueDeclarations = table.getUniqueDeclarations();
-            for (int j = 0; j < uniqueDeclarations.size(); j++) {
+            List uniqueDeclarations = table.getUniqueDeclarations();
+            for (Object uniqueDeclaration : uniqueDeclarations) {
                 String uniqueFieldString = "";
 
-                List<String> uniqueFieldsCombo = uniqueDeclarations.get(j);
+                List uniqueFieldsCombo = (List) uniqueDeclaration;
                 for (int k = 0; k < uniqueFieldsCombo.size(); k++) {
-                    String uniqueField = uniqueFieldsCombo.get(k);
+                    String uniqueField = (String) uniqueFieldsCombo.get(k);
 
                     if (k > 0) {
                         uniqueFieldString += ", ";
                     }
+
                     uniqueFieldString += uniqueField;
                 }
 
@@ -196,31 +199,31 @@ public class DerbyRenderer extends SchemaRenderer {
         }
 
         // create views
-        for (SchemaView view : requestedViews) {
-            // header
-            schema.append("CREATE VIEW ").append(view.getName()).append(" AS \n");
-
-            // SELECT
-            schema.append("  SELECT \n");
-
-            Iterator vfItr = view.getViewFields().iterator();
-            while (vfItr.hasNext()) {
-                SchemaViewField viewField = (SchemaViewField) vfItr.next();
-
-                schema.append("\t").append(viewField.getExpression()).append(" ").append(viewField.getName());
-
-                if (vfItr.hasNext()) {
-                    schema.append(",\n");
-                } else {
-                    schema.append("\n");
-                }
-            }
-
-            schema.append("  ").append(view.getViewPostSelectClause()).append(";");
-
-            // end
-            schema.append("\n\n");
-        } // end of views
+//        for (SchemaView view : requestedViews) {
+//            // header
+//            schema.append("CREATE VIEW ").append(view.getName()).append(" AS \n");
+//
+//            // SELECT
+//            schema.append("  SELECT \n");
+//
+//            Iterator vfItr = view.getViewFields().iterator();
+//            while (vfItr.hasNext()) {
+//                SchemaViewField viewField = (SchemaViewField) vfItr.next();
+//
+//                schema.append("\t").append(viewField.getExpression()).append(" ").append(viewField.getName());
+//
+//                if (vfItr.hasNext()) {
+//                    schema.append(",\n");
+//                } else {
+//                    schema.append("\n");
+//                }
+//            }
+//
+//            schema.append("  ").append(view.getViewPostSelectClause()).append(";");
+//
+//            // end
+//            schema.append("\n\n");
+//        } // end of views
 
         // return 
         return schema.toString();

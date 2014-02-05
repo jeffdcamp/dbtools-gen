@@ -14,9 +14,10 @@
 
 package org.dbtools.schema;
 
+import org.dbtools.schema.schemafile.*;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -40,7 +41,7 @@ public class IAnywhereRenderer extends SchemaRenderer {
     public String generateSchema(SchemaDatabase database, String[] tablesToGenerate, String[] viewsToGenerate, boolean dropTables, boolean createInserts) {
         showProgress("Generating SQL schema using iAnywhere renderer ...", true);
         StringBuilder schema = new StringBuilder();
-        List<ForeignKey> foreignKeysToCreate = new ArrayList<ForeignKey>();
+        List<ForeignKey> foreignKeysToCreate = new ArrayList<>();
 
         // Because jdbc connection to iAnywhere assumes all fields to be NOT NULL by default
         // the following statement is added to treat fields the same as
@@ -58,8 +59,8 @@ public class IAnywhereRenderer extends SchemaRenderer {
         // create tables
         for (SchemaTable table : requestedTables) {
             // reset values for new table
-            List<SchemaField> indexFields = new ArrayList<SchemaField>();
-            List<SchemaField> uniqueFields = new ArrayList<SchemaField>();
+            List<SchemaField> indexFields = new ArrayList<>();
+            List<SchemaField> uniqueFields = new ArrayList<>();
 
 
             String tableType = table.getParameter("tableType");
@@ -87,7 +88,7 @@ public class IAnywhereRenderer extends SchemaRenderer {
 
                 // datatype
                 schema.append(" ");
-                schema.append(getTypes().get(field.getJdbcType()));
+                schema.append(getSqlType(field.getJdbcDataType()));
 
                 //check for size for datatype
                 if (field.getSize() > 0) {
@@ -180,7 +181,7 @@ public class IAnywhereRenderer extends SchemaRenderer {
                 if (enumPKField == null && field.isPrimaryKey()) {
                     enumPKField = field;
                 }
-                if (enumValueField == null && field.getJdbcType().equals(SchemaField.TYPE_VARCHAR)) {
+                if (enumValueField == null && field.getJdbcDataType() == SchemaFieldType.VARCHAR) {
                     enumValueField = field;
                 }
             }
@@ -228,31 +229,31 @@ public class IAnywhereRenderer extends SchemaRenderer {
         }
 
         // create views
-        for (SchemaView view : requestedViews) {
-            // header
-            schema.append("CREATE VIEW ").append(view.getName()).append(" AS \n");
-
-            // SELECT
-            schema.append("  SELECT \n");
-
-            Iterator vfItr = view.getViewFields().iterator();
-            while (vfItr.hasNext()) {
-                SchemaViewField viewField = (SchemaViewField) vfItr.next();
-
-                schema.append("\t").append(viewField.getExpression()).append(" ").append(viewField.getName());
-
-                if (vfItr.hasNext()) {
-                    schema.append(",\n");
-                } else {
-                    schema.append("\n");
-                }
-            }
-
-            schema.append("  ").append(view.getViewPostSelectClause()).append(";");
-
-            // end
-            schema.append("\n\n");
-        } // end of views
+//        for (SchemaView view : requestedViews) {
+//            // header
+//            schema.append("CREATE VIEW ").append(view.getName()).append(" AS \n");
+//
+//            // SELECT
+//            schema.append("  SELECT \n");
+//
+//            Iterator vfItr = view.getViewFields().iterator();
+//            while (vfItr.hasNext()) {
+//                SchemaViewField viewField = (SchemaViewField) vfItr.next();
+//
+//                schema.append("\t").append(viewField.getExpression()).append(" ").append(viewField.getName());
+//
+//                if (vfItr.hasNext()) {
+//                    schema.append(",\n");
+//                } else {
+//                    schema.append("\n");
+//                }
+//            }
+//
+//            schema.append("  ").append(view.getViewPostSelectClause()).append(";");
+//
+//            // end
+//            schema.append("\n\n");
+//        } // end of views
 
         // return 
         return schema.toString();

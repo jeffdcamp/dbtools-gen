@@ -9,6 +9,8 @@
  */
 package org.dbtools.schema;
 
+import org.dbtools.schema.schemafile.DatabaseSchema;
+
 /**
  * @author Jeff
  */

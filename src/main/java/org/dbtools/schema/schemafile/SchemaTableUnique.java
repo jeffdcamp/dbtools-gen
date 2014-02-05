@@ -1,4 +1,4 @@
-package org.dbtools.schema.xmlfile;
+package org.dbtools.schema.schemafile;
 
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;

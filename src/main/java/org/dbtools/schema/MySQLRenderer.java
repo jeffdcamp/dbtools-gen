@@ -9,6 +9,8 @@
  */
 package org.dbtools.schema;
 
+import org.dbtools.schema.schemafile.*;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,7 +37,7 @@ public class MySQLRenderer extends SchemaRenderer {
     public String generateSchema(SchemaDatabase database, String[] tablesToGenerate, String[] viewsToGenerate, boolean dropTables, boolean createInserts) {
         showProgress("Generating SQL schema using MySQL renderer ...", true);
         StringBuilder schema = new StringBuilder();
-        List<ForeignKey> foreignKeysToCreate = new ArrayList<ForeignKey>();
+        List<ForeignKey> foreignKeysToCreate = new ArrayList<>();
 
         List<SchemaTable> requestedTables = getTablesToGenerate(database, tablesToGenerate);
         List<SchemaView> requestedViews = getViewsToGenerate(database, viewsToGenerate);
@@ -50,7 +52,7 @@ public class MySQLRenderer extends SchemaRenderer {
             // add table header
             // reset values for new table
             SchemaField primaryKey = null;
-            List<SchemaField> indexFields = new ArrayList<SchemaField>();
+            List<SchemaField> indexFields = new ArrayList<>();
 
             schema.append("CREATE TABLE ");
             schema.append(table.getName());
@@ -75,7 +77,7 @@ public class MySQLRenderer extends SchemaRenderer {
 
                 // datatype
                 schema.append(" ");
-                schema.append(getTypes().get(field.getJdbcType()));
+                schema.append(getSqlType(field.getJdbcDataType()));
 
                 //check for size for datatype
                 if (field.getSize() > 0) {
@@ -162,7 +164,7 @@ public class MySQLRenderer extends SchemaRenderer {
                 if (enumPKField == null && field.isPrimaryKey()) {
                     enumPKField = field;
                 }
-                if (enumValueField == null && field.getJdbcType().equals(SchemaField.TYPE_VARCHAR)) {
+                if (enumValueField == null && field.getJdbcDataType() == SchemaFieldType.VARCHAR) {
                     enumValueField = field;
                 }
             }

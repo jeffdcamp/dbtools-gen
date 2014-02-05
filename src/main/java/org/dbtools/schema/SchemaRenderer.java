@@ -9,9 +9,11 @@
  */
 package org.dbtools.schema;
 
-import org.dom4j.Document;
-import org.dom4j.Element;
-import org.dom4j.io.SAXReader;
+import org.dbtools.schema.dbmappings.DatabaseMapping;
+import org.dbtools.schema.dbmappings.DatabaseMappings;
+import org.dbtools.schema.schemafile.*;
+import org.simpleframework.xml.Serializer;
+import org.simpleframework.xml.core.Persister;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,13 +28,11 @@ public class SchemaRenderer implements Runnable {
 
     public static final String DEFAULT_TYPE_MAPPING_FILENAME = "dbmappings.xml";
     public static final String DEFAULT_TYPE_MAPPING_FILE = "/org/dbtools/xml/" + DEFAULT_TYPE_MAPPING_FILENAME;
-    private DatabaseSchema dbSchema = new DatabaseSchema();
-    //protected List inserts = new ArrayList();
+    private DatabaseSchema dbSchema;
     private String otherInsertsFilename = "";
-    private Map<String, String> types = new HashMap<String, String>();
-    private Map<String, String> javaTypes = new HashMap<String, String>();
+    private DatabaseMapping databaseMapping;
     private PrintStream ps = null;
-    private static Map<String, String> dbRenderers = new TreeMap<String, String>();
+    private static Map<String, String> dbRenderers = new TreeMap<>();
     private Component parentComponent; // for progress (if needed)
     private String dbVendorName;
     private String databaseName;
@@ -47,7 +47,7 @@ public class SchemaRenderer implements Runnable {
     private boolean createONLYOtherInserts = false;
     private boolean createPostSchema = true;
     private boolean createEnumInserts = true;
-    private Map<String, SchemaTable> alreadyCreatedEnum = new HashMap<String, SchemaTable>();
+    private Map<String, SchemaTable> alreadyCreatedEnum = new HashMap<>();
     private boolean showConsoleProgress = false;
     private ProgressMonitor pm = null;
     private int currProgress = 0;
@@ -87,8 +87,8 @@ public class SchemaRenderer implements Runnable {
         init(parentComponent, dbVendorName, schemaXMLFilename, outputFile, tablesToGenerate, dropTables, createInserts, ps);
     }
 
-    public void readXMLSchema(String path, String dbVendorName) {
-        dbSchema.readXMLSchema(path, dbVendorName, false, ps);
+    public void readXMLSchema(String path) {
+        dbSchema = DatabaseSchema.readXMLSchema(path);
     }
 
     private void setDefaults() {
@@ -124,9 +124,9 @@ public class SchemaRenderer implements Runnable {
     private void calculateProgress(SchemaDatabase database) {
         // determine size of inserts
         if (executeSQLScriptFiles && database.getPostSQLScriptFiles() != null && !createONLYOtherInserts) {
-            for (String insertsFilename : database.getPostSQLScriptFiles()) {
+            for (PostSQLScriptFile postSqlScriptFile : database.getPostSQLScriptFiles()) {
                 try {
-                    File insertsFile = new File(insertsFilename);
+                    File insertsFile = new File(postSqlScriptFile.getPreparedFilepath());
                     maxProgress += (int) insertsFile.length();
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -140,8 +140,7 @@ public class SchemaRenderer implements Runnable {
         }
     }
 
-    public static synchronized boolean readXMLTypes(Class<?> classLoaderClass, String typesFilename, String dbVendorName,
-                                                    Map<String, String> types, Map<String, String> javaTypes) {
+    public static synchronized DatabaseMapping readXMLTypes(Class<?> classLoaderClass, String typesFilename, String dbVendorName) {
         File xmlMappingFile = new File(typesFilename);
         if (!xmlMappingFile.exists()) {
             xmlMappingFile = new File("xml/" + typesFilename);
@@ -161,65 +160,29 @@ public class SchemaRenderer implements Runnable {
         }
 
         if (xmlMappingFile == null && xmlMappingInputStream == null) {
-            throw new IllegalStateException("Failed to find mapping file: [" + typesFilename + "] and from classpath!");
+            throw new IllegalStateException("Failed to find mapping file: [" + typesFilename + "] in classpath.");
             //return false;
         }
 
         try {
-//            System.out.println("Loading database datatypes...");
-
-            // prepare the xml file for reading...
-            SAXReader xmlReader = new SAXReader(false);  // use a DTD
-            Document doc = null;
+            Serializer serializer = new Persister();
+            DatabaseMappings mappings;
             if (xmlMappingFile != null) {
-                String pathname = xmlMappingFile.getAbsolutePath();
-                doc = xmlReader.read(new File(pathname));//inputFile, url);
+                mappings = serializer.read(DatabaseMappings.class, xmlMappingFile);
             } else {
-                doc = xmlReader.read(xmlMappingInputStream);
+                mappings = serializer.read(DatabaseMappings.class, xmlMappingInputStream);
             }
 
-            // get the document root
-            Element root = doc.getRootElement();
-            Element typeMappingsElement = root.element("type-mappings");
-
-            Iterator<Element> typeMappingsItr = typeMappingsElement.elementIterator();
-
-            // look for the database mapping specified
-            boolean found = false;
-            while (typeMappingsItr.hasNext() && !found) {
-                Element typeMappingElement = typeMappingsItr.next();
-
-                // is this it?
-                String dbMapping = typeMappingElement.element("name").getText();
-                if (dbMapping.equalsIgnoreCase(dbVendorName)) {
-//                    System.out.println("Found requested dbMapping: [" + dbMapping + "]. Loading jdbc types...");
-                    found = true;
-
-                    Iterator<Element> mappingItr = typeMappingElement.elementIterator("mapping");
-
-                    while (mappingItr.hasNext()) {
-                        Element mappingElement = mappingItr.next();
-
-                        String jdbcType = mappingElement.element("jdbc-type").getText();
-                        String javaType = mappingElement.element("java-type").getText();
-                        String sqlType = mappingElement.element("sql-type").getText();
-
-                        javaTypes.put(jdbcType, javaType);
-                        types.put(jdbcType, sqlType);
-                    }
-
-//                    System.out.println("Complete");
+            for (DatabaseMapping databaseMapping : mappings.getDatabaseMappings()) {
+                if (databaseMapping.getDatabaseName().equalsIgnoreCase(dbVendorName)) {
+                    return databaseMapping;
                 }
-            }
-
-            if (!found) {
-                System.out.println("Database Mappings could not be found for [" + dbVendorName + "].  Check dbmappings.xml file.");
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return true;
+        return null;
     }
 
     /**
@@ -235,13 +198,13 @@ public class SchemaRenderer implements Runnable {
 
             fps.print(schema);
 
-            // concatinate inserts
+            // concatenate inserts
             if (addInserts) {
                 // Add all inserts as specified in the xml file
                 if (database.getPostSQLScriptFiles() != null && !createONLYOtherInserts) {
-                    for (String insertsFilename : database.getPostSQLScriptFiles()) {
+                    for (PostSQLScriptFile postSQLScriptFile : database.getPostSQLScriptFiles()) {
                         try {
-                            addInsertsToSQL(fps, insertsFilename);
+                            addInsertsToSQL(fps, postSQLScriptFile.getPreparedFilepath());
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
@@ -308,15 +271,16 @@ public class SchemaRenderer implements Runnable {
     }
 
     public boolean executeRenderer() {
-        readXMLTypes(this.getClass(), mappingFilename, dbVendorName, types, javaTypes);
+        showProgress("Reading Database Mappings...", true);
+        databaseMapping = readXMLTypes(this.getClass(), mappingFilename, dbVendorName);
 
         showProgress("Reading XML Schema...", true);
-        dbSchema.readXMLSchema(schemaXMLFilename, dbVendorName, schemaXMLFilenameIsAResource, ps);
+        dbSchema.readXMLSchema(schemaXMLFilename);
 
         if (databaseName != null && databaseName.isEmpty()) {
             return renderDatabase(dbSchema.getDatabase(databaseName));
         } else {
-            for (SchemaDatabase database : dbSchema.getSchemaDatabases()) {
+            for (SchemaDatabase database : dbSchema.getDatabases()) {
                 if (!renderDatabase(database)) {
                     return false;
                 }
@@ -324,6 +288,14 @@ public class SchemaRenderer implements Runnable {
         }
 
         return true;
+    }
+
+    public String getSqlType(SchemaFieldType type) {
+        return databaseMapping.getSqlType(type);
+    }
+
+    public DatabaseMapping getDatabaseMapping() {
+        return databaseMapping;
     }
 
     private boolean renderDatabase(SchemaDatabase database) {
@@ -384,7 +356,7 @@ public class SchemaRenderer implements Runnable {
                 schema.append("\t");
                 schema.append(field.getName());
                 schema.append(" ");
-                schema.append(types.get(field.getJdbcType()));
+                schema.append(getSqlType(field.getJdbcDataType()));
 
                 //check for size
                 if (field.getSize() > 0) {
@@ -407,7 +379,7 @@ public class SchemaRenderer implements Runnable {
                 if (enumPKField == null && field.isPrimaryKey()) {
                     enumPKField = field;
                 }
-                if (enumValueField == null && field.getJdbcType().equals(SchemaField.TYPE_VARCHAR)) {
+                if (enumValueField == null && field.getJdbcDataType() == SchemaFieldType.VARCHAR) {
                     enumValueField = field;
                 }
             }
@@ -442,11 +414,10 @@ public class SchemaRenderer implements Runnable {
             alreadyCreatedEnum.put(table.getName().toLowerCase(), table);
 
             schema.append("\n");
-            Map<String, String> enumValues = table.getEnumValues();
-            for (String enumItem : table.getEnumerations()) {
+            for (TableEnum enumItem : table.getTableEnums()) {
                 schema.append("INSERT INTO ").append(table.getName());
                 schema.append(" (").append(enumPKField.getName()).append(", ").append(enumValueField.getName()).append(")");
-                schema.append(" VALUES (").append(enumPKID).append(", \'").append(enumValues.get(enumItem)).append("\');\n");
+                schema.append(" VALUES (").append(enumPKID).append(", \'").append(enumItem.getValue()).append("\');\n");
                 enumPKID++;
             }
             schema.append("\n");
@@ -470,8 +441,8 @@ public class SchemaRenderer implements Runnable {
     public void generateDropSchema(boolean addIfExists, boolean ifExistsAtEndOfStmnt, StringBuilder schema,
                                    List<SchemaTable> tablesToGenerate, List<SchemaView> viewsToGenerate) {
         // reverse order
-        List<String> inverseViews = new ArrayList<String>();
-        List<String> inverseTables = new ArrayList<String>();
+        List<String> inverseViews = new ArrayList<>();
+        List<String> inverseTables = new ArrayList<>();
 
         String ifExists = "";
         if (addIfExists) {
@@ -530,7 +501,7 @@ public class SchemaRenderer implements Runnable {
     }
 
     public static List<String> getRendererNames() {
-        List<String> renderers = new ArrayList<String>();
+        List<String> renderers = new ArrayList<>();
 
         for (Map.Entry<String, String> stringStringEntry : dbRenderers.entrySet()) {
             Map.Entry e = (Map.Entry) stringStringEntry;
@@ -563,7 +534,7 @@ public class SchemaRenderer implements Runnable {
 
     public List<SchemaTable> getTablesToGenerate(SchemaDatabase database, String[] tablesToGenerate) {
         // determine which tables to generate
-        List<SchemaTable> requestedTables = new ArrayList<SchemaTable>();
+        List<SchemaTable> requestedTables = new ArrayList<>();
         if (tablesToGenerate == null || (tablesToGenerate.length > 0 && tablesToGenerate[0] == null)) {
             requestedTables.addAll(database.getTables());
         } else {
@@ -589,13 +560,13 @@ public class SchemaRenderer implements Runnable {
      */
     public static List<SchemaTable> getTablesInCreateOrder(List<SchemaTable> requestedTables) {
         // order the tables in correct create order so that there are no db errors
-        List<SchemaTable> orderedTables = new ArrayList<SchemaTable>();
+        List<SchemaTable> orderedTables = new ArrayList<>();
         int lastOrderedTablesSize = 0;
 
-        List<SchemaTable> tablesNotYetAdded = new ArrayList<SchemaTable>(requestedTables);
-        List<SchemaTable> tablesCouldNotBeAdded = new ArrayList<SchemaTable>();
+        List<SchemaTable> tablesNotYetAdded = new ArrayList<>(requestedTables);
+        List<SchemaTable> tablesCouldNotBeAdded;
         while (tablesNotYetAdded.size() > 0) {
-            tablesCouldNotBeAdded = new ArrayList<SchemaTable>();
+            tablesCouldNotBeAdded = new ArrayList<>();
             for (SchemaTable table : tablesNotYetAdded) {
                 if (tableListContainsAllFKFields(orderedTables, table)) {
                     orderedTables.add(table);
@@ -621,7 +592,7 @@ public class SchemaRenderer implements Runnable {
             lastOrderedTablesSize = orderedTables.size();
 
             // this must be last
-            tablesNotYetAdded = new ArrayList<SchemaTable>(tablesCouldNotBeAdded);
+            tablesNotYetAdded = new ArrayList<>(tablesCouldNotBeAdded);
         }
 
         return orderedTables;
@@ -659,7 +630,7 @@ public class SchemaRenderer implements Runnable {
 
     public List<SchemaView> getViewsToGenerate(SchemaDatabase database, String[] viewsToGenerate) {
         // determine which views to generate
-        List<SchemaView> requestedViews = new ArrayList<SchemaView>();
+        List<SchemaView> requestedViews = new ArrayList<>();
         if (viewsToGenerate == null || (viewsToGenerate.length > 0 && viewsToGenerate[0] == null)) {
             requestedViews.addAll(database.getViews());
         } else {
@@ -682,7 +653,7 @@ public class SchemaRenderer implements Runnable {
 
     public static String formatBaseDefaultValue(SchemaField field) {
         String defaultValue = field.getDefaultValue();
-        String newDefaultValue = "";
+        String newDefaultValue;
 
         Class<?> javaType = field.getJavaClassType();
         if (defaultValue.equalsIgnoreCase("NULL")) {
@@ -859,10 +830,6 @@ public class SchemaRenderer implements Runnable {
 
     public void setCreateONLYOtherInserts(boolean createONLYOtherInserts) {
         this.createONLYOtherInserts = createONLYOtherInserts;
-    }
-
-    public Map<String, String> getTypes() {
-        return types;
     }
 
     public boolean isCreateEnumInserts() {

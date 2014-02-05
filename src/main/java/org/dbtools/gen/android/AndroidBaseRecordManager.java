@@ -13,7 +13,7 @@ package org.dbtools.gen.android;
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaVariable;
-import org.dbtools.schema.SchemaTable;
+import org.dbtools.schema.schemafile.SchemaTable;
 
 import java.io.PrintStream;
 import java.util.ArrayList;

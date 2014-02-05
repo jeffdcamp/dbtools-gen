@@ -12,8 +12,8 @@ package org.dbtools.gen.android;
 
 import org.dbtools.gen.DBObjectBuilder;
 import org.dbtools.gen.GroupObjectBuilder;
-import org.dbtools.schema.SchemaDatabase;
-import org.dbtools.schema.SchemaTable;
+import org.dbtools.schema.schemafile.SchemaDatabase;
+import org.dbtools.schema.schemafile.SchemaTable;
 
 import java.io.File;
 import java.io.PrintStream;

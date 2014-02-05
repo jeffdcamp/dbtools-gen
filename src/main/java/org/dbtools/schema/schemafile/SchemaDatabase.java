@@ -1,8 +1,7 @@
-package org.dbtools.schema.xmlfile;
+package org.dbtools.schema.schemafile;
 
 import org.dbtools.schema.ClassInfo;
 import org.simpleframework.xml.Attribute;
-import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
 
@@ -16,14 +15,14 @@ public class SchemaDatabase {
     @Attribute
     private String name;
 
-    @Element(required = false)
-    private PostSQLScriptFile postSQLScriptFile;
-
     @ElementList(entry = "table", inline = true)
     private List<SchemaTable> tables = new ArrayList<>();
 
     @ElementList(entry = "view", inline = true, required = false)
     private List<SchemaView> views = new ArrayList<>();
+
+    @ElementList(entry = "postSQLScriptFile", inline = true, required = false)
+    private List<PostSQLScriptFile> postSQLScriptFiles;
 
     public SchemaDatabase() {
     }
@@ -54,6 +53,14 @@ public class SchemaDatabase {
 
     public void setViews(List<SchemaView> views) {
         this.views = views;
+    }
+
+    public List<PostSQLScriptFile> getPostSQLScriptFiles() {
+        return postSQLScriptFiles;
+    }
+
+    public void setPostSQLScriptFiles(List<PostSQLScriptFile> postSQLScriptFiles) {
+        this.postSQLScriptFiles = postSQLScriptFiles;
     }
 
     public List<String> getTableNames() {
