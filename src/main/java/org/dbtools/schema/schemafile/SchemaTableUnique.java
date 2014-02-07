@@ -1,13 +1,13 @@
 package org.dbtools.schema.schemafile;
 
-import org.simpleframework.xml.Element;
+import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
 
 import java.util.List;
 
 @Root
 public class SchemaTableUnique {
-    @Element(required = false, name = "uniqueField")
+    @ElementList(entry = "uniqueField", inline = true, required = false)
     private List<SchemaUniqueField> uniqueFields;
 
     public List<SchemaUniqueField> getUniqueFields() {

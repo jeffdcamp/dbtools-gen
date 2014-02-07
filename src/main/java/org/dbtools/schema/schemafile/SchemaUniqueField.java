@@ -1,6 +1,6 @@
 package org.dbtools.schema.schemafile;
 
-import org.simpleframework.xml.Element;
+import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Root;
 
 /**
@@ -9,7 +9,7 @@ import org.simpleframework.xml.Root;
  */
 @Root
 public class SchemaUniqueField {
-    @Element
+    @Attribute
     private String name;
 
     public String getName() {
