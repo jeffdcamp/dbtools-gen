@@ -12,8 +12,9 @@
  * http://www.ianywhere.com/developer/product_manuals/sqlanywhere/1000/en/html/dbrfen10/dbrfen10.html
  */
 
-package org.dbtools.schema;
+package org.dbtools.renderer;
 
+import org.dbtools.schema.ForeignKey;
 import org.dbtools.schema.schemafile.*;
 
 import java.io.PrintStream;

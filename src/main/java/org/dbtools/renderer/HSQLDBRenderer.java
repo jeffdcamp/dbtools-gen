@@ -11,8 +11,9 @@
 /*
  * http://hsqldb.org/web/hsqlDocsFrame.html
  */
-package org.dbtools.schema;
+package org.dbtools.renderer;
 
+import org.dbtools.schema.ForeignKey;
 import org.dbtools.schema.schemafile.*;
 
 import java.io.PrintStream;

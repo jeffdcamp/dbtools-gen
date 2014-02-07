@@ -11,8 +11,8 @@ package org.dbtools.gen.android;
 
 import org.dbtools.codegen.*;
 import org.dbtools.schema.ClassInfo;
-import org.dbtools.schema.SchemaRenderer;
-import org.dbtools.schema.SqliteRenderer;
+import org.dbtools.renderer.SchemaRenderer;
+import org.dbtools.renderer.SqliteRenderer;
 import org.dbtools.schema.dbmappings.DatabaseMapping;
 import org.dbtools.schema.schemafile.*;
 

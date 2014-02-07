@@ -70,7 +70,7 @@ public enum SchemaFieldType {
             return javaType.getMainClass();
         } else {
             // field is nullable.... so we CANNOT use a primitive
-            return javaType.getMatchingNonPrimativeClass();
+            return javaType.getMatchingNonPrimitiveClass();
         }
     }
 
@@ -83,7 +83,7 @@ public enum SchemaFieldType {
             fieldClass = javaType.getJavaTypeText();
         } else {
             // field is nullable.... so we CANNOT use a primitive
-            fieldClass = javaType.getMatchingNonPrimativeClassText();
+            fieldClass = javaType.getMatchingNonPrimitiveClassText();
         }
 
         return fieldClass;
@@ -95,7 +95,7 @@ public enum SchemaFieldType {
 
     public boolean isJavaTypePrimative(boolean isNullable) {
         if (!isNullable) {
-            return javaType.isPrimative();
+            return javaType.isPrimitive();
         } else {
             return false;
         }

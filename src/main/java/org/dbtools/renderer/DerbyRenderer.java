@@ -11,8 +11,9 @@
 /*
  * http://db.apache.org/derby/docs/10.1/ref/ 
  */
-package org.dbtools.schema;
+package org.dbtools.renderer;
 
+import org.dbtools.schema.ForeignKey;
 import org.dbtools.schema.schemafile.*;
 
 import java.io.PrintStream;

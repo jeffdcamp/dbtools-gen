@@ -12,19 +12,19 @@ public class JavaType {
 
     private String javaTypeText;
     private Class<?> mainClass;
-    private Class<?> matchingNonPrimativeClass;
-    private String matchingNonPrimativeClassText;
-    private boolean primative = false;
+    private Class<?> matchingNonPrimitiveClass;
+    private String matchingNonPrimitiveClassText;
+    private boolean primitive = false;
     private boolean immutable = false;
 
-    public JavaType(String javaTypeText, boolean primative, boolean immutable, Class<?> mainClass, Class<?> matchingNonPrimativeClass,
-                    String matchingNonPrimativeClassText) {
+    public JavaType(String javaTypeText, boolean primitive, boolean immutable, Class<?> mainClass, Class<?> matchingNonPrimitiveClass,
+                    String matchingNonPrimitiveClassText) {
         this.javaTypeText = javaTypeText;
-        this.primative = primative;
+        this.primitive = primitive;
         this.immutable = immutable;
         this.mainClass = mainClass;
-        this.matchingNonPrimativeClass = matchingNonPrimativeClass;
-        this.matchingNonPrimativeClassText = matchingNonPrimativeClassText;
+        this.matchingNonPrimitiveClass = matchingNonPrimitiveClass;
+        this.matchingNonPrimitiveClassText = matchingNonPrimitiveClassText;
     }
 
     public String getJavaTypeText() {
@@ -35,12 +35,12 @@ public class JavaType {
         this.javaTypeText = javaTypeText;
     }
 
-    public boolean isPrimative() {
-        return primative;
+    public boolean isPrimitive() {
+        return primitive;
     }
 
-    public void setPrimative(boolean primative) {
-        this.primative = primative;
+    public void setPrimitive(boolean primitive) {
+        this.primitive = primitive;
     }
 
     public boolean isImmutable() {
@@ -59,19 +59,19 @@ public class JavaType {
         this.mainClass = mainClass;
     }
 
-    public Class<?> getMatchingNonPrimativeClass() {
-        return matchingNonPrimativeClass;
+    public Class<?> getMatchingNonPrimitiveClass() {
+        return matchingNonPrimitiveClass;
     }
 
-    public void setMatchingNonPrimativeClass(Class<?> matchingNonPrimativeClass) {
-        this.matchingNonPrimativeClass = matchingNonPrimativeClass;
+    public void setMatchingNonPrimitiveClass(Class<?> matchingNonPrimitiveClass) {
+        this.matchingNonPrimitiveClass = matchingNonPrimitiveClass;
     }
 
-    public String getMatchingNonPrimativeClassText() {
-        return matchingNonPrimativeClassText;
+    public String getMatchingNonPrimitiveClassText() {
+        return matchingNonPrimitiveClassText;
     }
 
-    public void setMatchingNonPrimativeClassText(String matchingNonPrimativeClassText) {
-        this.matchingNonPrimativeClassText = matchingNonPrimativeClassText;
+    public void setMatchingNonPrimitiveClassText(String matchingNonPrimitiveClassText) {
+        this.matchingNonPrimitiveClassText = matchingNonPrimitiveClassText;
     }
 }

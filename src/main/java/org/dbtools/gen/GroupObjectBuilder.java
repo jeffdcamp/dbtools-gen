@@ -10,7 +10,7 @@
 package org.dbtools.gen;
 
 
-import org.dbtools.schema.SchemaRenderer;
+import org.dbtools.renderer.SchemaRenderer;
 import org.dbtools.schema.schemafile.SchemaDatabase;
 import org.dbtools.schema.schemafile.SchemaTable;
 import org.dbtools.util.PackageUtil;

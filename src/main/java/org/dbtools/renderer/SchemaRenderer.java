@@ -7,8 +7,9 @@
  * is a violation of applicable law. This material contains certain 
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
-package org.dbtools.schema;
+package org.dbtools.renderer;
 
+import org.dbtools.schema.SQLStatement;
 import org.dbtools.schema.dbmappings.DatabaseMapping;
 import org.dbtools.schema.dbmappings.DatabaseMappings;
 import org.dbtools.schema.schemafile.*;

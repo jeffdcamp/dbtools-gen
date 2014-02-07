@@ -11,8 +11,9 @@
 /*
  * http://www.ibphoenix.com/main.nfs?a=ibphoenix&page=ibp_60_sqlref
  */
-package org.dbtools.schema;
+package org.dbtools.renderer;
 
+import org.dbtools.schema.ForeignKey;
 import org.dbtools.schema.schemafile.*;
 
 import java.io.PrintStream;

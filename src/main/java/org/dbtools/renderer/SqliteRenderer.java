@@ -11,7 +11,7 @@
 /*
  * http://www.sqlite.org/lang.html
  */
-package org.dbtools.schema;
+package org.dbtools.renderer;
 
 import org.dbtools.schema.dbmappings.DatabaseMapping;
 import org.dbtools.schema.schemafile.*;
@@ -109,7 +109,7 @@ public class SqliteRenderer extends SchemaRenderer {
             }
 
         } else {
-            newDefaultValue = SchemaRenderer.formatBaseDefaultValue(field);
+            newDefaultValue = formatBaseDefaultValue(field);
         }
 
         return newDefaultValue;
