@@ -14,7 +14,6 @@ import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaVariable;
 import org.dbtools.schema.schemafile.SchemaTable;
 
-import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,7 +35,7 @@ public class AndroidRecordManager {
     /**
      * Creates a new instance of AndroidRecordManager.
      */
-    public void generateObjectCode(SchemaTable table, String packageName, String author, String version, PrintStream psLog) {
+    public void generate(SchemaTable table, String packageName) {
         String className = getClassName(table);
         myClass = new JavaClass(packageName, className);
         myClass.setExtends(AndroidBaseRecordManager.getClassName(table)); // extend the generated base class
@@ -61,7 +60,7 @@ public class AndroidRecordManager {
         // constructor
         myClass.setCreateDefaultConstructor(false);
 
-        List<JavaVariable> constParams = new ArrayList<JavaVariable>();
+        List<JavaVariable> constParams = new ArrayList<>();
         String constContent = "";
         myClass.addConstructor(Access.PUBLIC, constParams, constContent);
     }

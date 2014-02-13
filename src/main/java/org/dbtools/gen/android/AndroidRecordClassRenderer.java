@@ -13,10 +13,8 @@ import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaMethod;
 import org.dbtools.codegen.JavaVariable;
-import org.dbtools.schema.schemafile.SchemaDatabase;
 import org.dbtools.schema.schemafile.SchemaTable;
 
-import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,12 +34,7 @@ public class AndroidRecordClassRenderer {
     public AndroidRecordClassRenderer() {
     }
 
-    public void generateObjectCode(SchemaDatabase database, SchemaTable table, String packageName, String author, String version, PrintStream psLog) {
-        if (psLog == null) {
-            psLog = System.out;
-        }
-//        psLog.println("Generating Record class...");
-
+    public void generate(SchemaTable table, String packageName) {
         String baseClassName = AndroidBaseRecordClassRenderer.createClassName(table);
         String className = createClassName(table);
         myClass = new JavaClass(packageName, className);
@@ -61,11 +54,11 @@ public class AndroidRecordClassRenderer {
         if (!myClass.isEnum()) {
             myClass.addImport("android.database.Cursor");
             myClass.addImport("android.content.ContentValues");
-            List<JavaVariable> constructorVarsCursor = new ArrayList<JavaVariable>();
+            List<JavaVariable> constructorVarsCursor = new ArrayList<>();
             constructorVarsCursor.add(new JavaVariable("Cursor", "cursor"));
             myClass.addConstructor(Access.PUBLIC, constructorVarsCursor, "setContent(cursor);");
 
-            List<JavaVariable> constructorVarsValues = new ArrayList<JavaVariable>();
+            List<JavaVariable> constructorVarsValues = new ArrayList<>();
             constructorVarsValues.add(new JavaVariable("ContentValues", "values"));
             myClass.addConstructor(Access.PUBLIC, constructorVarsValues, "setContent(values);");
         }
@@ -94,10 +87,6 @@ public class AndroidRecordClassRenderer {
 
     public static String createClassName(SchemaTable table) {
         return table.getClassName();
-    }
-
-    public String getFilename() {
-        return myClass.getFilename();
     }
 
     public void writeToFile(String directoryname) {

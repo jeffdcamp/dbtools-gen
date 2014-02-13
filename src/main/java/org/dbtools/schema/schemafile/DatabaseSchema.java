@@ -76,7 +76,7 @@ public class DatabaseSchema {
             SchemaDatabase db1 = new SchemaDatabase("main");
             SchemaTable t1 = new SchemaTable("table1");
 
-            SchemaField f1 = new SchemaField("ID", SchemaFieldType.BIGINT);
+            SchemaTableField f1 = new SchemaTableField("ID", SchemaFieldType.BIGINT);
             f1.setIncrement(true);
 
             t1.getFields().add(f1);

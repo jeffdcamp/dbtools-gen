@@ -60,8 +60,8 @@ public class IAnywhereRenderer extends SchemaRenderer {
         // create tables
         for (SchemaTable table : requestedTables) {
             // reset values for new table
-            List<SchemaField> indexFields = new ArrayList<>();
-            List<SchemaField> uniqueFields = new ArrayList<>();
+            List<SchemaTableField> indexFields = new ArrayList<>();
+            List<SchemaTableField> uniqueFields = new ArrayList<>();
 
 
             String tableType = table.getParameter("tableType");
@@ -75,12 +75,12 @@ public class IAnywhereRenderer extends SchemaRenderer {
             schema.append(" (\n");
 
             // add fields
-            List<SchemaField> fields = table.getFields();
-            SchemaField enumPKField = null;
-            SchemaField enumValueField = null;
+            List<SchemaTableField> fields = table.getFields();
+            SchemaTableField enumPKField = null;
+            SchemaTableField enumValueField = null;
 
             for (int j = 0; j < fields.size(); j++) {
-                SchemaField field = fields.get(j);
+                SchemaTableField field = fields.get(j);
 
                 // add field
                 // name
@@ -154,7 +154,7 @@ public class IAnywhereRenderer extends SchemaRenderer {
                         schema.append(",\n\tUNIQUE(");
 
                         for (int k = 0; k < uniqueFields.size(); k++) {
-                            SchemaField uField = uniqueFields.get(k);
+                            SchemaTableField uField = uniqueFields.get(k);
                             if (k != 0) {
                                 schema.append(", ");
                             }
@@ -210,8 +210,8 @@ public class IAnywhereRenderer extends SchemaRenderer {
             schema.append("\n);");
 
             // create indexes
-            for (SchemaField indexField : indexFields) {
-                SchemaField iField = (SchemaField) indexField;
+            for (SchemaTableField indexField : indexFields) {
+                SchemaTableField iField = (SchemaTableField) indexField;
                 schema.append("\nCREATE INDEX ").append(table.getName()).append(iField.getName()).append("_IDX ON ").append(table.getName()).append(" (").append(iField.getName()).append(");");
             }
 

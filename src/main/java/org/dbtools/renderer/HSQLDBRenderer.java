@@ -42,7 +42,7 @@ public class HSQLDBRenderer extends SchemaRenderer {
         showProgress("Generating SQL schema using HSQLDB renderer ...", true);
         StringBuilder schema = new StringBuilder();
         List<ForeignKey> foreignKeysToCreate = new ArrayList<ForeignKey>();
-        List<SchemaField> uniqueFields = null;
+        List<SchemaTableField> uniqueFields = null;
 
         List<SchemaTable> requestedTables = getTablesToGenerate(database, tablesToGenerate);
         List<SchemaView> requestedViews = getViewsToGenerate(database, viewsToGenerate);
@@ -55,8 +55,8 @@ public class HSQLDBRenderer extends SchemaRenderer {
         // create tables
         for (SchemaTable table : requestedTables) {
             // reset values for new table
-            List<SchemaField> indexFields = new ArrayList<SchemaField>();
-            uniqueFields = new ArrayList<SchemaField>();
+            List<SchemaTableField> indexFields = new ArrayList<SchemaTableField>();
+            uniqueFields = new ArrayList<SchemaTableField>();
 
 
             String tableType = table.getParameter("tableType");
@@ -70,12 +70,12 @@ public class HSQLDBRenderer extends SchemaRenderer {
             schema.append(" (\n");
 
             // add fields
-            List<SchemaField> fields = table.getFields();
-            SchemaField enumPKField = null;
-            SchemaField enumValueField = null;
+            List<SchemaTableField> fields = table.getFields();
+            SchemaTableField enumPKField = null;
+            SchemaTableField enumValueField = null;
 
             for (int j = 0; j < fields.size(); j++) {
-                SchemaField field = fields.get(j);
+                SchemaTableField field = fields.get(j);
 
                 // add field
                 // name
@@ -149,7 +149,7 @@ public class HSQLDBRenderer extends SchemaRenderer {
                         schema.append(",\n\tUNIQUE(");
 
                         for (int k = 0; k < uniqueFields.size(); k++) {
-                            SchemaField uField = (SchemaField) uniqueFields.get(k);
+                            SchemaTableField uField = (SchemaTableField) uniqueFields.get(k);
                             if (k != 0) {
                                 schema.append(", ");
                             }
@@ -206,7 +206,7 @@ public class HSQLDBRenderer extends SchemaRenderer {
             schema.append("\n);");
 
             // create indexes
-            for (SchemaField indexField : indexFields) {
+            for (SchemaTableField indexField : indexFields) {
                 schema.append("\nCREATE INDEX ").append(table.getName()).append(indexField.getName()).append("_IDX ON ").append(table.getName()).append(" (").append(indexField.getName()).append(");");
             }
 
@@ -256,7 +256,7 @@ public class HSQLDBRenderer extends SchemaRenderer {
     }
 
     @Override
-    public String formatDefaultValue(SchemaField field) {
+    public String formatDefaultValue(SchemaTableField field) {
         String defaultValue = field.getDefaultValue();
         String newDefaultValue;
 

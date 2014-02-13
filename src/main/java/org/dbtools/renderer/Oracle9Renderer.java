@@ -50,12 +50,12 @@ public class Oracle9Renderer extends SchemaRenderer {
         // create tables
         for (SchemaTable table : requestedTables) {
             // add table header
-            List<SchemaField> fields = table.getFields();
+            List<SchemaTableField> fields = table.getFields();
 
             // determine sequence name
             String sequencerName = null;
             int sequencerStartValue = 1;
-            for (SchemaField field : fields) {
+            for (SchemaTableField field : fields) {
                 String fieldSeqName = field.getSequencerName();
                 if (fieldSeqName != null && fieldSeqName.length() > 0) {
                     sequencerName = fieldSeqName;
@@ -65,19 +65,19 @@ public class Oracle9Renderer extends SchemaRenderer {
             }
 
             // reset values for new table
-            SchemaField primaryKey = null;
-            List<SchemaField> indexFields = new ArrayList<SchemaField>();
+            SchemaTableField primaryKey = null;
+            List<SchemaTableField> indexFields = new ArrayList<SchemaTableField>();
 
             schema.append("CREATE TABLE ");
             schema.append(table.getName());
             schema.append(" (\n");
 
             // add fields
-            SchemaField enumPKField = null;
-            SchemaField enumValueField = null;
+            SchemaTableField enumPKField = null;
+            SchemaTableField enumValueField = null;
 
             for (int j = 0; j < fields.size(); j++) {
-                SchemaField field = fields.get(j);
+                SchemaTableField field = fields.get(j);
 
                 if (field.isPrimaryKey()) {
                     primaryKey = field;
@@ -182,7 +182,7 @@ public class Oracle9Renderer extends SchemaRenderer {
             schema.append("\n);");
 
             // create indexes
-            for (SchemaField indexField : indexFields) {
+            for (SchemaTableField indexField : indexFields) {
                 schema.append("\nCREATE INDEX ").append(table.getName()).append(indexField.getName()).append("_IDX ON ").append(table.getName()).append(" (").append(indexField.getName()).append(");");
             }
             schema.append("\n");
@@ -281,7 +281,7 @@ public class Oracle9Renderer extends SchemaRenderer {
     @Override
     public void generateDropSchema(boolean addIfExists, boolean ifExistsAtEndOfStmnt, StringBuilder schema, List<SchemaTable> tablesToGenerate, List<SchemaView> viewsToGenerate) {
         for (SchemaTable table : tablesToGenerate) {
-            for (SchemaField field : table.getFields()) {
+            for (SchemaTableField field : table.getFields()) {
                 String sequencerName = field.getSequencerName();
                 if (sequencerName != null && sequencerName.length() > 0) {
                     schema.append("DROP SEQUENCE ").append(sequencerName).append(";\n");

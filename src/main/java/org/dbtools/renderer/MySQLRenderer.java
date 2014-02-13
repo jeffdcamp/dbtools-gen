@@ -52,22 +52,22 @@ public class MySQLRenderer extends SchemaRenderer {
         for (SchemaTable table : requestedTables) {
             // add table header
             // reset values for new table
-            SchemaField primaryKey = null;
-            List<SchemaField> indexFields = new ArrayList<>();
+            SchemaTableField primaryKey = null;
+            List<SchemaTableField> indexFields = new ArrayList<>();
 
             schema.append("CREATE TABLE ");
             schema.append(table.getName());
             schema.append(" (\n");
 
             // add fields
-            List<SchemaField> fields = table.getFields();
-            SchemaField enumPKField = null;
-            SchemaField enumValueField = null;
+            List<SchemaTableField> fields = table.getFields();
+            SchemaTableField enumPKField = null;
+            SchemaTableField enumValueField = null;
 
             int incrementFieldInitialValue = 1;
 
             for (int j = 0; j < fields.size(); j++) {
-                SchemaField field = fields.get(j);
+                SchemaTableField field = fields.get(j);
 
                 if (field.isPrimaryKey()) {
                     primaryKey = field;                // add field
@@ -143,7 +143,7 @@ public class MySQLRenderer extends SchemaRenderer {
                     }
 
                     // add index fields
-                    for (SchemaField indexField : indexFields) {
+                    for (SchemaTableField indexField : indexFields) {
                         schema.append(",\n\tINDEX ").append(indexField.getName()).append("_IDX (").append(indexField.getName()).append(")");
                     }
 
@@ -220,7 +220,7 @@ public class MySQLRenderer extends SchemaRenderer {
     }
 
     @Override
-    public String formatDefaultValue(SchemaField field) {
+    public String formatDefaultValue(SchemaTableField field) {
         String defaultValue = field.getDefaultValue();
         String newDefaultValue = "";
 

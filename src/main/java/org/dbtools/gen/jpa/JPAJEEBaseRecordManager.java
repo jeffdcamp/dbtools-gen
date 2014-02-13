@@ -116,14 +116,14 @@ public class JPAJEEBaseRecordManager {
         remoteInterfaceBase.addMethod(persistMethod);
 
         String updateContent = recordClassName + " mergedRecord = entityManager.merge(" + recordVarParamName + ");\n" +
-                "mergedRecord." + JPABaseRecordClassRenderer.CLEANUP_ORPHANS_METHODNAME + "(entityManager);  // work-around till CascadeType.DELETE-ORPHAN is supported\n";
+                "mergedRecord." + JPABaseRecordClassRenderer.CLEANUP_ORPHANS_METHOD_NAME + "(entityManager);  // work-around till CascadeType.DELETE-ORPHAN is supported\n";
 
         JavaMethod mergeMethod = myClass.addMethod(Access.PUBLIC, "void", "update", recordClassOnlyParam, updateContent);
         localInterfaceBase.addMethod(mergeMethod);
         remoteInterfaceBase.addMethod(mergeMethod);
 
         String deleteContent = recordClassName + " mergedRecord = entityManager.merge(" + recordVarParamName + ");\n" +
-                "mergedRecord." + JPABaseRecordClassRenderer.CLEANUP_ORPHANS_METHODNAME + "(entityManager);  // work-around till CascadeType.DELETE-ORPHAN is supported\n" +
+                "mergedRecord." + JPABaseRecordClassRenderer.CLEANUP_ORPHANS_METHOD_NAME + "(entityManager);  // work-around till CascadeType.DELETE-ORPHAN is supported\n" +
                 "entityManager.remove(mergedRecord);\n";
 
         JavaMethod deleteMethod = myClass.addMethod(Access.PUBLIC, "void", "delete", recordClassOnlyParam, deleteContent);

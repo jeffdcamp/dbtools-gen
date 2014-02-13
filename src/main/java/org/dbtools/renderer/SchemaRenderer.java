@@ -345,13 +345,13 @@ public class SchemaRenderer implements Runnable {
             schema.append(" (\n");
 
             // add fields
-            List<SchemaField> fields = table.getFields();
+            List<SchemaTableField> fields = table.getFields();
 
-            SchemaField enumPKField = null;
-            SchemaField enumValueField = null;
+            SchemaTableField enumPKField = null;
+            SchemaTableField enumValueField = null;
 
             for (int j = 0; j < fields.size(); j++) {
-                SchemaField field = fields.get(j);
+                SchemaTableField field = fields.get(j);
 
                 // add field
                 schema.append("\t");
@@ -396,17 +396,17 @@ public class SchemaRenderer implements Runnable {
         return schema.toString();
     }
 
-    public static boolean enumInsertsWillBeCreated(SchemaTable table, SchemaField enumPKField, SchemaField enumValueField, boolean createInserts) {
+    public static boolean enumInsertsWillBeCreated(SchemaTable table, SchemaTableField enumPKField, SchemaTableField enumValueField, boolean createInserts) {
         return table.isEnumerationTable() && createInserts && enumPKField != null && enumValueField != null;
     }
 
     public static int generateEnumSchema(StringBuilder schema, SchemaTable table, Map<String, SchemaTable> alreadyCreatedEnum,
-                                         SchemaField enumPKField, SchemaField enumValueField, boolean createInserts) {
+                                         SchemaTableField enumPKField, SchemaTableField enumValueField, boolean createInserts) {
         return generateEnumSchema(schema, table, alreadyCreatedEnum, enumPKField, enumValueField, createInserts, 0);
     }
 
     public static int generateEnumSchema(StringBuilder schema, SchemaTable table, Map<String, SchemaTable> alreadyCreatedEnum,
-                                         SchemaField enumPKField, SchemaField enumValueField, boolean createInserts, int ordinalStartValue) {
+                                         SchemaTableField enumPKField, SchemaTableField enumValueField, boolean createInserts, int ordinalStartValue) {
         int enumPKID = ordinalStartValue;
 
         // if table is enum, add enum inserts
@@ -600,7 +600,7 @@ public class SchemaRenderer implements Runnable {
     }
 
     private static boolean tableListContainsAllFKFields(List<SchemaTable> orderedTables, SchemaTable table) {
-        for (SchemaField field : table.getFields()) {
+        for (SchemaTableField field : table.getFields()) {
             String fkTable = field.getForeignKeyTable();
 
             // if
@@ -648,11 +648,11 @@ public class SchemaRenderer implements Runnable {
         return requestedViews;
     }
 
-    public String formatDefaultValue(SchemaField field) {
+    public String formatDefaultValue(SchemaTableField field) {
         return formatBaseDefaultValue(field);
     }
 
-    public static String formatBaseDefaultValue(SchemaField field) {
+    public static String formatBaseDefaultValue(SchemaTableField field) {
         String defaultValue = field.getDefaultValue();
         String newDefaultValue;
 

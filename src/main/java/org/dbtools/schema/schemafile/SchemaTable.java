@@ -26,7 +26,7 @@ public class SchemaTable {
     private List<SchemaTableParameter> tableParameters = new ArrayList<>();
 
     @ElementList(entry = "field", inline = true)
-    List<SchemaField> fields = new ArrayList<>();
+    List<SchemaTableField> fields = new ArrayList<>();
 
     public SchemaTable() {
     }
@@ -51,7 +51,7 @@ public class SchemaTable {
 
     public List<String> getSequenceNames() {
         List<String> names = new ArrayList<>();
-        for (SchemaField field : fields) {
+        for (SchemaTableField field : fields) {
             String seqName = field.getSequencerName();
             if (seqName != null && !seqName.isEmpty()) {
                 names.add(seqName);
@@ -135,10 +135,10 @@ public class SchemaTable {
      * @param tableName Name of table that fields reference
      * @return List of Fields (foreign key)
      */
-    public List<SchemaField> getForeignKeyFields(String tableName) {
-        List<SchemaField> fkFields = new ArrayList<SchemaField>();
+    public List<SchemaTableField> getForeignKeyFields(String tableName) {
+        List<SchemaTableField> fkFields = new ArrayList<SchemaTableField>();
 
-        for (SchemaField field : fields) {
+        for (SchemaTableField field : fields) {
             String fkTable = field.getForeignKeyTable();
             if (fkTable != null && fkTable.equalsIgnoreCase(tableName)) {
                 fkFields.add(field);
@@ -153,10 +153,10 @@ public class SchemaTable {
      *
      * @return List of Fields (foreign key)
      */
-    public List<SchemaField> getForeignKeyFields() {
-        List<SchemaField> fkFields = new ArrayList<SchemaField>();
+    public List<SchemaTableField> getForeignKeyFields() {
+        List<SchemaTableField> fkFields = new ArrayList<SchemaTableField>();
 
-        for (SchemaField field : fields) {
+        for (SchemaTableField field : fields) {
             String fkTable = field.getForeignKeyTable();
             if (fkTable != null && fkTable.length() > 0) {
                 fkFields.add(field);
@@ -199,7 +199,7 @@ public class SchemaTable {
 
     public boolean validate() {
         int primaryKeyCount = 0;
-        for (SchemaField field : fields) {
+        for (SchemaTableField field : fields) {
             if (field.isPrimaryKey()) {
                 primaryKeyCount++;
 
@@ -258,11 +258,11 @@ public class SchemaTable {
         this.tableParameters = tableParameters;
     }
 
-    public List<SchemaField> getFields() {
+    public List<SchemaTableField> getFields() {
         return fields;
     }
 
-    public void setFields(List<SchemaField> fields) {
+    public void setFields(List<SchemaTableField> fields) {
         this.fields = fields;
     }
 }

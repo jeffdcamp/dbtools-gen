@@ -88,11 +88,11 @@ public class SqliteRenderer extends SchemaRenderer {
     }
 
     @Override
-    public String formatDefaultValue(SchemaField field) {
+    public String formatDefaultValue(SchemaTableField field) {
         return formatSqliteDefaultValue(field);
     }
 
-    public static String formatSqliteDefaultValue(SchemaField field) {
+    public static String formatSqliteDefaultValue(SchemaTableField field) {
         String defaultValue = field.getDefaultValue();
         String newDefaultValue = "";
 
@@ -134,14 +134,14 @@ public class SqliteRenderer extends SchemaRenderer {
         tableSchema.append(" (\n");
 
         // add fields
-        List<SchemaField> fields = table.getFields();
-        List<SchemaField> indexFields = new ArrayList<SchemaField>();
-        List<SchemaField> uniqueFields = new ArrayList<SchemaField>();
-        SchemaField enumPKField = null;
-        SchemaField enumValueField = null;
+        List<SchemaTableField> fields = table.getFields();
+        List<SchemaTableField> indexFields = new ArrayList<SchemaTableField>();
+        List<SchemaTableField> uniqueFields = new ArrayList<SchemaTableField>();
+        SchemaTableField enumPKField = null;
+        SchemaTableField enumValueField = null;
 
         for (int j = 0; j < fields.size(); j++) {
-            SchemaField field = fields.get(j);
+            SchemaTableField field = fields.get(j);
 
             String fieldName = field.getName();
 
@@ -185,7 +185,7 @@ public class SqliteRenderer extends SchemaRenderer {
                     tableSchema.append(",\n\tUNIQUE(");
 
                     for (int k = 0; k < uniqueFields.size(); k++) {
-                        SchemaField uField = uniqueFields.get(k);
+                        SchemaTableField uField = uniqueFields.get(k);
                         if (k != 0) {
                             tableSchema.append(", ");
                         }
@@ -196,7 +196,7 @@ public class SqliteRenderer extends SchemaRenderer {
                 }
 
                 // add foreign keys fields
-                for (SchemaField foreignKeyField : table.getForeignKeyFields()) {
+                for (SchemaTableField foreignKeyField : table.getForeignKeyFields()) {
                     tableSchema.append(",\n\tFOREIGN KEY (");
                     tableSchema.append(foreignKeyField.getName()).append(") REFERENCES ").append(foreignKeyField.getForeignKeyTable());
                     tableSchema.append(" (").append(foreignKeyField.getForeignKeyField()).append(")");
@@ -239,7 +239,7 @@ public class SqliteRenderer extends SchemaRenderer {
         tableSchema.append("\n);\n\n");
 
         // create indexes
-        for (SchemaField iField : indexFields) {
+        for (SchemaTableField iField : indexFields) {
             tableSchema.append("CREATE INDEX IF NOT EXISTS ").append(table.getName()).append(iField.getName()).append("_IDX ON ").append(table.getName());
             tableSchema.append(" (").append(iField.getName()).append(");\n\n");
         }

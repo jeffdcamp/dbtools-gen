@@ -44,7 +44,7 @@ public class FireBirdRenderer extends SchemaRenderer {
         showProgress("Generating SQL schema using FireBird renderer ...", true);
         StringBuilder schema = new StringBuilder();
         List<ForeignKey> foreignKeysToCreate = new ArrayList<>();
-        SchemaField incrementField = null;
+        SchemaTableField incrementField = null;
 
         List<SchemaTable> requestedTables = getTablesToGenerate(database, tablesToGenerate);
         List<SchemaView> requestedViews = getViewsToGenerate(database, viewsToGenerate);
@@ -58,19 +58,19 @@ public class FireBirdRenderer extends SchemaRenderer {
         for (SchemaTable table : requestedTables) {
             // add table header
             // reset values for new table
-            List<SchemaField> indexFields = new ArrayList<>();
+            List<SchemaTableField> indexFields = new ArrayList<>();
 
             schema.append("CREATE TABLE ");
             schema.append(table.getName());
             schema.append(" (\n");
 
             // add fields
-            List<SchemaField> fields = table.getFields();
-            SchemaField enumPKField = null;
-            SchemaField enumValueField = null;
+            List<SchemaTableField> fields = table.getFields();
+            SchemaTableField enumPKField = null;
+            SchemaTableField enumValueField = null;
 
             for (int j = 0; j < fields.size(); j++) {
-                SchemaField field = fields.get(j);
+                SchemaTableField field = fields.get(j);
 
                 // add field
                 // name
@@ -194,7 +194,7 @@ public class FireBirdRenderer extends SchemaRenderer {
             }
 
             // add index fields
-            for (SchemaField iField : indexFields) {
+            for (SchemaTableField iField : indexFields) {
                 // create the unique index name... limit it to 25 characters
 //                int MAXLENGTH = 16;
 //                String indexName = table.getName()+iField.getName();
@@ -276,7 +276,7 @@ public class FireBirdRenderer extends SchemaRenderer {
             List fields = table.getFields();
             Iterator fItr = fields.iterator();
             while (fItr.hasNext() && !containsSequence) {
-                SchemaField field = (SchemaField) fItr.next();
+                SchemaTableField field = (SchemaTableField) fItr.next();
                 if (field.isIncrement()) {
                     containsSequence = true;
                     incrementInitialValue = field.getIncrementInitialValue();
@@ -286,7 +286,7 @@ public class FireBirdRenderer extends SchemaRenderer {
             if (containsSequence) {
                 //select setval ('carrier_id_seq', max(id)) from carrier
                 //postSchema.append("SET GENERATOR ('"+ table.getName() +"_"+ sequenceField +"_seq', max("+ sequenceField +")) FROM "+ table.getName() + ";\n\n");
-                if (incrementInitialValue == SchemaField.DEFAULT_INITIAL_INCREMENT) {
+                if (incrementInitialValue == SchemaTableField.DEFAULT_INITIAL_INCREMENT) {
                     postSchema.append("SELECT GEN_ID (gen" + table.getName() + "ID, (SELECT MAX(ID) FROM " + table.getName() + ") - GEN_ID (gen" + table.getName() + "ID,0) ) FROM RDB$DATABASE;\n");
                 } else {
                     postSchema.append("SELECT GEN_ID (gen" + table.getName() + "ID, " + incrementInitialValue + ") FROM RDB$DATABASE;\n");

@@ -16,7 +16,6 @@ import org.dbtools.renderer.SqliteRenderer;
 import org.dbtools.schema.dbmappings.DatabaseMapping;
 import org.dbtools.schema.schemafile.*;
 
-import java.io.PrintStream;
 import java.util.*;
 
 /**
@@ -27,17 +26,15 @@ public class AndroidBaseRecordClassRenderer {
     private JavaClass myClass;
     private JavaClass myTestClass;
     private boolean writeTestClass = true;
-    private List<JavaEnum> enumerationClasses = new ArrayList<JavaEnum>();
+    private List<JavaEnum> enumerationClasses = new ArrayList<>();
     private StringBuilder toStringContent;
     private StringBuilder cleanupOrphansContent;
-    private boolean includeXML = false;
     private boolean useInnerEnums = true;
-    public static final String CLEANUP_ORPHANS_METHODNAME = "cleanupOrphans";
-    private static final String ALL_KEYS_VARNAME = "ALL_KEYS";
-    private boolean uselegacyJUnit = false;
+    public static final String CLEANUP_ORPHANS_METHOD_NAME = "cleanupOrphans";
+    private static final String ALL_KEYS_VAR_NAME = "ALL_KEYS";
+    private boolean useLegacyJUnit = false;
 
-    private boolean useDateTime = false; // use joda datetime or jsr 310
-    private boolean dateTimeHelperMethodsAdded = false;
+    private boolean useDateTime = false; // use datetime or jsr 310
 
     public static final String PRIMARY_KEY_COLUMN = "PRIMARY_KEY_COLUMN";
 
@@ -47,25 +44,25 @@ public class AndroidBaseRecordClassRenderer {
     public AndroidBaseRecordClassRenderer() {
     }
 
-    public void generateObjectCode(SchemaDatabase database, SchemaTable table, String packageName, PrintStream psLog) {
+    public void generate(SchemaDatabase database, SchemaTable table, String packageName) {
         String className = createClassName(table);
 
-        // sqlite table field types
+        // SQLite table field types
         DatabaseMapping databaseMapping = SchemaRenderer.readXMLTypes(this.getClass(), SchemaRenderer.DEFAULT_TYPE_MAPPING_FILENAME, "sqlite");
 
         if (table.isEnumerationTable()) {
-            String enumClassname = createClassName(table);
+            String enumClassName = createClassName(table);
             List<TableEnum> enums = table.getTableEnums();
 
-            myClass = new JavaEnum(packageName, enumClassname, table.getTableEnumsText());
+            myClass = new JavaEnum(packageName, enumClassName, table.getTableEnumsText());
             myClass.setCreateDefaultConstructor(false);
             writeTestClass = false;
 
             if (enums.size() > 0) {
                 myClass.addImport("java.util.Map");
                 myClass.addImport("java.util.EnumMap");
-                JavaVariable enumStringMapVar = myClass.addVariable("Map<" + enumClassname + ", String>", "enumStringMap",
-                        "new EnumMap<" + enumClassname + ", String>(" + enumClassname + ".class)");
+                JavaVariable enumStringMapVar = myClass.addVariable("Map<" + enumClassName + ", String>", "enumStringMap",
+                        "new EnumMap<" + enumClassName + ", String>(" + enumClassName + ".class)");
                 enumStringMapVar.setStatic(true);
 
                 myClass.addImport("java.util.List");
@@ -79,8 +76,8 @@ public class AndroidBaseRecordClassRenderer {
                     myClass.appendStaticInitializer("");
                 }
 
-                List<JavaVariable> getStringMParam = new ArrayList<JavaVariable>();
-                getStringMParam.add(new JavaVariable(enumClassname, "key"));
+                List<JavaVariable> getStringMParam = new ArrayList<>();
+                getStringMParam.add(new JavaVariable(enumClassName, "key"));
                 JavaMethod getStringM = myClass.addMethod(Access.PUBLIC, "String", "getString", getStringMParam, "return enumStringMap.get(key);");
                 getStringM.setStatic(true);
 
@@ -121,13 +118,6 @@ public class AndroidBaseRecordClassRenderer {
 
         final String TAB = JavaClass.getTab();
 
-        if (psLog == null) {
-            psLog = System.out;
-        }
-
-        StringBuilder constructorElement = new StringBuilder();
-        constructorElement.append("try {\n");
-
         boolean primaryKeyAdded = false;
 
         // constants and variables
@@ -148,9 +138,9 @@ public class AndroidBaseRecordClassRenderer {
         String setContentValuesContent = "";
         String setContentCursorContent = "";
 
-        List<SchemaField> fields = table.getFields();
-        List<String> keys = new ArrayList<String>();
-        for (SchemaField field : fields) {
+        List<SchemaTableField> fields = table.getFields();
+        List<String> keys = new ArrayList<>();
+        for (SchemaTableField field : fields) {
             boolean primaryKey = field.isPrimaryKey();
 
             String fieldName = field.getName();
@@ -180,13 +170,13 @@ public class AndroidBaseRecordClassRenderer {
             // skip some types of variables at this point (so that we still get the column name and the property name)
             switch (field.getForeignKeyType()) {
                 case MANYTOONE:
-                    generateManyToOne(database, packageName, field, table);
+                    generateManyToOne(database, packageName, field);
                     continue;
                 case ONETOMANY:
-                    generateOneToMany(table, field, packageName, database);
+                    generateOneToMany(database, packageName, field);
                     continue;
                 case ONETOONE:
-                    generateOneToOne(database, table, field, packageName);
+                    generateOneToOne(database, packageName, field);
                     continue;
                 default:
             }
@@ -194,7 +184,7 @@ public class AndroidBaseRecordClassRenderer {
             createToStringMethodContent(field, fieldNameJavaStyle);
 
             // creates the variable OR changes the var to an enum
-            JavaVariable newVariable = null;
+            JavaVariable newVariable;
             if (field.isEnumeration()) {
                 newVariable = generateEnumeration(field, fieldNameJavaStyle, packageName, database);
             } else {
@@ -208,7 +198,7 @@ public class AndroidBaseRecordClassRenderer {
                 // add vanilla getPrimaryKeyID() / setPrimaryKeyID(...) for the primary key
                 myClass.addMethod(Access.PUBLIC, field.getJavaTypeText(), "getPrimaryKeyID", "return " + fieldNameJavaStyle + ";").addAnnotation("Override");
 
-                List<JavaVariable> setIDParams = new ArrayList<JavaVariable>();
+                List<JavaVariable> setIDParams = new ArrayList<>();
                 setIDParams.add(new JavaVariable(newVariable.getDataType(), "id"));
                 myClass.addMethod(Access.PUBLIC, "void", "setPrimaryKeyID", setIDParams, "this." + fieldNameJavaStyle + " = id;").addAnnotation("Override");
             }
@@ -270,24 +260,24 @@ public class AndroidBaseRecordClassRenderer {
             }
             allKeysDefaultValue += "}";
 
-//            JavaVariable allKeysVar = new JavaVariable("String[]", ALL_KEYS_VARNAME);
+//            JavaVariable allKeysVar = new JavaVariable("String[]", ALL_KEYS_VAR_NAME);
 //            allKeysVar.setDefaultValue(allKeysDefaultValue);
 //            allKeysVar.setAccess(Access.PROTECTED);
 //            myClass.addConstant()
 //            allKeysVar.setStatic(true);
 //            myClass.addVariable(allKeysVar);
-            JavaVariable allKeysVar = myClass.addConstant("String[]", ALL_KEYS_VARNAME, allKeysDefaultValue);
+            JavaVariable allKeysVar = myClass.addConstant("String[]", ALL_KEYS_VAR_NAME, allKeysDefaultValue);
             allKeysVar.setAccess(Access.DEFAULT_NONE);
-            myClass.addMethod(Access.PUBLIC, "String[]", "getAllKeys", "return " + ALL_KEYS_VARNAME + ".clone();").addAnnotation("Override");
+            myClass.addMethod(Access.PUBLIC, "String[]", "getAllKeys", "return " + ALL_KEYS_VAR_NAME + ".clone();").addAnnotation("Override");
 
             contentValuesContent += "return values;";
             myClass.addMethod(Access.PUBLIC, "ContentValues", "getContentValues", contentValuesContent).addAnnotation("Override");
 
-            List<JavaVariable> setCValuesParams = new ArrayList<JavaVariable>();
+            List<JavaVariable> setCValuesParams = new ArrayList<>();
             setCValuesParams.add(new JavaVariable("ContentValues", "values"));
             myClass.addMethod(Access.PUBLIC, "void", "setContent", setCValuesParams, setContentValuesContent);
 
-            List<JavaVariable> setCCursorParams = new ArrayList<JavaVariable>();
+            List<JavaVariable> setCCursorParams = new ArrayList<>();
             setCCursorParams.add(new JavaVariable("Cursor", "cursor"));
             myClass.addMethod(Access.PUBLIC, "void", "setContent", setCCursorParams, setContentCursorContent).addAnnotation("Override");
         }
@@ -297,10 +287,10 @@ public class AndroidBaseRecordClassRenderer {
 
         // add method to cleanup many-to-one left-overs
         if (!myClass.isEnum()) {
-            List<JavaVariable> orphanParams = new ArrayList<JavaVariable>();
+            List<JavaVariable> orphanParams = new ArrayList<>();
 
             if (cleanupOrphansContent.length() > 0) {
-                myClass.addMethod(Access.PROTECTED, "void", CLEANUP_ORPHANS_METHODNAME, orphanParams, cleanupOrphansContent.toString());
+                myClass.addMethod(Access.PROTECTED, "void", CLEANUP_ORPHANS_METHOD_NAME, orphanParams, cleanupOrphansContent.toString());
             }
 
             // to String method
@@ -335,7 +325,7 @@ public class AndroidBaseRecordClassRenderer {
     /**
      * For method setContent(ContentValues values).
      */
-    private String getContentValuesGetterMethod(SchemaField field, String paramValue, JavaVariable newVariable) {
+    private String getContentValuesGetterMethod(SchemaTableField field, String paramValue, JavaVariable newVariable) {
         if (field.isEnumeration()) {
             return newVariable.getDataType() + ".values()[values.getAsInteger(" + paramValue + ")]";
         }
@@ -375,13 +365,8 @@ public class AndroidBaseRecordClassRenderer {
 
     /**
      * For method setContent(Cursor cursor).
-     *
-     * @param field
-     * @param paramValue
-     * @param newVariable
-     * @return
      */
-    private String getContentValuesCursorGetterMethod(SchemaField field, String paramValue, JavaVariable newVariable) {
+    private String getContentValuesCursorGetterMethod(SchemaTableField field, String paramValue, JavaVariable newVariable) {
         if (field.isEnumeration()) {
             return newVariable.getDataType() + ".values()[cursor.getInt(cursor.getColumnIndex(" + paramValue + "))]";
         }
@@ -419,16 +404,14 @@ public class AndroidBaseRecordClassRenderer {
         }
     }
 
-    private void createToStringMethodContent(final SchemaField field, final String fieldNameJavaStyle) {
-
-        SchemaFieldType fieldType = field.getJdbcDataType();
+    private void createToStringMethodContent(final SchemaTableField field, final String fieldNameJavaStyle) {
         if (field.getJdbcDataType() != SchemaFieldType.BLOB && field.getJdbcDataType() != SchemaFieldType.CLOB) {
             // toString
             toStringContent.append("text += \"").append(fieldNameJavaStyle).append(" = \"+ ").append(fieldNameJavaStyle).append(" +\"\\n\";\n");
         }
     }
 
-    private JavaVariable generateEnumeration(SchemaField field, String fieldNameJavaStyle, String packageName, SchemaDatabase database) {
+    private JavaVariable generateEnumeration(SchemaTableField field, String fieldNameJavaStyle, String packageName, SchemaDatabase database) {
         JavaVariable newVariable;
         if (field.getJdbcDataType().isNumberDataType()) {
             if (field.getForeignKeyTable().length() > 0) {
@@ -485,8 +468,8 @@ public class AndroidBaseRecordClassRenderer {
         return newVariable;
     }
 
-    private JavaVariable generateFieldVariable(String fieldNameJavaStyle, SchemaField field) {
-        JavaVariable newVariable = null;
+    private JavaVariable generateFieldVariable(String fieldNameJavaStyle, SchemaTableField field) {
+        JavaVariable newVariable;
 
         String typeText = field.getJavaTypeText();
         String defaultValue = field.getFormattedClassDefaultValue();
@@ -533,7 +516,7 @@ public class AndroidBaseRecordClassRenderer {
         return newVariable;
     }
 
-    private void generateManyToOne(SchemaDatabase dbSchema, String packageName, SchemaField field, SchemaTable table) {
+    private void generateManyToOne(SchemaDatabase dbSchema, String packageName, SchemaTableField field) {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = dbSchema.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
@@ -549,7 +532,7 @@ public class AndroidBaseRecordClassRenderer {
         myClass.addVariable(manyToOneVar, true);
     }
 
-    private void generateOneToMany(SchemaTable table, SchemaField field, String packageName, SchemaDatabase database) {
+    private void generateOneToMany(SchemaDatabase database, String packageName, SchemaTableField field) {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = database.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
@@ -565,7 +548,7 @@ public class AndroidBaseRecordClassRenderer {
         myClass.addVariable(manyToOneVar, true);
     }
 
-    private void generateOneToOne(SchemaDatabase database, SchemaTable table, SchemaField field, String packageName) {
+    private void generateOneToOne(SchemaDatabase database, String packageName, SchemaTableField field) {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = database.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
@@ -586,9 +569,9 @@ public class AndroidBaseRecordClassRenderer {
 
         // find any other tables that depend on this one (MANYTOONE) or other tables this table depends on (ONETOONE)
         for (SchemaTable tmpTable : database.getTables()) {
-            List<SchemaField> fkFields = tmpTable.getForeignKeyFields(table.getName());
+            List<SchemaTableField> fkFields = tmpTable.getForeignKeyFields(table.getName());
 
-            for (SchemaField fkField : fkFields) {
+            for (SchemaTableField fkField : fkFields) {
                 switch (fkField.getForeignKeyType()) {
                     case ONETOMANY:
                         String fkTableName = tmpTable.getName();
@@ -612,7 +595,7 @@ public class AndroidBaseRecordClassRenderer {
                         myClass.addMethod(Access.PUBLIC, listType, JavaVariable.getGetterMethodName(listType, items), "return java.util.Collections.unmodifiableSet(" + items + ");");
 
                         ClassInfo mappedByClassInfo = database.getTableClassInfo(fkField.getForeignKeyTable());
-                        String mappedByVarName = JavaClass.formatToJavaVariable(mappedByClassInfo.getClassName());
+                        JavaClass.formatToJavaVariable(mappedByClassInfo.getClassName());
 
                         // addItem method
                         JavaMethod addMethod = new JavaMethod("add" + fkTableClassName);
@@ -665,11 +648,11 @@ public class AndroidBaseRecordClassRenderer {
                         myClass.addMethod(removeMethod);
 
                         // add to cleanup orphans
-                        cleanupOrphansContent.append("for (" + fkTableClassName + " itemToDelete : " + itemsToDelete + ") {\n");
-                        cleanupOrphansContent.append(TAB + "try {\n");
-                        cleanupOrphansContent.append(TAB + TAB + "em.remove(itemToDelete);\n");
-                        cleanupOrphansContent.append(TAB + "} catch(RuntimeException e) {// do nothing... it is ok if it does not exist\n");
-                        cleanupOrphansContent.append(TAB + "}\n");
+                        cleanupOrphansContent.append("for (").append(fkTableClassName).append(" itemToDelete : ").append(itemsToDelete).append(") {\n");
+                        cleanupOrphansContent.append(TAB).append("try {\n");
+                        cleanupOrphansContent.append(TAB).append(TAB).append("em.remove(itemToDelete);\n");
+                        cleanupOrphansContent.append(TAB).append("} catch(RuntimeException e) {// do nothing... it is ok if it does not exist\n");
+                        cleanupOrphansContent.append(TAB).append("}\n");
                         cleanupOrphansContent.append("}\n\n");
                         break;
                     case ONETOONE:
@@ -691,21 +674,17 @@ public class AndroidBaseRecordClassRenderer {
         }
     }
 
-    public String getFilename() {
-        return myClass.getFilename();
-    }
-
-    public void writeToFile(String directoryname) {
-        myClass.writeToDisk(directoryname);
+    public void writeToFile(String directoryName) {
+        myClass.writeToDisk(directoryName);
 
         for (JavaEnum enumClass : enumerationClasses) {
-            enumClass.writeToDisk(directoryname);
+            enumClass.writeToDisk(directoryName);
         }
     }
 
-    public void writeTestsToFile(String directoryname) {
+    public void writeTestsToFile(String directoryName) {
         if (writeTestClass) {
-            myTestClass.writeToDisk(directoryname);
+            myTestClass.writeToDisk(directoryName);
         }
     }
 
@@ -725,8 +704,8 @@ public class AndroidBaseRecordClassRenderer {
         fileHeaderComment += " */\n";
         myTestClass.setFileHeaderComment(fileHeaderComment);
 
-        if (uselegacyJUnit) {
-            List<JavaVariable> params = new ArrayList<JavaVariable>();
+        if (useLegacyJUnit) {
+            List<JavaVariable> params = new ArrayList<>();
             params.add(new JavaVariable("String", "testName"));
             myTestClass.addConstructor(Access.PUBLIC, params, "super(testName);");
         } else {
@@ -738,12 +717,12 @@ public class AndroidBaseRecordClassRenderer {
 
         // methods
         JavaMethod setUpMethod = myTestClass.addMethod(Access.PUBLIC, "void", "setUp", "testRecord = new " + myClass.getName() + "();\nassertNotNull(testRecord);");
-        if (!uselegacyJUnit) {
+        if (!useLegacyJUnit) {
             setUpMethod.addAnnotation("Before");
         }
 
         JavaMethod tearDownMethod = myTestClass.addMethod(Access.PUBLIC, "void", "tearDown", null);
-        if (!uselegacyJUnit) {
+        if (!useLegacyJUnit) {
             tearDownMethod.addAnnotation("After");
         }
     }
@@ -754,45 +733,45 @@ public class AndroidBaseRecordClassRenderer {
         JavaMethod testMethod = new JavaMethod(Access.PUBLIC, "void", "test" + JavaVariable.createBeanMethodName(newVariable.getName()));
         StringBuilder testContent = new StringBuilder();
 
-        if (!uselegacyJUnit) {
+        if (!useLegacyJUnit) {
             testMethod.addAnnotation("Test");
         }
 
         switch (dataType) {
             case STRING:
                 testContent.append("String testData = \"abc\";\n");
-                testContent.append("testRecord." + newVariable.getSetterMethodName() + "(testData);\n");
-                testContent.append("String recordData = testRecord." + newVariable.getGetterMethodName() + "();\n");
+                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
+                testContent.append("String recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
                 testContent.append("assertEquals(testData, recordData);");
                 break;
             case CHAR:
                 testContent.append("char testData = 'z';\n");
-                testContent.append("testRecord." + newVariable.getSetterMethodName() + "(testData);\n");
-                testContent.append("char recordData = testRecord." + newVariable.getGetterMethodName() + "();\n");
+                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
+                testContent.append("char recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
                 testContent.append("assertEquals(testData, recordData);");
                 break;
             case BOOLEAN:
                 testContent.append("boolean testData = false;\n");
-                testContent.append("testRecord." + newVariable.getSetterMethodName() + "(testData);\n");
-                testContent.append("boolean recordData = testRecord." + newVariable.getGetterMethodName() + "();\n");
+                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
+                testContent.append("boolean recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
                 testContent.append("assertEquals(testData, recordData);");
                 break;
             case INT:
                 testContent.append("int testData = 123;\n");
-                testContent.append("testRecord." + newVariable.getSetterMethodName() + "(testData);\n");
-                testContent.append("int recordData = testRecord." + newVariable.getGetterMethodName() + "();\n");
+                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
+                testContent.append("int recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
                 testContent.append("assertEquals(testData, recordData);");
                 break;
             case FLOAT:
                 testContent.append("float testData = 123.56f;\n");
-                testContent.append("testRecord." + newVariable.getSetterMethodName() + "(testData);\n");
-                testContent.append("float recordData = testRecord." + newVariable.getGetterMethodName() + "();\n");
+                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
+                testContent.append("float recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
                 testContent.append("assertEquals(testData, recordData, 0);");
                 break;
             case DOUBLE:
                 testContent.append("double testData = 123.56;\n");
-                testContent.append("testRecord." + newVariable.getSetterMethodName() + "(testData);\n");
-                testContent.append("double recordData = testRecord." + newVariable.getGetterMethodName() + "();\n");
+                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
+                testContent.append("double recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
                 testContent.append("assertEquals(testData, recordData, 0);");
                 break;
             case DATE:
@@ -803,8 +782,8 @@ public class AndroidBaseRecordClassRenderer {
                 testContent.append("int testMonth = 2;\n");
                 testContent.append("int testDay = 1;\n");
                 testContent.append("testData.set(1980, 2, 1);\n");
-                testContent.append("testRecord." + newVariable.getSetterMethodName() + "(testData.getTime());\n");
-                testContent.append("Date recordDataDate = testRecord." + newVariable.getGetterMethodName() + "();\n");
+                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData.getTime());\n");
+                testContent.append("Date recordDataDate = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
                 testContent.append("Calendar recordData = Calendar.getInstance();\n");
                 testContent.append("recordData.setTime(recordDataDate);\n");
                 testContent.append("int year = recordData.get(Calendar.YEAR);\n");
@@ -827,23 +806,7 @@ public class AndroidBaseRecordClassRenderer {
         myTestClass.addMethod(testMethod);
     }
 
-    public boolean isIncludeXML() {
-        return includeXML;
-    }
-
-    public void setIncludeXML(boolean includeXML) {
-        this.includeXML = includeXML;
-    }
-
     public void setUseDateTime(boolean useDateTime) {
         this.useDateTime = useDateTime;
-    }
-
-    public boolean isUseInnerEnums() {
-        return useInnerEnums;
-    }
-
-    public void setUseInnerEnums(boolean useInnerEnums) {
-        this.useInnerEnums = useInnerEnums;
     }
 }

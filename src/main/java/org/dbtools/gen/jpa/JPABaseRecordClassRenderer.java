@@ -14,7 +14,6 @@ import org.dbtools.codegen.*;
 import org.dbtools.schema.ClassInfo;
 import org.dbtools.schema.schemafile.*;
 
-import java.io.PrintStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,8 +23,6 @@ import java.util.List;
  * @author Jeff
  */
 public class JPABaseRecordClassRenderer {
-
-    private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
     private JavaClass myClass;
     private JavaClass myTestClass;
@@ -40,8 +37,8 @@ public class JPABaseRecordClassRenderer {
     private boolean useDateTime = false; // use joda datetime or jsr 310
     private boolean useInnerEnums = true;
 
-    public static final String CLEANUP_ORPHANS_METHODNAME = "cleanupOrphans";
-    boolean uselegacyJUnit = false;
+    public static final String CLEANUP_ORPHANS_METHOD_NAME = "cleanupOrphans";
+    boolean useLegacyJUnit = false;
     boolean useBeanValidators = false;
 
     /**
@@ -50,12 +47,12 @@ public class JPABaseRecordClassRenderer {
     public JPABaseRecordClassRenderer() {
     }
 
-    public void generateObjectCode(SchemaDatabase schemaDatabase, SchemaTable table, String packageName, String author, String version, PrintStream psLog) {
+    public void generate(SchemaDatabase schemaDatabase, SchemaTable table, String packageName) {
         String className = createClassName(table);
 
         if (table.isEnumerationTable()) {
-            String enumClassname = createClassName(table);
-            myClass = new JavaEnum(packageName, enumClassname, table.getTableEnumsText());
+            String enumClassName = createClassName(table);
+            myClass = new JavaEnum(packageName, enumClassName, table.getTableEnumsText());
             myClass.setCreateDefaultConstructor(false);
             writeTestClass = false;
 
@@ -64,7 +61,7 @@ public class JPABaseRecordClassRenderer {
                 // private static Map<ScheduleType, String> enumStringMap = new HashMap<ScheduleType, String>();
                 myClass.addImport("java.util.Map");
                 myClass.addImport("java.util.HashMap");
-                JavaVariable enumStringMapVar = myClass.addVariable("Map<" + enumClassname + ", String>", "enumStringMap", "new HashMap<" + enumClassname + ", String>()");
+                JavaVariable enumStringMapVar = myClass.addVariable("Map<" + enumClassName + ", String>", "enumStringMap", "new HashMap<" + enumClassName + ", String>()");
                 enumStringMapVar.setStatic(true);
 
                 // private static List<String> stringList = new ArrayList<String>();
@@ -83,7 +80,7 @@ public class JPABaseRecordClassRenderer {
                 }
 
                 List<JavaVariable> getStringMParam = new ArrayList<JavaVariable>();
-                getStringMParam.add(new JavaVariable(enumClassname, "key"));
+                getStringMParam.add(new JavaVariable(enumClassName, "key"));
                 JavaMethod getStringM = myClass.addMethod(Access.PUBLIC, "String", "getString", getStringMParam, "return enumStringMap.get(key);");
                 getStringM.setStatic(true);
 
@@ -146,8 +143,8 @@ public class JPABaseRecordClassRenderer {
         myClass.addConstant("String", "TABLE", tableName);
         myClass.addConstant("String", "TABLE_CLASSNAME", JPARecordClassRenderer.createClassName(table));
 
-        List<SchemaField> fields = table.getFields();
-        for (SchemaField field : fields) {
+        List<SchemaTableField> fields = table.getFields();
+        for (SchemaTableField field : fields) {
             boolean primaryKey = field.isPrimaryKey();
 
             String fieldNameJavaStyle = field.getName(true);
@@ -290,7 +287,7 @@ public class JPABaseRecordClassRenderer {
         if (!myClass.isEnum()) {
             List<JavaVariable> orphanParams = new ArrayList<JavaVariable>();
             orphanParams.add(new JavaVariable("javax.persistence.EntityManager", "em"));
-            myClass.addMethod(Access.PROTECTED, "void", CLEANUP_ORPHANS_METHODNAME, orphanParams, cleanupOrphansContent.toString());
+            myClass.addMethod(Access.PROTECTED, "void", CLEANUP_ORPHANS_METHOD_NAME, orphanParams, cleanupOrphansContent.toString());
         }
 
         if (!myClass.isEnum()) {
@@ -323,7 +320,7 @@ public class JPABaseRecordClassRenderer {
         }
     }
 
-    private void addFieldVariableAnnotations(SchemaField field, String fieldNameJavaStyle, JavaVariable newVariable) {
+    private void addFieldVariableAnnotations(SchemaTableField field, String fieldNameJavaStyle, JavaVariable newVariable) {
         myClass.addImport("javax.persistence.Id");
         newVariable.addAnnotation("@Id");
 
@@ -344,7 +341,7 @@ public class JPABaseRecordClassRenderer {
         myClass.addMethod(Access.PUBLIC, field.getJavaTypeText(), "getID", "return " + fieldNameJavaStyle + ";");
     }
 
-    private void createToStringMethodContent(final SchemaField field, final String fieldNameJavaStyle) {
+    private void createToStringMethodContent(final SchemaTableField field, final String fieldNameJavaStyle) {
 
         SchemaFieldType fieldType = field.getJdbcDataType();
         if (fieldType != SchemaFieldType.BLOB && fieldType != SchemaFieldType.CLOB) {
@@ -353,7 +350,7 @@ public class JPABaseRecordClassRenderer {
         }
     }
 
-    private JavaVariable generateEnumeration(SchemaField field, String fieldNameJavaStyle, String packageName, JavaVariable newVariable, SchemaDatabase dbSchema) {
+    private JavaVariable generateEnumeration(SchemaTableField field, String fieldNameJavaStyle, String packageName, JavaVariable newVariable, SchemaDatabase dbSchema) {
         myClass.addImport("javax.persistence.Enumerated");
         myClass.addImport("javax.persistence.EnumType");
         if (field.getJdbcDataType().isNumberDataType()) {
@@ -417,7 +414,7 @@ public class JPABaseRecordClassRenderer {
         return newVariable;
     }
 
-    private JavaVariable generateFieldVariable(String fieldNameJavaStyle, SchemaField field) {
+    private JavaVariable generateFieldVariable(String fieldNameJavaStyle, SchemaTableField field) {
         JavaVariable newVariable;
 
         String typeText = field.getJavaTypeText();
@@ -464,7 +461,7 @@ public class JPABaseRecordClassRenderer {
         return newVariable;
     }
 
-    private void generateManyToOne(SchemaDatabase schemaDatabase, String packageName, SchemaField field, SchemaTable table) {
+    private void generateManyToOne(SchemaDatabase schemaDatabase, String packageName, SchemaTableField field, SchemaTable table) {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = schemaDatabase.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
@@ -493,7 +490,7 @@ public class JPABaseRecordClassRenderer {
         myClass.addVariable(manyToOneVar, true);
     }
 
-    private void generateOneToMany(SchemaTable table, SchemaField field, String packageName, SchemaDatabase dbSchema) {
+    private void generateOneToMany(SchemaTable table, SchemaTableField field, String packageName, SchemaDatabase dbSchema) {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = dbSchema.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
@@ -522,7 +519,7 @@ public class JPABaseRecordClassRenderer {
         myClass.addVariable(manyToOneVar, true);
     }
 
-    private void generateOneToOne(SchemaDatabase dbSchema, SchemaTable table, SchemaField field, String packageName) {
+    private void generateOneToOne(SchemaDatabase dbSchema, SchemaTable table, SchemaTableField field, String packageName) {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = dbSchema.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
@@ -560,7 +557,7 @@ public class JPABaseRecordClassRenderer {
         myClass.addVariable(oneToOneVar, true);
     }
 
-    private void generateXMLCode(final SchemaDatabase dbSchema, final StringBuilder constructorElement, final StringBuilder methodToXML, final StringBuffer dtd, final String TAB, final SchemaField field, final String constName) {
+    private void generateXMLCode(final SchemaDatabase dbSchema, final StringBuilder constructorElement, final StringBuilder methodToXML, final StringBuffer dtd, final String TAB, final SchemaTableField field, final String constName) {
 //
 //        String fieldNameJavaStyle = field.getName(true);
 //
@@ -689,9 +686,9 @@ public class JPABaseRecordClassRenderer {
 
         // find any other tables that depend on this one (MANYTOONE) or other tables this table depends on (ONETOONE)
         for (SchemaTable tmpTable : dbSchema.getTables()) {
-            List<SchemaField> fkFields = tmpTable.getForeignKeyFields(table.getName());
+            List<SchemaTableField> fkFields = tmpTable.getForeignKeyFields(table.getName());
 
-            for (SchemaField fkField : fkFields) {
+            for (SchemaTableField fkField : fkFields) {
                 switch (fkField.getForeignKeyType()) {
                     case ONETOMANY:
                         String fkTableName = tmpTable.getName();
@@ -834,7 +831,7 @@ public class JPABaseRecordClassRenderer {
     }
 
     private void initTestClass() {
-        if (uselegacyJUnit) {
+        if (useLegacyJUnit) {
             myTestClass.addImport("junit.framework.*");
             myTestClass.setExtends("TestCase");
         } else {
@@ -854,7 +851,7 @@ public class JPABaseRecordClassRenderer {
         fileHeaderComment += " */\n";
         myTestClass.setFileHeaderComment(fileHeaderComment);
 
-        if (uselegacyJUnit) {
+        if (useLegacyJUnit) {
             List<JavaVariable> params = new ArrayList<JavaVariable>();
             params.add(new JavaVariable("String", "testName"));
             myTestClass.addConstructor(Access.PUBLIC, params, "super(testName);");
@@ -867,12 +864,12 @@ public class JPABaseRecordClassRenderer {
 
         // methods
         JavaMethod setUpMethod = myTestClass.addMethod(Access.PUBLIC, "void", "setUp", "testRecord = new " + myClass.getName() + "();\nassertNotNull(testRecord);");
-        if (!uselegacyJUnit) {
+        if (!useLegacyJUnit) {
             setUpMethod.addAnnotation("Before");
         }
 
         JavaMethod tearDownMethod = myTestClass.addMethod(Access.PUBLIC, "void", "tearDown", null);
-        if (!uselegacyJUnit) {
+        if (!useLegacyJUnit) {
             tearDownMethod.addAnnotation("After");
         }
     }
@@ -883,7 +880,7 @@ public class JPABaseRecordClassRenderer {
         JavaMethod testMethod = new JavaMethod(Access.PUBLIC, "void", "test" + JavaVariable.createBeanMethodName(newVariable.getName()));
         StringBuilder testContent = new StringBuilder();
 
-        if (!uselegacyJUnit) {
+        if (!useLegacyJUnit) {
             testMethod.addAnnotation("Test");
         }
 

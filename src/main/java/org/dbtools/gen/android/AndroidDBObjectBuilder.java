@@ -32,7 +32,7 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
     private AndroidRecordManager managerClass;
 
     private int filesGeneratedCount = 0;
-    private List<String> filesGenerated = new ArrayList<String>();
+    private List<String> filesGenerated = new ArrayList<>();
 
     private SchemaDatabase database;
     private SchemaTable table;
@@ -40,9 +40,6 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
     private String outDir;
     private String testOutDir;
     private PrintStream psLog;
-    private String author;
-    private String version;
-    private boolean injectionSupport;
 
     /**
      * Creates a new instance of AndroidDBObjectBuilder.
@@ -52,7 +49,6 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
     }
 
     public AndroidDBObjectBuilder(boolean injectionSupport) {
-        this.injectionSupport = injectionSupport;
         baseManagerClass = new AndroidBaseRecordManager(injectionSupport);
         managerClass = new AndroidRecordManager(injectionSupport);
     }
@@ -81,8 +77,6 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
             psLog = System.out;
         }
 
-//        psLog.println("Injection Support: " + injectionSupport);
-
         if (table != null) {
             psLog.println("SchemaTable: " + table.getName());
         } else {
@@ -90,7 +84,6 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
             return false;
         }
 
-//        System.out.println("Pre outdir: " + outDir);
         char lastDirChar = outDir.charAt(outDir.length() - 1);
         if (lastDirChar != File.separatorChar) {
             outDir += File.separatorChar;
@@ -99,20 +92,17 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
         // Managers
         if (!table.isEnumerationTable()) {
             String managerFileName = outDir + AndroidRecordManager.getClassName(table) + ".java";
-//            System.out.println("ManagerFilename: " + managerFileName);
-
-            //File baseManagerFile = new File(baseSEManagerFileName);
             File managerFile = new File(managerFileName);
 
             // Base Manager
-            baseManagerClass.generateObjectCode(table, packageName, author, version, psLog);
+            baseManagerClass.generate(table, packageName);
             baseManagerClass.writeToFile(outDir);
 
             filesGeneratedCount++;
 
             // Manager
             if (!managerFile.exists()) {
-                managerClass.generateObjectCode(table, packageName, author, version, psLog);
+                managerClass.generate(table, packageName);
                 managerClass.writeToFile(outDir);
 
                 filesGeneratedCount++;
@@ -128,7 +118,7 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
 
 
         // BaseRecord
-        baseRecordClass.generateObjectCode(database, table, packageName, psLog);
+        baseRecordClass.generate(database, table, packageName);
         baseRecordClass.writeToFile(outDir);
 
         if (testOutDir != null && testOutDir.length() > 0) {
@@ -141,7 +131,7 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
         // Record
         if (!table.isEnumerationTable()) {
             if (!recordFile.exists()) {
-                recordClass.generateObjectCode(database, table, packageName, author, version, psLog);
+                recordClass.generate(table, packageName);
                 recordClass.writeToFile(outDir);
 
                 filesGenerated.add(recordFile.getPath());
@@ -169,7 +159,6 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
 
     @Override
     public void setIncludeXMLSupport(boolean b) {
-        baseRecordClass.setIncludeXML(b);
     }
 
     @Override
@@ -204,12 +193,12 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
 
     @Override
     public void setAuthor(String author) {
-        this.author = author;
+
     }
 
     @Override
     public void setVersion(String version) {
-        this.version = version;
+
     }
 
     @Override

@@ -13,10 +13,8 @@ import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaMethod;
 import org.dbtools.codegen.JavaVariable;
-import org.dbtools.schema.schemafile.SchemaDatabase;
 import org.dbtools.schema.schemafile.SchemaTable;
 
-import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,12 +35,7 @@ public class JPARecordClassRenderer {
     public JPARecordClassRenderer() {
     }
 
-    public void generateObjectCode(SchemaDatabase dbSchema, SchemaTable table, String packageName, String author, String version, PrintStream psLog) {
-        if (psLog == null) {
-            psLog = System.out;
-        }
-//        psLog.println("Generating Record class...");
-
+    public void generate(SchemaTable table, String packageName) {
         String baseClassName = JPABaseRecordClassRenderer.createClassName(table);
         String className = createClassName(table);
         myClass = new JavaClass(packageName, className);

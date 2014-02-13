@@ -4,13 +4,8 @@ import org.dbtools.schema.ForeignKeyType;
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Root;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Root
-public class SchemaField {
-    public static final int DEFAULT_INITIAL_INCREMENT = 1;
-
+public class SchemaViewField {
     @Attribute
     private String name;
     @Attribute
@@ -27,48 +22,23 @@ public class SchemaField {
     private String defaultValue = "";
 
     @Attribute(required = false)
-    private boolean primaryKey = false;
-    @Attribute(required = false)
-    private boolean increment = false;
-    @Attribute(required = false)
     private boolean notNull = false;
-    @Attribute(required = false)
-    private boolean unique = false;
-
-    @Attribute(required = false)
-    private boolean index = false;
-    @Attribute(required = false)
-    private int incrementInitialValue = 0;
-    @Attribute(required = false)
-    private String sequencerName = "";
-    @Attribute(required = false)
-    private int sequencerStartValue = 1;
 
     @Attribute(required = false)
     private String foreignKeyTable = "";
     @Attribute(required = false)
     private String foreignKeyField = "";
     @Attribute(required = false)
-    private String foreignKeyOrderByColumn = "";
-    @Attribute(required = false)
     private ForeignKeyType foreignKeyType = ForeignKeyType.IGNORE;
     @Attribute(required = false)
     private ForeignKeyFetchType foreignKeyFetchType = ForeignKeyFetchType.LAZY;
     @Attribute(required = false)
-    private String foreignKeyCascadeType = "ALL";
-
-    @Attribute(required = false)
-    private String enumerations = "";
-    @Attribute(required = false)
     private String enumerationDefault = "";
 
-    @Attribute(required = false)
-    private boolean lastModifiedField = false;
-
-    public SchemaField() {
+    public SchemaViewField() {
     }
 
-    public SchemaField(String name, SchemaFieldType jdbcDataType) {
+    public SchemaViewField(String name, SchemaFieldType jdbcDataType) {
         this.name = name;
         this.jdbcDataType = jdbcDataType;
     }
@@ -76,12 +46,6 @@ public class SchemaField {
     public void validate() {
         if (getForeignKeyType() == ForeignKeyType.ENUM) {
             setNotNull(true);
-        }
-
-        if (enumerations != null && enumerations.length() > 0) {
-            if (!jdbcDataType.isNumberDataType() && jdbcDataType != SchemaFieldType.VARCHAR) {
-                throw new IllegalStateException("Enumerations can ONLY be used with INTEGER or VARCHAR datatypes for field [" + getName() + "]");
-            }
         }
     }
 
@@ -178,34 +142,8 @@ public class SchemaField {
         }
     }
 
-    public boolean isEnumeration() {
-        return (enumerations.length() > 0 || isForeignKeyIsEnumeration());
-    }
-
     public boolean isForeignKeyIsEnumeration() {
         return foreignKeyType == ForeignKeyType.ENUM;
-    }
-
-    public List<String> getEnumValues() {
-        if (enumerations == null || enumerations.isEmpty()) {
-            return null;
-        }
-
-        List<String> enumValues = new ArrayList<>();
-
-        StringBuilder cleanEnumArrayStr = new StringBuilder();
-        for (char c : enumerations.toCharArray()) {
-            if (c != ' ') {
-                cleanEnumArrayStr.append(c);
-            }
-        }
-
-        String[] array = cleanEnumArrayStr.toString().split(",");
-        for (String enumItem : array) {
-            enumValues.add(enumItem.trim());
-        }
-
-        return enumValues;
     }
 
     public String getName() {
@@ -256,22 +194,6 @@ public class SchemaField {
         this.defaultValue = defaultValue;
     }
 
-    public boolean isPrimaryKey() {
-        return primaryKey;
-    }
-
-    public void setPrimaryKey(boolean primaryKey) {
-        this.primaryKey = primaryKey;
-    }
-
-    public boolean isIncrement() {
-        return increment;
-    }
-
-    public void setIncrement(boolean increment) {
-        this.increment = increment;
-    }
-
     public boolean isNotNull() {
         return notNull;
     }
@@ -280,44 +202,12 @@ public class SchemaField {
         this.notNull = notNull;
     }
 
-    public boolean isUnique() {
-        return unique;
+    public String getJavaFieldNameStyleName() {
+        return javaFieldNameStyleName;
     }
 
-    public void setUnique(boolean unique) {
-        this.unique = unique;
-    }
-
-    public boolean isIndex() {
-        return index;
-    }
-
-    public void setIndex(boolean index) {
-        this.index = index;
-    }
-
-    public int getIncrementInitialValue() {
-        return incrementInitialValue;
-    }
-
-    public void setIncrementInitialValue(int incrementInitialValue) {
-        this.incrementInitialValue = incrementInitialValue;
-    }
-
-    public String getSequencerName() {
-        return sequencerName;
-    }
-
-    public void setSequencerName(String sequencerName) {
-        this.sequencerName = sequencerName;
-    }
-
-    public int getSequencerStartValue() {
-        return sequencerStartValue;
-    }
-
-    public void setSequencerStartValue(int sequencerStartValue) {
-        this.sequencerStartValue = sequencerStartValue;
+    public void setJavaFieldNameStyleName(String javaFieldNameStyleName) {
+        this.javaFieldNameStyleName = javaFieldNameStyleName;
     }
 
     public String getForeignKeyTable() {
@@ -336,14 +226,6 @@ public class SchemaField {
         this.foreignKeyField = foreignKeyField;
     }
 
-    public String getForeignKeyOrderByColumn() {
-        return foreignKeyOrderByColumn;
-    }
-
-    public void setForeignKeyOrderByColumn(String foreignKeyOrderByColumn) {
-        this.foreignKeyOrderByColumn = foreignKeyOrderByColumn;
-    }
-
     public ForeignKeyType getForeignKeyType() {
         return foreignKeyType;
     }
@@ -360,35 +242,11 @@ public class SchemaField {
         this.foreignKeyFetchType = foreignKeyFetchType;
     }
 
-    public String getForeignKeyCascadeType() {
-        return foreignKeyCascadeType;
-    }
-
-    public void setForeignKeyCascadeType(String foreignKeyCascadeType) {
-        this.foreignKeyCascadeType = foreignKeyCascadeType;
-    }
-
-    public String getEnumerations() {
-        return enumerations;
-    }
-
-    public void setEnumerations(String enumerations) {
-        this.enumerations = enumerations;
-    }
-
     public String getEnumerationDefault() {
         return enumerationDefault;
     }
 
     public void setEnumerationDefault(String enumerationDefault) {
         this.enumerationDefault = enumerationDefault;
-    }
-
-    public boolean isLastModifiedField() {
-        return lastModifiedField;
-    }
-
-    public void setLastModifiedField(boolean lastModifiedField) {
-        this.lastModifiedField = lastModifiedField;
     }
 }

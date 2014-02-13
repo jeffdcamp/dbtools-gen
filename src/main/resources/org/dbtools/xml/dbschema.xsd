@@ -238,6 +238,14 @@
                                                         </xsd:restriction>
                                                     </xsd:simpleType>
                                                 </xsd:attribute>
+                                                <xsd:attribute name="notNull" use="optional" default="false">
+                                                    <xsd:simpleType>
+                                                        <xsd:restriction base="xsd:string">
+                                                            <xsd:enumeration value="true" />
+                                                            <xsd:enumeration value="false" />
+                                                        </xsd:restriction>
+                                                    </xsd:simpleType>
+                                                </xsd:attribute>
                                                 <xsd:attribute name="jdbcDataType" use="required">
                                                     <xsd:simpleType>
                                                         <xsd:restriction base="xsd:string">

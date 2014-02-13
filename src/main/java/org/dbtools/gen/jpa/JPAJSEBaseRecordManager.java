@@ -103,12 +103,12 @@ public class JPAJSEBaseRecordManager {
         addSpringSupport(createMethod);
 
         String updateContent = recordClassName + " mergedRecord = entityManager.merge(" + recordVarParamName + ");\n"
-                + "mergedRecord." + JPABaseRecordClassRenderer.CLEANUP_ORPHANS_METHODNAME + "(entityManager);  // work-around till CascadeType.DELETE-ORPHAN is supported\n";
+                + "mergedRecord." + JPABaseRecordClassRenderer.CLEANUP_ORPHANS_METHOD_NAME + "(entityManager);  // work-around till CascadeType.DELETE-ORPHAN is supported\n";
         JavaMethod updateMethod = myClass.addMethod(Access.PUBLIC, "void", "update", recordClassOnlyParam, updateContent);
         addSpringSupport(updateMethod);
 
         String deleteContent = recordClassName + " mergedRecord = entityManager.merge(" + recordVarParamName + ");\n"
-                + "mergedRecord." + JPABaseRecordClassRenderer.CLEANUP_ORPHANS_METHODNAME + "(entityManager);  // work-around till CascadeType.DELETE-ORPHAN is supported\n"
+                + "mergedRecord." + JPABaseRecordClassRenderer.CLEANUP_ORPHANS_METHOD_NAME + "(entityManager);  // work-around till CascadeType.DELETE-ORPHAN is supported\n"
                 + "entityManager.remove(mergedRecord);\n";
 
         JavaMethod deleteMethod = myClass.addMethod(Access.PUBLIC, "void", "delete", recordClassOnlyParam, deleteContent);

@@ -135,7 +135,7 @@ public class JPADBObjectBuilder implements DBObjectBuilder {
 
 
         // BaseRecord
-        baseRecordClass.generateObjectCode(database, table, packageName, author, version, psLog);
+        baseRecordClass.generate(database, table, packageName);
         baseRecordClass.writeToFile(outDir);
 
         if (testOutDir != null && testOutDir.length() > 0) {
@@ -148,7 +148,7 @@ public class JPADBObjectBuilder implements DBObjectBuilder {
         // Record
         if (!table.isEnumerationTable()) {
             if (!recordFile.exists()) {
-                recordClass.generateObjectCode(database, table, packageName, author, version, psLog);
+                recordClass.generate(table, packageName);
                 recordClass.writeToFile(outDir);
 
                 filesGenerated.add(recordFile.getPath());

@@ -53,12 +53,12 @@ public class PostgreSQLRenderer extends SchemaRenderer {
         for (SchemaTable requestedTable : requestedTables) {
             // add table header
             SchemaTable table = requestedTable;
-            List<SchemaField> fields = table.getFields();
+            List<SchemaTableField> fields = table.getFields();
 
             // determine sequence name
             String sequencerName = null;
             int sequencerStartValue = 1;
-            for (SchemaField field : fields) {
+            for (SchemaTableField field : fields) {
                 String fieldSeqName = field.getSequencerName();
                 if (fieldSeqName != null && fieldSeqName.length() > 0) {
                     sequencerName = fieldSeqName;
@@ -68,19 +68,19 @@ public class PostgreSQLRenderer extends SchemaRenderer {
             }
 
             // reset values for new table
-            SchemaField primaryKey = null;
-            List<SchemaField> indexFields = new ArrayList<>();
+            SchemaTableField primaryKey = null;
+            List<SchemaTableField> indexFields = new ArrayList<>();
 
             schema.append("CREATE TABLE ");
             schema.append(table.getName());
             schema.append(" (\n");
 
             // add fields
-            SchemaField enumPKField = null;
-            SchemaField enumValueField = null;
+            SchemaTableField enumPKField = null;
+            SchemaTableField enumValueField = null;
 
             for (int j = 0; j < fields.size(); j++) {
-                SchemaField field = fields.get(j);
+                SchemaTableField field = fields.get(j);
 
                 if (field.isPrimaryKey()) {
                     primaryKey = field;
@@ -185,7 +185,7 @@ public class PostgreSQLRenderer extends SchemaRenderer {
             schema.append("\n);");
 
             // create indexes
-            for (SchemaField indexField : indexFields) {
+            for (SchemaTableField indexField : indexFields) {
                 schema.append("\nCREATE INDEX ").append(requestedTable.getName()).append(indexField.getName()).append("_IDX ON ").append(requestedTable.getName()).append(" (").append(indexField.getName()).append(");");
             }
             schema.append("\n");
@@ -260,11 +260,11 @@ public class PostgreSQLRenderer extends SchemaRenderer {
         postSchema.append("\n\n");
 
         for (SchemaTable table : getTablesToGenerate(database, tablesToGenerate)) {
-            for (SchemaField field : table.getFields()) {
+            for (SchemaTableField field : table.getFields()) {
                 String sequencerName = field.getSequencerName();
                 int sequencerStartValue = field.getSequencerStartValue();
                 if (sequencerName != null && sequencerName.length() > 0) {
-                    if (sequencerStartValue == SchemaField.DEFAULT_INITIAL_INCREMENT) {
+                    if (sequencerStartValue == SchemaTableField.DEFAULT_INITIAL_INCREMENT) {
                         // SELECT SETVAL ('MYTABLE_SEQ', (SELECT MAX(ID)+1 FROM MYTABLE), false)
                         postSchema.append("SELECT SETVAL ('").append(sequencerName).append("', (SELECT MAX(").append(field.getName()).append(")+1 FROM ").append(table.getName()).append("), false);\n\n");
                     } else {
@@ -280,7 +280,7 @@ public class PostgreSQLRenderer extends SchemaRenderer {
     @Override
     public void generateDropSchema(boolean addIfExists, boolean ifExistsAtEndOfStmnt, StringBuilder schema, List<SchemaTable> tablesToGenerate, List<SchemaView> viewsToGenerate) {
         for (SchemaTable table : tablesToGenerate) {
-            for (SchemaField field : table.getFields()) {
+            for (SchemaTableField field : table.getFields()) {
                 String sequencerName = field.getSequencerName();
                 if (sequencerName != null && sequencerName.length() > 0) {
                     schema.append("DROP SEQUENCE ").append(sequencerName).append(";\n");
