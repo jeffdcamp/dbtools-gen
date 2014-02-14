@@ -15,25 +15,24 @@ import org.dbtools.codegen.JavaMethod;
 import org.dbtools.codegen.JavaVariable;
 import org.dbtools.schema.schemafile.SchemaTable;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Jeff
  */
-public class JPAJSEBaseRecordManager {
+public class JPABaseRecordManager {
 
     private JavaClass myClass;
     private boolean springSupport = false;
 
     /**
-     * Creates a new instance of JPAJSEBaseRecordManager.
+     * Creates a new instance of JPABaseRecordManager.
      */
-    public JPAJSEBaseRecordManager() {
+    public JPABaseRecordManager() {
     }
 
-    public void generateObjectCode(SchemaTable table, String packageName, String author, String version, PrintStream psLog) {
+    public void generateObjectCode(SchemaTable table, String packageName) {
         String TAB = JavaClass.getTab();
         String recordClassName = JPARecordClassRenderer.createClassName(table);
         String className = getClassName(table);

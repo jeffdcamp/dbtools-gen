@@ -10,8 +10,7 @@
 package org.dbtools.gen.android;
 
 
-import org.dbtools.gen.DBObjectBuilder;
-import org.dbtools.gen.GroupObjectBuilder;
+import org.dbtools.gen.DBTableObjectBuilder;
 import org.dbtools.schema.schemafile.SchemaDatabase;
 import org.dbtools.schema.schemafile.SchemaTable;
 
@@ -24,12 +23,12 @@ import java.util.List;
 /**
  * @author Jeff
  */
-public class AndroidDBObjectBuilder implements DBObjectBuilder {
+public class AndroidDBTableObjectBuilder implements DBTableObjectBuilder {
 
     private AndroidBaseRecordClassRenderer baseRecordClass = new AndroidBaseRecordClassRenderer();
     private AndroidRecordClassRenderer recordClass = new AndroidRecordClassRenderer();
-    private AndroidBaseRecordManager baseManagerClass;
-    private AndroidRecordManager managerClass;
+    private AndroidBaseRecordManager baseManagerClass = new AndroidBaseRecordManager();
+    private AndroidRecordManager managerClass = new AndroidRecordManager();
 
     private int filesGeneratedCount = 0;
     private List<String> filesGenerated = new ArrayList<>();
@@ -38,33 +37,7 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
     private SchemaTable table;
     private String packageName;
     private String outDir;
-    private String testOutDir;
     private PrintStream psLog;
-
-    /**
-     * Creates a new instance of AndroidDBObjectBuilder.
-     */
-    public AndroidDBObjectBuilder() {
-        this(false);
-    }
-
-    public AndroidDBObjectBuilder(boolean injectionSupport) {
-        baseManagerClass = new AndroidBaseRecordManager(injectionSupport);
-        managerClass = new AndroidRecordManager(injectionSupport);
-    }
-
-    public static void buildAll(String schemaFilename, String baseOutputDir, String basePackageName, boolean injectionSupport, boolean dateTimeSupport) {
-        AndroidDBObjectBuilder androidBuilder = new AndroidDBObjectBuilder(injectionSupport);
-        androidBuilder.setUseDateTime(dateTimeSupport);
-        GroupObjectBuilder groupObjectBuilder = new GroupObjectBuilder();
-        groupObjectBuilder.setXmlFilename(schemaFilename);
-        groupObjectBuilder.setTables(null); // null means all
-        groupObjectBuilder.setOutputBaseDir(baseOutputDir);
-        groupObjectBuilder.setPackageBase(basePackageName);
-        groupObjectBuilder.setObjectBuilder(androidBuilder);
-        groupObjectBuilder.build();
-        System.out.println("Generated [" + groupObjectBuilder.getObjectBuilder().getNumberFilesGenerated() + "] files.");
-    }
 
     @Override
     public String getName() {
@@ -114,16 +87,11 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
         String recordFileName = outDir + AndroidRecordClassRenderer.createClassName(table) + ".java";
         File baseRecordFile = new File(baseRecordFileName);
         File recordFile = new File(recordFileName);
-        File recordTestFile = new File(recordFileName + "Test");
 
 
         // BaseRecord
         baseRecordClass.generate(database, table, packageName);
         baseRecordClass.writeToFile(outDir);
-
-        if (testOutDir != null && testOutDir.length() > 0) {
-            baseRecordClass.writeTestsToFile(testOutDir);
-        }
 
         filesGenerated.add(baseRecordFile.getPath());
         filesGeneratedCount++;
@@ -137,12 +105,6 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
                 filesGenerated.add(recordFile.getPath());
                 filesGeneratedCount++;
             }
-
-            // if this test does not exist then write it
-            if (testOutDir != null && testOutDir.length() > 0 && !recordTestFile.exists()) {
-                recordClass.writeTestsToFile(testOutDir, table, packageName);
-            }
-
         }
         return true;
     }
@@ -162,8 +124,15 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
     }
 
     @Override
-    public void setUseDateTime(boolean b) {
-        baseRecordClass.setUseDateTime(b);
+    public void setDateTimeSupport(boolean b) {
+        baseRecordClass.setDateTimeSupport(b);
+    }
+
+    @Override
+    public void setInjectionSupport(boolean b) {
+        baseManagerClass.setInjectionSupport(b);
+        baseRecordClass.setInjectionSupport(b);
+        managerClass.setInjectionSupport(b);
     }
 
     @Override
@@ -179,26 +148,6 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
     @Override
     public void setSourceOutputDir(String outDir) {
         this.outDir = outDir;
-    }
-
-    @Override
-    public void setTestOutputDir(String outDir) {
-        this.testOutDir = outDir;
-    }
-
-    @Override
-    public void setLogPrintStream(PrintStream psLog) {
-        this.psLog = psLog;
-    }
-
-    @Override
-    public void setAuthor(String author) {
-
-    }
-
-    @Override
-    public void setVersion(String version) {
-
     }
 
     @Override

@@ -27,10 +27,6 @@ public class AndroidBaseRecordManager {
 
     private boolean injectionSupport = false;
 
-    public AndroidBaseRecordManager(boolean injectionSupport) {
-        this.injectionSupport = injectionSupport;
-    }
-
     /**
      * Creates a new instance of AndroidBaseRecordManager.
      */
@@ -263,5 +259,9 @@ public class AndroidBaseRecordManager {
 
     public void writeToFile(String outDir) {
         myClass.writeToDisk(outDir);
+    }
+
+    public void setInjectionSupport(boolean injectionSupport) {
+        this.injectionSupport = injectionSupport;
     }
 }

@@ -27,7 +27,7 @@ public class JPARecordClassRenderer {
 
     private JavaClass myClass;
     private JavaClass myTestClass;
-    private boolean uselegacyJUnit = false;
+    private boolean useLegacyJUnit = false;
 
     /**
      * Creates a new instance of JPARecordClassRenderer.
@@ -62,7 +62,7 @@ public class JPARecordClassRenderer {
     }
 
     private void initTestClass(String className) {
-        if (uselegacyJUnit) {
+        if (useLegacyJUnit) {
             myTestClass.addImport("junit.framework.*");
             myTestClass.setExtends("TestCase");
         } else {
@@ -71,7 +71,7 @@ public class JPARecordClassRenderer {
         }
 
 
-        if (uselegacyJUnit) {
+        if (useLegacyJUnit) {
             List<JavaVariable> params = new ArrayList<JavaVariable>();
             params.add(new JavaVariable("String", "testName"));
             myTestClass.addConstructor(Access.PUBLIC, params, "super(testName);");
@@ -85,17 +85,17 @@ public class JPARecordClassRenderer {
 
         // methods
         JavaMethod setUpMethod = myTestClass.addMethod(Access.PUBLIC, "void", "setUp", "testRecord = new " + className + "();\nassertNotNull(testRecord);");
-        if (!uselegacyJUnit) {
+        if (!useLegacyJUnit) {
             setUpMethod.addAnnotation("Before");
         }
 
         JavaMethod tearDownMethod = myTestClass.addMethod(Access.PUBLIC, "void", "tearDown", null);
-        if (!uselegacyJUnit) {
+        if (!useLegacyJUnit) {
             tearDownMethod.addAnnotation("After");
         }
 
         // create empty test to get rid of warnings
-        if (uselegacyJUnit) {
+        if (useLegacyJUnit) {
             myTestClass.addMethod(Access.PUBLIC, "void", "testEmpty", "");
         } else {
             JavaMethod emptyTestMethod = myTestClass.addMethod(Access.PUBLIC, "void", "emptyTest", "");

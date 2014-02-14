@@ -34,7 +34,8 @@ public class JPABaseRecordClassRenderer {
     private StringBuilder cleanupOrphansContent;
 
     private boolean includeXML = false;
-    private boolean useDateTime = false; // use joda datetime or jsr 310
+    private boolean dateTimeSupport = false; // use joda datetime or jsr 310
+    private boolean injectionSupport = false;
     private boolean useInnerEnums = true;
 
     public static final String CLEANUP_ORPHANS_METHOD_NAME = "cleanupOrphans";
@@ -235,24 +236,24 @@ public class JPABaseRecordClassRenderer {
                 String temporalImport = "javax.persistence.Temporal";
                 String temporalTypeImport = "javax.persistence.TemporalType";
                 String temporalAnnotation = "@Temporal(value = TemporalType.{0})";
-                if (!useDateTime && fieldType == SchemaFieldType.TIMESTAMP) {
+                if (!dateTimeSupport && fieldType == SchemaFieldType.TIMESTAMP) {
                     myClass.addImport(temporalImport);
                     myClass.addImport(temporalTypeImport);
 
                     newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "TIMESTAMP"));
-                } else if (!useDateTime && fieldType == SchemaFieldType.DATE) {
+                } else if (!dateTimeSupport && fieldType == SchemaFieldType.DATE) {
                     myClass.addImport(temporalImport);
                     myClass.addImport(temporalTypeImport);
 
                     newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "DATE"));
-                } else if (!useDateTime && fieldType == SchemaFieldType.TIMESTAMP) {
+                } else if (!dateTimeSupport && fieldType == SchemaFieldType.TIMESTAMP) {
                     myClass.addImport(temporalImport);
                     myClass.addImport(temporalTypeImport);
 
                     newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "TIMESTAMP"));
                 }
 
-                if (useDateTime && newVariable.getDataType().endsWith("DateTime")) {
+                if (dateTimeSupport && newVariable.getDataType().endsWith("DateTime")) {
                     myClass.addImport("org.hibernate.annotations.Type");
                     myClass.addImport("org.springframework.format.annotation.DateTimeFormat");
 
@@ -440,14 +441,14 @@ public class JPABaseRecordClassRenderer {
 //            getterMethod.setContent("return new " + typeText + "(" + newVariable.getName() + ");");
 //            myClass.addMethod(getterMethod);
 //        } else {
-        if (dateType && useDateTime) {
+        if (dateType && dateTimeSupport) {
             newVariable = new JavaVariable("org.joda.time.DateTime", fieldNameJavaStyle);
         } else {
             newVariable = new JavaVariable(typeText, fieldNameJavaStyle);
         }
 
         SchemaFieldType fieldType = field.getJdbcDataType();
-        boolean immutableDate = field.getJavaClassType() == Date.class && useDateTime; // org.joda.time.DateTime IS immutable
+        boolean immutableDate = field.getJavaClassType() == Date.class && dateTimeSupport; // org.joda.time.DateTime IS immutable
         if (!fieldType.isJavaTypePrimative() && !fieldType.isJavaTypeImmutable() && !immutableDate) {
             newVariable.setCloneSetterGetterVar(true);
         }
@@ -957,7 +958,11 @@ public class JPABaseRecordClassRenderer {
         this.includeXML = includeXML;
     }
 
-    public void setUseDateTime(boolean useDateTime) {
-        this.useDateTime = useDateTime;
+    public void setDateTimeSupport(boolean dateTimeSupport) {
+        this.dateTimeSupport = dateTimeSupport;
+    }
+
+    public void setInjectionSupport(boolean injectionSupport) {
+        this.injectionSupport = injectionSupport;
     }
 }

@@ -34,7 +34,8 @@ public class AndroidBaseRecordClassRenderer {
     private static final String ALL_KEYS_VAR_NAME = "ALL_KEYS";
     private boolean useLegacyJUnit = false;
 
-    private boolean useDateTime = false; // use datetime or jsr 310
+    private boolean injectionSupport = false;
+    private boolean dateTimeSupport = false; // use datetime or jsr 310
 
     public static final String PRIMARY_KEY_COLUMN = "PRIMARY_KEY_COLUMN";
 
@@ -215,11 +216,11 @@ public class AndroidBaseRecordClassRenderer {
                 if (field.isEnumeration()) {
                     value = newVariable.getName() + ".ordinal()";
                 } else if (fieldType == SchemaFieldType.DATE || fieldType == SchemaFieldType.TIMESTAMP || fieldType == SchemaFieldType.TIME) {
-                    if (!useDateTime) {
-                        String methodName = useDateTime ? "dateTimeToDBString" : "dateToDBString";
+                    if (!dateTimeSupport) {
+                        String methodName = dateTimeSupport ? "dateTimeToDBString" : "dateToDBString";
                         value = methodName + "(" + fieldNameJavaStyle + ")";
                     } else {
-                        String getTimeMethod = useDateTime ? ".getMillis()" : ".getTime()";
+                        String getTimeMethod = dateTimeSupport ? ".getMillis()" : ".getTime()";
 
                         value = fieldNameJavaStyle + " != null ? " + fieldNameJavaStyle + getTimeMethod + " : null";
                     }
@@ -342,13 +343,13 @@ public class AndroidBaseRecordClassRenderer {
         } else if (type == Date.class) {
             SchemaFieldType fieldType = field.getJdbcDataType();
             if (fieldType == SchemaFieldType.DATE) {
-                if (useDateTime) {
+                if (dateTimeSupport) {
                     return "dbStringToDateTime(values.getAsString(" + paramValue + "))";
                 } else {
                     return "dbStringToDate(values.getAsString(" + paramValue + "))";
                 }
             } else {
-                if (useDateTime) {
+                if (dateTimeSupport) {
                     return "new org.joda.time.DateTime(values.getAsLong(" + paramValue + "))";
                 } else {
                     return "new java.util.Date(values.getAsLong(" + paramValue + "))";
@@ -383,13 +384,13 @@ public class AndroidBaseRecordClassRenderer {
         } else if (type == Date.class) {
             SchemaFieldType fieldType = field.getJdbcDataType();
             if (fieldType == SchemaFieldType.DATE) {
-                if (useDateTime) {
+                if (dateTimeSupport) {
                     return "dbStringToDateTime(cursor.getString(cursor.getColumnIndex(" + paramValue + ")))";
                 } else {
                     return "dbStringToDate(cursor.getString(cursor.getColumnIndex(" + paramValue + ")))";
                 }
             } else {
-                if (useDateTime) {
+                if (dateTimeSupport) {
                     return "!cursor.isNull(cursor.getColumnIndex(" + paramValue + ")) ? new org.joda.time.DateTime(cursor.getLong(cursor.getColumnIndex(" + paramValue + "))) : null";
                 } else {
                     return "!cursor.isNull(cursor.getColumnIndex(" + paramValue + ")) ? new java.util.Date(cursor.getLong(cursor.getColumnIndex(" + paramValue + "))) : null";
@@ -494,14 +495,14 @@ public class AndroidBaseRecordClassRenderer {
 //            getterMethod.setContent("return new " + typeText + "(" + newVariable.getName() + ");");
 //            myClass.addMethod(getterMethod);
 //        } else {
-        if (dateType && useDateTime) {
+        if (dateType && dateTimeSupport) {
             newVariable = new JavaVariable("org.joda.time.DateTime", fieldNameJavaStyle);
         } else {
             newVariable = new JavaVariable(typeText, fieldNameJavaStyle);
         }
 
         SchemaFieldType fieldType = field.getJdbcDataType();
-        boolean immutableDate = field.getJavaClassType() == Date.class && useDateTime; // org.joda.time.DateTime IS immutable
+        boolean immutableDate = field.getJavaClassType() == Date.class && dateTimeSupport; // org.joda.time.DateTime IS immutable
         if (!fieldType.isJavaTypePrimative() && !fieldType.isJavaTypeImmutable() && !immutableDate) {
             newVariable.setCloneSetterGetterVar(true);
         }
@@ -806,7 +807,11 @@ public class AndroidBaseRecordClassRenderer {
         myTestClass.addMethod(testMethod);
     }
 
-    public void setUseDateTime(boolean useDateTime) {
-        this.useDateTime = useDateTime;
+    public void setDateTimeSupport(boolean dateTimeSupport) {
+        this.dateTimeSupport = dateTimeSupport;
+    }
+
+    public void setInjectionSupport(boolean injectionSupport) {
+        this.injectionSupport = injectionSupport;
     }
 }
