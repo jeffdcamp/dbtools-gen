@@ -11,6 +11,8 @@ package org.dbtools.gen.android;
 
 
 import org.dbtools.gen.DBTableObjectBuilder;
+import org.dbtools.renderer.SchemaRenderer;
+import org.dbtools.schema.dbmappings.DatabaseMapping;
 import org.dbtools.schema.schemafile.SchemaDatabase;
 import org.dbtools.schema.schemafile.SchemaTable;
 
@@ -62,6 +64,8 @@ public class AndroidDBTableObjectBuilder implements DBTableObjectBuilder {
             outDir += File.separatorChar;
         }
 
+        DatabaseMapping databaseMapping = SchemaRenderer.readXMLTypes(this.getClass(), SchemaRenderer.DEFAULT_TYPE_MAPPING_FILENAME, "sqlite");
+
         // Managers
         if (!table.isEnumerationTable()) {
             String managerFileName = outDir + AndroidRecordManager.getClassName(table) + ".java";
@@ -70,14 +74,12 @@ public class AndroidDBTableObjectBuilder implements DBTableObjectBuilder {
             // Base Manager
             baseManagerClass.generate(table, packageName);
             baseManagerClass.writeToFile(outDir);
-
             filesGeneratedCount++;
 
             // Manager
             if (!managerFile.exists()) {
                 managerClass.generate(table, packageName);
                 managerClass.writeToFile(outDir);
-
                 filesGeneratedCount++;
             }
         }
@@ -88,9 +90,8 @@ public class AndroidDBTableObjectBuilder implements DBTableObjectBuilder {
         File baseRecordFile = new File(baseRecordFileName);
         File recordFile = new File(recordFileName);
 
-
         // BaseRecord
-        baseRecordClass.generate(database, table, packageName);
+        baseRecordClass.generate(database, table, packageName, databaseMapping);
         baseRecordClass.writeToFile(outDir);
 
         filesGenerated.add(baseRecordFile.getPath());
@@ -127,7 +128,6 @@ public class AndroidDBTableObjectBuilder implements DBTableObjectBuilder {
     @Override
     public void setInjectionSupport(boolean b) {
         baseManagerClass.setInjectionSupport(b);
-        baseRecordClass.setInjectionSupport(b);
         managerClass.setInjectionSupport(b);
     }
 

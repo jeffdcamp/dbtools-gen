@@ -31,7 +31,6 @@ public class AndroidBaseRecordClassRenderer {
     public static final String CLEANUP_ORPHANS_METHOD_NAME = "cleanupOrphans";
     private static final String ALL_KEYS_VAR_NAME = "ALL_KEYS";
 
-    private boolean injectionSupport = false;
     private boolean dateTimeSupport = false; // use datetime or jsr 310
 
     public static final String PRIMARY_KEY_COLUMN = "PRIMARY_KEY_COLUMN";
@@ -42,46 +41,13 @@ public class AndroidBaseRecordClassRenderer {
     public AndroidBaseRecordClassRenderer() {
     }
 
-    public void generate(SchemaDatabase database, SchemaTable table, String packageName) {
+    public void generate(SchemaDatabase database, SchemaTable table, String packageName, DatabaseMapping databaseMapping) {
+        final String TAB = JavaClass.getTab();
+
         String className = createClassName(table);
 
-        // SQLite table field types
-        DatabaseMapping databaseMapping = SchemaRenderer.readXMLTypes(this.getClass(), SchemaRenderer.DEFAULT_TYPE_MAPPING_FILENAME, "sqlite");
-
         if (table.isEnumerationTable()) {
-            String enumClassName = createClassName(table);
-            List<TableEnum> enums = table.getTableEnums();
-
-            myClass = new JavaEnum(packageName, enumClassName, table.getTableEnumsText());
-            myClass.setCreateDefaultConstructor(false);
-
-            if (enums.size() > 0) {
-                myClass.addImport("java.util.Map");
-                myClass.addImport("java.util.EnumMap");
-                JavaVariable enumStringMapVar = myClass.addVariable("Map<" + enumClassName + ", String>", "enumStringMap",
-                        "new EnumMap<" + enumClassName + ", String>(" + enumClassName + ".class)");
-                enumStringMapVar.setStatic(true);
-
-                myClass.addImport("java.util.List");
-                myClass.addImport("java.util.ArrayList");
-                JavaVariable stringListVar = myClass.addVariable("List<String>", "stringList", "new ArrayList<String>()");
-                stringListVar.setStatic(true);
-
-                for (TableEnum enumItem : enums) {
-                    myClass.appendStaticInitializer("enumStringMap.put(" + enumItem.getName() + ", \"" + enumItem.getValue() + "\");");
-                    myClass.appendStaticInitializer("stringList.add(\"" + enumItem.getValue() + "\");");
-                    myClass.appendStaticInitializer("");
-                }
-
-                List<JavaVariable> getStringMParam = new ArrayList<>();
-                getStringMParam.add(new JavaVariable(enumClassName, "key"));
-                JavaMethod getStringM = myClass.addMethod(Access.PUBLIC, "String", "getString", getStringMParam, "return enumStringMap.get(key);");
-                getStringM.setStatic(true);
-
-                myClass.addImport("java.util.Collections");
-                JavaMethod getListM = myClass.addMethod(Access.PUBLIC, "List<String>", "getList", "return Collections.unmodifiableList(stringList);");
-                getListM.setStatic(true);
-            }
+            initClassAsEnum(packageName, table);
         } else {
             myClass = new JavaClass(packageName, className);
             myClass.addImport(packageName.substring(0, packageName.lastIndexOf('.')) + ".BaseRecord");
@@ -94,21 +60,7 @@ public class AndroidBaseRecordClassRenderer {
         cleanupOrphansContent = new StringBuilder();
 
         // header comment
-        // Do not place date in file because it will cause a new check-in to scm        
-        String fileHeaderComment;
-        fileHeaderComment = "/*\n";
-        fileHeaderComment += " * " + className + ".java\n";
-        fileHeaderComment += " *\n";
-        fileHeaderComment += " * GENERATED FILE - DO NOT EDIT\n";
-        fileHeaderComment += " * CHECKSTYLE:OFF\n";
-        fileHeaderComment += " * \n";
-        fileHeaderComment += " */\n";
-        myClass.setFileHeaderComment(fileHeaderComment);
-
-        // Since this is generated code.... suppress all warnings
-        myClass.addAnnotation("@SuppressWarnings(\"all\")");
-
-        final String TAB = JavaClass.getTab();
+        addHeader(className);
 
         boolean primaryKeyAdded = false;
 
@@ -130,9 +82,8 @@ public class AndroidBaseRecordClassRenderer {
         String setContentValuesContent = "";
         String setContentCursorContent = "";
 
-        List<SchemaTableField> fields = table.getFields();
         List<String> keys = new ArrayList<>();
-        for (SchemaTableField field : fields) {
+        for (SchemaTableField field : table.getFields()) {
             boolean primaryKey = field.isPrimaryKey();
 
             String fieldName = field.getName();
@@ -176,6 +127,7 @@ public class AndroidBaseRecordClassRenderer {
             createToStringMethodContent(field, fieldNameJavaStyle);
 
             // creates the variable OR changes the var to an enum
+
             JavaVariable newVariable;
             if (field.isEnumeration()) {
                 newVariable = generateEnumeration(field, fieldNameJavaStyle, packageName, database);
@@ -194,7 +146,6 @@ public class AndroidBaseRecordClassRenderer {
                 setIDParams.add(new JavaVariable(newVariable.getDataType(), "id"));
                 myClass.addMethod(Access.PUBLIC, "void", "setPrimaryKeyID", setIDParams, "this." + fieldNameJavaStyle + " = id;").addAnnotation("Override");
             }
-
 
             if (!myClass.isEnum()) {
                 myClass.addVariable(newVariable);
@@ -225,13 +176,10 @@ public class AndroidBaseRecordClassRenderer {
         }
 
         // SchemaDatabase variables
-
         String createTable = SqliteRenderer.generateTableSchema(table, databaseMapping);
         createTable = createTable.replace("\n", "\" + \n" + TAB + TAB + "\"");
         createTable = createTable.replace("\t", ""); // remove tabs
-//        createTable = createTable.replace(";", ""); // remove last ;
         myClass.addConstant("String", "CREATE_TABLE", createTable);
-
         myClass.addConstant("String", "DROP_TABLE", SchemaRenderer.generateDropSchema(true, table));
 
         // Content values
@@ -252,12 +200,6 @@ public class AndroidBaseRecordClassRenderer {
             }
             allKeysDefaultValue += "}";
 
-//            JavaVariable allKeysVar = new JavaVariable("String[]", ALL_KEYS_VAR_NAME);
-//            allKeysVar.setDefaultValue(allKeysDefaultValue);
-//            allKeysVar.setAccess(Access.PROTECTED);
-//            myClass.addConstant()
-//            allKeysVar.setStatic(true);
-//            myClass.addVariable(allKeysVar);
             JavaVariable allKeysVar = myClass.addConstant("String[]", ALL_KEYS_VAR_NAME, allKeysDefaultValue);
             allKeysVar.setAccess(Access.DEFAULT_NONE);
             myClass.addMethod(Access.PUBLIC, "String[]", "getAllKeys", "return " + ALL_KEYS_VAR_NAME + ".clone();").addAnnotation("Override");
@@ -275,7 +217,7 @@ public class AndroidBaseRecordClassRenderer {
         }
 
         // methods
-        addForgeignKeyData(database, table, packageName);
+        addForeignKeyData(database, table, packageName);
 
         // add method to cleanup many-to-one left-overs
         if (!myClass.isEnum()) {
@@ -305,6 +247,59 @@ public class AndroidBaseRecordClassRenderer {
 
 //            myClass.addMethod(Access.PUBLIC, "void", "cleanTable", tableParams, "BaseManager.executeSQL(db, DROP_TABLE);").setStatic(true);
 //            myClass.addMethod(Access.PUBLIC, "void", "createTable", tableParams, "BaseManager.executeSQL(db, CREATE_TABLE);").setStatic(true);
+        }
+
+    }
+
+    private void addHeader(String className) {
+        // Do not place date in file because it will cause a new check-in to scm
+        String fileHeaderComment;
+        fileHeaderComment = "/*\n";
+        fileHeaderComment += " * " + className + ".java\n";
+        fileHeaderComment += " *\n";
+        fileHeaderComment += " * GENERATED FILE - DO NOT EDIT\n";
+        fileHeaderComment += " * CHECKSTYLE:OFF\n";
+        fileHeaderComment += " * \n";
+        fileHeaderComment += " */\n";
+        myClass.setFileHeaderComment(fileHeaderComment);
+
+        // Since this is generated code.... suppress all warnings
+        myClass.addAnnotation("@SuppressWarnings(\"all\")");
+    }
+
+    private void initClassAsEnum(String packageName, SchemaTable table) {
+        String enumClassName = createClassName(table);
+        List<TableEnum> enums = table.getTableEnums();
+
+        myClass = new JavaEnum(packageName, enumClassName, table.getTableEnumsText());
+        myClass.setCreateDefaultConstructor(false);
+
+        if (enums.size() > 0) {
+            myClass.addImport("java.util.Map");
+            myClass.addImport("java.util.EnumMap");
+            JavaVariable enumStringMapVar = myClass.addVariable("Map<" + enumClassName + ", String>", "enumStringMap",
+                    "new EnumMap<" + enumClassName + ", String>(" + enumClassName + ".class)");
+            enumStringMapVar.setStatic(true);
+
+            myClass.addImport("java.util.List");
+            myClass.addImport("java.util.ArrayList");
+            JavaVariable stringListVar = myClass.addVariable("List<String>", "stringList", "new ArrayList<String>()");
+            stringListVar.setStatic(true);
+
+            for (TableEnum enumItem : enums) {
+                myClass.appendStaticInitializer("enumStringMap.put(" + enumItem.getName() + ", \"" + enumItem.getValue() + "\");");
+                myClass.appendStaticInitializer("stringList.add(\"" + enumItem.getValue() + "\");");
+                myClass.appendStaticInitializer("");
+            }
+
+            List<JavaVariable> getStringMParam = new ArrayList<>();
+            getStringMParam.add(new JavaVariable(enumClassName, "key"));
+            JavaMethod getStringM = myClass.addMethod(Access.PUBLIC, "String", "getString", getStringMParam, "return enumStringMap.get(key);");
+            getStringM.setStatic(true);
+
+            myClass.addImport("java.util.Collections");
+            JavaMethod getListM = myClass.addMethod(Access.PUBLIC, "List<String>", "getList", "return Collections.unmodifiableList(stringList);");
+            getListM.setStatic(true);
         }
 
     }
@@ -544,7 +539,7 @@ public class AndroidBaseRecordClassRenderer {
         myClass.addVariable(oneToOneVar, true);
     }
 
-    private void addForgeignKeyData(SchemaDatabase database, SchemaTable table, String packageName) {
+    private void addForeignKeyData(SchemaDatabase database, SchemaTable table, String packageName) {
         String TAB = JavaClass.getTab();
 
         // find any other tables that depend on this one (MANYTOONE) or other tables this table depends on (ONETOONE)
@@ -664,9 +659,5 @@ public class AndroidBaseRecordClassRenderer {
 
     public void setDateTimeSupport(boolean dateTimeSupport) {
         this.dateTimeSupport = dateTimeSupport;
-    }
-
-    public void setInjectionSupport(boolean injectionSupport) {
-        this.injectionSupport = injectionSupport;
     }
 }
