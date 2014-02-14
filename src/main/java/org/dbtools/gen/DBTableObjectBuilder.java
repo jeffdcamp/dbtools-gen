@@ -28,8 +28,6 @@ public interface DBTableObjectBuilder {
 
     public List<String> getFilesGenerated();
 
-    public void setIncludeXMLSupport(boolean b);
-
     public void setDateTimeSupport(boolean b);
 
     public void setInjectionSupport(boolean b);
@@ -43,6 +41,4 @@ public interface DBTableObjectBuilder {
     public void setPackageName(String packageName);
 
     public void setSourceOutputDir(String outDir);
-
-    public void setProperty(String key, Object value);
 }

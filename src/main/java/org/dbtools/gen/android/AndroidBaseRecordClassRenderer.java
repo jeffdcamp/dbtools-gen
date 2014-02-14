@@ -24,15 +24,12 @@ import java.util.*;
 public class AndroidBaseRecordClassRenderer {
 
     private JavaClass myClass;
-    private JavaClass myTestClass;
-    private boolean writeTestClass = true;
     private List<JavaEnum> enumerationClasses = new ArrayList<>();
     private StringBuilder toStringContent;
     private StringBuilder cleanupOrphansContent;
     private boolean useInnerEnums = true;
     public static final String CLEANUP_ORPHANS_METHOD_NAME = "cleanupOrphans";
     private static final String ALL_KEYS_VAR_NAME = "ALL_KEYS";
-    private boolean useLegacyJUnit = false;
 
     private boolean injectionSupport = false;
     private boolean dateTimeSupport = false; // use datetime or jsr 310
@@ -57,7 +54,6 @@ public class AndroidBaseRecordClassRenderer {
 
             myClass = new JavaEnum(packageName, enumClassName, table.getTableEnumsText());
             myClass.setCreateDefaultConstructor(false);
-            writeTestClass = false;
 
             if (enums.size() > 0) {
                 myClass.addImport("java.util.Map");
@@ -90,12 +86,7 @@ public class AndroidBaseRecordClassRenderer {
             myClass = new JavaClass(packageName, className);
             myClass.addImport(packageName.substring(0, packageName.lastIndexOf('.')) + ".BaseRecord");
             myClass.setExtends("BaseRecord");
-
-            writeTestClass = true;
         }
-
-        myTestClass = new JavaClass(packageName, className + "Test");
-        initTestClass();
 
         // prep
         toStringContent = new StringBuilder();
@@ -301,10 +292,6 @@ public class AndroidBaseRecordClassRenderer {
 
             // new record check
             myClass.addMethod(Access.PUBLIC, "boolean", "isNewRecord", "return getPrimaryKeyID() <= 0;");
-
-            // testing methods
-            JavaMethod toStringTestMethod = myTestClass.addMethod(Access.PUBLIC, "void", "testToString", "assertNotNull(testRecord.toString());");
-            toStringTestMethod.addAnnotation("Test");
         }
 
         // Enum classes need a cleanTable and createTable
@@ -442,8 +429,6 @@ public class AndroidBaseRecordClassRenderer {
                 newVariable = new JavaVariable(enumName, fieldNameJavaStyle);
                 newVariable.setGenerateSetterGetter(true);
                 newVariable.setDefaultValue(enumName + "." + field.getEnumerationDefault(), false);
-
-                addSetterGetterTest(newVariable);
             } else {
                 // ENUM with out a foreign key table
                 String javaStyleFieldName = field.getName(true);
@@ -459,8 +444,6 @@ public class AndroidBaseRecordClassRenderer {
                 newVariable = new JavaVariable(enumName, fieldNameJavaStyle);
                 newVariable.setGenerateSetterGetter(true);
                 newVariable.setDefaultValue(enumName + "." + field.getEnumerationDefault(), false);
-
-                addSetterGetterTest(newVariable);
             }
         } else {
             newVariable = new JavaVariable(field.getJavaTypeText(), fieldNameJavaStyle);
@@ -507,11 +490,7 @@ public class AndroidBaseRecordClassRenderer {
             newVariable.setCloneSetterGetterVar(true);
         }
 
-
         newVariable.setGenerateSetterGetter(true);
-        addSetterGetterTest(newVariable);
-//        }
-
         newVariable.setDefaultValue(defaultValue);
 
         return newVariable;
@@ -681,130 +660,6 @@ public class AndroidBaseRecordClassRenderer {
         for (JavaEnum enumClass : enumerationClasses) {
             enumClass.writeToDisk(directoryName);
         }
-    }
-
-    public void writeTestsToFile(String directoryName) {
-        if (writeTestClass) {
-            myTestClass.writeToDisk(directoryName);
-        }
-    }
-
-    private void initTestClass() {
-        myTestClass.addImport("org.junit.*");
-        myTestClass.addImport("static org.junit.Assert.*");
-
-        // header comment
-        //Date now = new Date();
-        //SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
-        String fileHeaderComment;
-        fileHeaderComment = "/*\n";
-        fileHeaderComment += " * " + myTestClass.getName() + ".java\n";
-        fileHeaderComment += " * \n";
-        fileHeaderComment += " * GENERATED FILE - DO NOT EDIT\n";
-        fileHeaderComment += " * \n";
-        fileHeaderComment += " */\n";
-        myTestClass.setFileHeaderComment(fileHeaderComment);
-
-        if (useLegacyJUnit) {
-            List<JavaVariable> params = new ArrayList<>();
-            params.add(new JavaVariable("String", "testName"));
-            myTestClass.addConstructor(Access.PUBLIC, params, "super(testName);");
-        } else {
-            myTestClass.setCreateDefaultConstructor(true);
-        }
-
-        // variables
-        myTestClass.addVariable(myClass.getName(), "testRecord");
-
-        // methods
-        JavaMethod setUpMethod = myTestClass.addMethod(Access.PUBLIC, "void", "setUp", "testRecord = new " + myClass.getName() + "();\nassertNotNull(testRecord);");
-        if (!useLegacyJUnit) {
-            setUpMethod.addAnnotation("Before");
-        }
-
-        JavaMethod tearDownMethod = myTestClass.addMethod(Access.PUBLIC, "void", "tearDown", null);
-        if (!useLegacyJUnit) {
-            tearDownMethod.addAnnotation("After");
-        }
-    }
-
-    private void addSetterGetterTest(JavaVariable newVariable) {
-        DataType dataType = DataType.getDataType(newVariable.getDataType());
-
-        JavaMethod testMethod = new JavaMethod(Access.PUBLIC, "void", "test" + JavaVariable.createBeanMethodName(newVariable.getName()));
-        StringBuilder testContent = new StringBuilder();
-
-        if (!useLegacyJUnit) {
-            testMethod.addAnnotation("Test");
-        }
-
-        switch (dataType) {
-            case STRING:
-                testContent.append("String testData = \"abc\";\n");
-                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
-                testContent.append("String recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
-                testContent.append("assertEquals(testData, recordData);");
-                break;
-            case CHAR:
-                testContent.append("char testData = 'z';\n");
-                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
-                testContent.append("char recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
-                testContent.append("assertEquals(testData, recordData);");
-                break;
-            case BOOLEAN:
-                testContent.append("boolean testData = false;\n");
-                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
-                testContent.append("boolean recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
-                testContent.append("assertEquals(testData, recordData);");
-                break;
-            case INT:
-                testContent.append("int testData = 123;\n");
-                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
-                testContent.append("int recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
-                testContent.append("assertEquals(testData, recordData);");
-                break;
-            case FLOAT:
-                testContent.append("float testData = 123.56f;\n");
-                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
-                testContent.append("float recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
-                testContent.append("assertEquals(testData, recordData, 0);");
-                break;
-            case DOUBLE:
-                testContent.append("double testData = 123.56;\n");
-                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData);\n");
-                testContent.append("double recordData = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
-                testContent.append("assertEquals(testData, recordData, 0);");
-                break;
-            case DATE:
-                myTestClass.addImport("java.util.Calendar");
-                myTestClass.addImport("java.util.Date");
-                testContent.append("Calendar testData = Calendar.getInstance();\n");
-                testContent.append("int testYear = 1980;\n");
-                testContent.append("int testMonth = 2;\n");
-                testContent.append("int testDay = 1;\n");
-                testContent.append("testData.set(1980, 2, 1);\n");
-                testContent.append("testRecord.").append(newVariable.getSetterMethodName()).append("(testData.getTime());\n");
-                testContent.append("Date recordDataDate = testRecord.").append(newVariable.getGetterMethodName()).append("();\n");
-                testContent.append("Calendar recordData = Calendar.getInstance();\n");
-                testContent.append("recordData.setTime(recordDataDate);\n");
-                testContent.append("int year = recordData.get(Calendar.YEAR);\n");
-                testContent.append("int month = recordData.get(Calendar.MONTH);\n");
-                testContent.append("int day = recordData.get(Calendar.DATE);\n");
-                testContent.append("assertEquals(testYear, year);\n");
-                testContent.append("assertEquals(testMonth, month);\n");
-                testContent.append("assertEquals(testDay, day);\n");
-                break;
-
-//            case OBJECT:
-//                testContent.append("Object testData = 123.56;\n");
-//                testContent.append("testRecord."+ newVariable.getSetterMethodName() +"(testData);\n");
-//                testContent.append("double recordData = testRecord."+ newVariable.getGetterMethodName() +"();\n");
-//                testContent.append("assertEquals(testData, recordData);");
-
-        }
-
-        testMethod.setContent(testContent.toString());
-        myTestClass.addMethod(testMethod);
     }
 
     public void setDateTimeSupport(boolean dateTimeSupport) {

@@ -118,11 +118,6 @@ public class JPADBTableObjectBuilder implements DBTableObjectBuilder {
     }
 
     @Override
-    public void setIncludeXMLSupport(boolean b) {
-        baseRecordClass.setIncludeXML(b);
-    }
-
-    @Override
     public void setDateTimeSupport(boolean b) {
         baseRecordClass.setDateTimeSupport(b);
     }
@@ -156,9 +151,5 @@ public class JPADBTableObjectBuilder implements DBTableObjectBuilder {
     @Override
     public void setDatabase(SchemaDatabase dbSchema) {
         this.database = dbSchema;
-    }
-
-    @Override
-    public void setProperty(String key, Object value) {
     }
 }

@@ -11,7 +11,6 @@ package org.dbtools.gen.android;
 
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
-import org.dbtools.codegen.JavaMethod;
 import org.dbtools.codegen.JavaVariable;
 import org.dbtools.schema.schemafile.SchemaTable;
 
@@ -26,7 +25,6 @@ import java.util.List;
 public class AndroidRecordClassRenderer {
 
     private JavaClass myClass;
-    private JavaClass myTestClass;
 
     /**
      * Creates a new instance of AndroidRecordClassRenderer.
@@ -64,40 +62,11 @@ public class AndroidRecordClassRenderer {
         }
     }
 
-    private void initTestClass(String className) {
-        myTestClass.addImport("org.junit.*");
-        myTestClass.addImport("static org.junit.Assert.*");
-        myTestClass.setCreateDefaultConstructor(true);
-
-        // variables
-        myTestClass.addVariable(className, "testRecord");
-
-
-        // methods
-        JavaMethod setUpMethod = myTestClass.addMethod(Access.PUBLIC, "void", "setUp", "testRecord = new " + className + "();\nassertNotNull(testRecord);");
-        setUpMethod.addAnnotation("Before");
-
-        JavaMethod tearDownMethod = myTestClass.addMethod(Access.PUBLIC, "void", "tearDown", null);
-        tearDownMethod.addAnnotation("After");
-
-        // create empty test to get rid of warnings
-        JavaMethod emptyTestMethod = myTestClass.addMethod(Access.PUBLIC, "void", "emptyTest", "");
-        emptyTestMethod.addAnnotation("Test");
-    }
-
     public static String createClassName(SchemaTable table) {
         return table.getClassName();
     }
 
     public void writeToFile(String directoryname) {
         myClass.writeToDisk(directoryname);
-    }
-
-    public void writeTestsToFile(String directoryname, SchemaTable table, String packageName) {
-        String className = createClassName(table);
-        myTestClass = new JavaClass(packageName, className + "Test");
-        initTestClass(className);
-
-        myTestClass.writeToDisk(directoryname);
     }
 }

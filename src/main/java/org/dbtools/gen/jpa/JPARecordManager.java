@@ -63,7 +63,7 @@ public class JPARecordManager {
             myClass.addConstructor(Access.PUBLIC, null, "super(null);");
         }
 
-        List<JavaVariable> constParams = new ArrayList<JavaVariable>();
+        List<JavaVariable> constParams = new ArrayList<>();
         myClass.addImport("javax.persistence.EntityManager");
         constParams.add(new JavaVariable("EntityManager", "em"));
         String constContent = "super(em);";

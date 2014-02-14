@@ -57,13 +57,13 @@ public class JPABaseRecordManager {
         myClass.setCreateDefaultConstructor(false);
         myClass.addConstructor(Access.PRIVATE, null, null);
 
-        List<JavaVariable> constParams = new ArrayList<JavaVariable>();
+        List<JavaVariable> constParams = new ArrayList<>();
         constParams.add(new JavaVariable("EntityManager", "em"));
         String constContent = "";
-        constContent = "if (em == null) {\n";
-        constContent = TAB + "throw new IllegalArgumentException(\"EntityManager parameter cannot be null\");\n";
-        constContent = "}\n";
-        constContent = "this.entityManager = em;";
+        constContent += "if (em == null) {\n";
+        constContent += TAB + "throw new IllegalArgumentException(\"EntityManager parameter cannot be null\");\n";
+        constContent += "}\n";
+        constContent += "this.entityManager = em;";
         myClass.addConstructor(Access.PUBLIC, constParams, constContent);
 
         // singleton factory
@@ -82,7 +82,7 @@ public class JPABaseRecordManager {
         factoryMethodContet += "return manager;\n";
 
 
-        List<JavaVariable> factoryParams = new ArrayList<JavaVariable>();
+        List<JavaVariable> factoryParams = new ArrayList<>();
         factoryParams.add(new JavaVariable("EntityManager", "em"));
         JavaMethod factoryMethod = myClass.addMethod(Access.PUBLIC, managerClassName, "get" + managerClassName, factoryParams, factoryMethodContet);
         factoryMethod.setStatic(true);
@@ -95,7 +95,7 @@ public class JPABaseRecordManager {
 
 
         String recordVarParamName = "record";
-        List<JavaVariable> recordClassOnlyParam = new ArrayList<JavaVariable>();
+        List<JavaVariable> recordClassOnlyParam = new ArrayList<>();
         recordClassOnlyParam.add(new JavaVariable(recordClassName, recordVarParamName));
 
         JavaMethod createMethod = myClass.addMethod(Access.PUBLIC, "void", "create", recordClassOnlyParam, "entityManager.persist(" + recordVarParamName + ");");
@@ -122,7 +122,7 @@ public class JPABaseRecordManager {
         JavaMethod saveMethod = myClass.addMethod(Access.PUBLIC, "void", "save", recordClassOnlyParam, saveContent);
         addSpringSupport(saveMethod);
 
-        List<JavaVariable> findParams = new ArrayList<JavaVariable>();
+        List<JavaVariable> findParams = new ArrayList<>();
         findParams.add(new JavaVariable("Object", "pk"));
         myClass.addMethod(Access.PUBLIC, recordClassName, "find", findParams, "return (" + recordClassName + ") entityManager.find(" + recordClassName + ".class, pk);");
 

@@ -9,16 +9,11 @@
  */
 package org.dbtools.gen.jpa;
 
-import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
-import org.dbtools.codegen.JavaMethod;
-import org.dbtools.codegen.JavaVariable;
 import org.dbtools.schema.schemafile.SchemaTable;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author Jeff
@@ -26,8 +21,6 @@ import java.util.List;
 public class JPARecordClassRenderer {
 
     private JavaClass myClass;
-    private JavaClass myTestClass;
-    private boolean useLegacyJUnit = false;
 
     /**
      * Creates a new instance of JPARecordClassRenderer.
@@ -57,69 +50,13 @@ public class JPARecordClassRenderer {
         //myClass.addImplements("java.io.Serializable");
         myClass.addImport("javax.persistence.Table");
         myClass.addAnnotation("@Table(name=" + baseClassName + ".TABLE)");
-
-//        psLog.println("Generation complete!");
-    }
-
-    private void initTestClass(String className) {
-        if (useLegacyJUnit) {
-            myTestClass.addImport("junit.framework.*");
-            myTestClass.setExtends("TestCase");
-        } else {
-            myTestClass.addImport("org.junit.*");
-            myTestClass.addImport("static org.junit.Assert.*");
-        }
-
-
-        if (useLegacyJUnit) {
-            List<JavaVariable> params = new ArrayList<JavaVariable>();
-            params.add(new JavaVariable("String", "testName"));
-            myTestClass.addConstructor(Access.PUBLIC, params, "super(testName);");
-        } else {
-            myTestClass.setCreateDefaultConstructor(true);
-        }
-
-        // variables
-        myTestClass.addVariable(className, "testRecord");
-
-
-        // methods
-        JavaMethod setUpMethod = myTestClass.addMethod(Access.PUBLIC, "void", "setUp", "testRecord = new " + className + "();\nassertNotNull(testRecord);");
-        if (!useLegacyJUnit) {
-            setUpMethod.addAnnotation("Before");
-        }
-
-        JavaMethod tearDownMethod = myTestClass.addMethod(Access.PUBLIC, "void", "tearDown", null);
-        if (!useLegacyJUnit) {
-            tearDownMethod.addAnnotation("After");
-        }
-
-        // create empty test to get rid of warnings
-        if (useLegacyJUnit) {
-            myTestClass.addMethod(Access.PUBLIC, "void", "testEmpty", "");
-        } else {
-            JavaMethod emptyTestMethod = myTestClass.addMethod(Access.PUBLIC, "void", "emptyTest", "");
-            emptyTestMethod.addAnnotation("Test");
-        }
     }
 
     public static String createClassName(SchemaTable table) {
         return table.getClassName();
     }
 
-    public String getFilename() {
-        return myClass.getFilename();
-    }
-
-    public void writeToFile(String directoryname) {
-        myClass.writeToDisk(directoryname);
-    }
-
-    public void writeTestsToFile(String directoryname, SchemaTable table, String packageName) {
-        String className = createClassName(table);
-        myTestClass = new JavaClass(packageName, className + "Test");
-        initTestClass(className);
-
-        myTestClass.writeToDisk(directoryname);
+    public void writeToFile(String directoryName) {
+        myClass.writeToDisk(directoryName);
     }
 }
