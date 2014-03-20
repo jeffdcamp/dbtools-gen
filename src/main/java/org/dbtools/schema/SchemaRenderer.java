@@ -55,14 +55,14 @@ public class SchemaRenderer implements Runnable {
     private String mappingFilename = DEFAULT_TYPE_MAPPING_FILENAME;
 
     static {
-        dbRenderers.put(DerbyRenderer.RENDERER_NAME, "com.jdc.db.schema.DerbyRenderer");
-        dbRenderers.put(SqliteRenderer.RENDERER_NAME, "com.jdc.db.schema.SqliteRenderer");
-        dbRenderers.put(FireBirdRenderer.RENDERER_NAME, "com.jdc.db.schema.FireBirdRenderer");
-        dbRenderers.put(HSQLDBRenderer.RENDERER_NAME, "com.jdc.db.schema.HSQLDBRenderer");
-        dbRenderers.put(IAnywhereRenderer.RENDERER_NAME, "com.jdc.db.schema.IAnywhereRenderer");
-        dbRenderers.put(MySQLRenderer.RENDERER_NAME, "com.jdc.db.schema.MySQLRenderer");
-        dbRenderers.put(PostgreSQLRenderer.RENDERER_NAME, "com.jdc.db.schema.PostgreSQLRenderer");
-        dbRenderers.put(Oracle9Renderer.RENDERER_NAME, "com.jdc.db.schema.Oracle9Renderer");
+        dbRenderers.put(DerbyRenderer.RENDERER_NAME, DerbyRenderer.class.getName());
+        dbRenderers.put(SqliteRenderer.RENDERER_NAME, SqliteRenderer.class.getName());
+        dbRenderers.put(FireBirdRenderer.RENDERER_NAME, FireBirdRenderer.class.getName());
+        dbRenderers.put(HSQLDBRenderer.RENDERER_NAME, HSQLDBRenderer.class.getName());
+        dbRenderers.put(IAnywhereRenderer.RENDERER_NAME, IAnywhereRenderer.class.getName());
+        dbRenderers.put(MySQLRenderer.RENDERER_NAME, MySQLRenderer.class.getName());
+        dbRenderers.put(PostgreSQLRenderer.RENDERER_NAME, PostgreSQLRenderer.class.getName());
+        dbRenderers.put(Oracle9Renderer.RENDERER_NAME, Oracle9Renderer.class.getName());
     }
 
     /**
