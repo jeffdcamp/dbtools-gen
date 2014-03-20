@@ -231,6 +231,7 @@ public class SchemaRenderer implements Runnable {
         File outFile = new File(pathname);
 
         try {
+            outFile.getParentFile().mkdirs();
             PrintStream fps = new PrintStream(new FileOutputStream(outFile));
 
             fps.print(schema);
