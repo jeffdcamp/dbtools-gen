@@ -498,6 +498,12 @@ public class JPABaseRecordClassRenderer {
         }
 
         myClass.addVariable(oneToOneVar, true);
+
+        if (field.isPrimaryKey() && !myClass.isEnum()) {
+            JavaMethod getIDMethod = new JavaMethod(Access.PUBLIC, field.getJavaTypeText(), "getID");
+            getIDMethod.setContent("return " + varName + ".getID();");
+            myClass.addMethod(getIDMethod);
+        }
     }
 
     private void addForeignKeyData(SchemaDatabase dbSchema, SchemaEntity entity, String packageName) {
@@ -513,11 +519,15 @@ public class JPABaseRecordClassRenderer {
                         String fkTableName = tmpTable.getName();
                         ClassInfo fkTableClassInfo = dbSchema.getTableClassInfo(fkTableName);
                         String fkTableClassName = fkTableClassInfo.getClassName();
-                        String fkTableVarName = JavaClass.formatToJavaVariable(fkTableClassName); // mealItem
                         String newImport = fkTableClassInfo.getPackageName(packageName) + ".*";
 
-                        String items = fkTableVarName + "Items";
-                        String itemsToDelete = fkTableVarName + "ItemsToDelete";
+                        String customVarName = fkField.getVarName();
+                        String listVarName = customVarName != null && !customVarName.isEmpty() ?
+                                JavaClass.formatToJavaVariable(customVarName, fkTableClassName) :
+                                JavaClass.formatToJavaVariable(fkTableClassName);
+
+                        String items = listVarName + "Items";
+                        String itemsToDelete = listVarName + "ItemsToDelete";
 
                         myClass.addImport(newImport);
                         myClass.addImport("javax.persistence.OneToMany");
@@ -532,11 +542,15 @@ public class JPABaseRecordClassRenderer {
                         myClass.addMethod(Access.PUBLIC, listType, JavaVariable.getGetterMethodName(listType, items), "return java.util.Collections.unmodifiableSet(" + items + ");");
 
                         ClassInfo mappedByClassInfo = dbSchema.getTableClassInfo(fkField.getForeignKeyTable());
-                        String mappedByVarName = JavaClass.formatToJavaVariable(mappedByClassInfo.getClassName());
+
+                        String mappedByVarName = fkField.getVarName();
+                        if (mappedByVarName == null || mappedByVarName.isEmpty()) {
+                            mappedByVarName = JavaClass.formatToJavaVariable(mappedByClassInfo.getClassName());
+                        }
 
                         myClass.addImport("javax.persistence.FetchType");
 
-                        // determine the casecade type
+                        // determine the cascade type
                         String cascadeType = fkField.getForeignKeyCascadeType();
                         String cascadeTypeAnnotation = "";
                         if (cascadeType != null && cascadeType.length() > 0) {
@@ -554,9 +568,9 @@ public class JPABaseRecordClassRenderer {
                         }
 
                         // addItem method
-                        JavaMethod addMethod = new JavaMethod("add" + fkTableClassName);
+                        JavaMethod addMethod = new JavaMethod(JavaClass.formatToJavaMethod("add", listVarName));
                         addMethod.setAccess(Access.PUBLIC);
-                        addMethod.addParameter(new JavaVariable(fkTableClassName, fkTableVarName));
+                        addMethod.addParameter(new JavaVariable(fkTableClassName, listVarName));
                         String addMethodContent = "";
 
                         ClassInfo myTableClassInfo = dbSchema.getTableClassInfo(fkField.getForeignKeyTable());
@@ -570,8 +584,8 @@ public class JPABaseRecordClassRenderer {
 
                         String setterMethodName = "set" + fieldName.toUpperCase().charAt(0) + fieldName.substring(1, fieldName.length());
 
-                        addMethodContent += fkTableVarName + "." + setterMethodName + "((" + tableClassName + ")this);\n";
-                        addMethodContent += items + ".add(" + fkTableVarName + ");\n";
+                        addMethodContent += listVarName + "." + setterMethodName + "((" + tableClassName + ")this);\n";
+                        addMethodContent += items + ".add(" + listVarName + ");\n";
                         addMethod.setContent(addMethodContent);
                         myClass.addMethod(addMethod);
 
@@ -584,24 +598,24 @@ public class JPABaseRecordClassRenderer {
                         //itemsToDeleteList.setGenerateGetter(true);
                         //itemsToDeleteList.setGenerateGetterAccess(Access.PROTECTED);
 
-                        JavaMethod removeMethod = new JavaMethod("delete" + fkTableClassName);
+                        JavaMethod removeMethod = new JavaMethod(JavaClass.formatToJavaMethod("delete", listVarName));
                         removeMethod.setAccess(Access.PUBLIC);
-                        removeMethod.addParameter(new JavaVariable(fkTableClassName, fkTableVarName));
+                        removeMethod.addParameter(new JavaVariable(fkTableClassName, listVarName));
 
                         String removeMethodContent = "";
-                        removeMethodContent += "if (" + fkTableVarName + " == null) {\n";
+                        removeMethodContent += "if (" + listVarName + " == null) {\n";
                         removeMethodContent += TAB + "return;\n";
                         removeMethodContent += "}\n\n";
                         removeMethodContent += "java.util.Iterator<" + fkTableClassName + "> itr = " + items + ".iterator();\n";
                         removeMethodContent += "while (itr.hasNext()) {\n";
                         removeMethodContent += TAB + fkTableClassName + " item = itr.next();\n";
-                        removeMethodContent += TAB + "if (item.equals(" + fkTableVarName + ")) {\n";
+                        removeMethodContent += TAB + "if (item.equals(" + listVarName + ")) {\n";
                         removeMethodContent += TAB + TAB + "itr.remove();\n";
                         removeMethodContent += TAB + TAB + itemsToDelete + ".add(item);\n";
                         removeMethodContent += TAB + TAB + "break;\n";
                         removeMethodContent += TAB + "}\n";
                         removeMethodContent += TAB + "if (!itr.hasNext()) {\n";
-                        removeMethodContent += TAB + TAB + "throw new IllegalStateException(\"deleteItem failed: Cannot find itemID \"+ " + fkTableVarName + ".getID());\n";
+                        removeMethodContent += TAB + TAB + "throw new IllegalStateException(\"deleteItem failed: Cannot find itemID \"+ " + listVarName + ".getID());\n";
                         removeMethodContent += TAB + "}\n";
                         removeMethodContent += "}";
 

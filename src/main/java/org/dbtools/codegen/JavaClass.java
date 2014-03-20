@@ -9,8 +9,6 @@
  */
 package org.dbtools.codegen;
 
-import org.dbtools.codegen.ClassType;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -779,22 +777,46 @@ public class JavaClass {
      * Method that makes sure that a string is java bean compliant.  Makes
      * sure that first letter is lowercase
      *
-     * @param item Incoming string
+     * @param items Incoming String(s)
      * @return String that is adjusted to a proper java variable standards
      */
-    public static String formatToJavaVariable(String item) {
-        return item.substring(0, 1).toLowerCase() + item.substring(1);
+    public static String formatToJavaVariable(String... items) {
+        String formattedName = "";
+
+        boolean firstItem = true;
+        for (String item : items) {
+            if (firstItem) {
+                formattedName += item.substring(0, 1).toLowerCase() + item.substring(1);
+                firstItem = false;
+            } else {
+                formattedName += item.substring(0, 1).toUpperCase() + item.substring(1);
+            }
+        }
+
+        return formattedName;
     }
 
     /**
      * Method that makes sure that a string is java bean compliant.  Makes
      * sure that first letter is upper case
      *
-     * @param item Incoming string
+     * @param items Incoming String(s)
      * @return String that is adjusted to a proper java variable standards
      */
-    public static String formatToJavaMethod(String item) {
-        return item.substring(0, 1).toUpperCase() + item.substring(1);
+    public static String formatToJavaMethod(String... items) {
+        String formattedName = "";
+
+        boolean firstItem = true;
+        for (String item : items) {
+            if (firstItem) {
+                formattedName += item.substring(0, 1).toLowerCase() + item.substring(1);
+                firstItem = false;
+            } else {
+                formattedName += item.substring(0, 1).toUpperCase() + item.substring(1);
+            }
+        }
+
+        return formattedName;
     }
 
     public String getFileHeaderComment() {

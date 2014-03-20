@@ -565,11 +565,15 @@ public class AndroidBaseRecordClassRenderer {
                         String fkTableName = tmpTable.getName();
                         ClassInfo fkTableClassInfo = database.getTableClassInfo(fkTableName);
                         String fkTableClassName = fkTableClassInfo.getClassName();
-                        String fkTableVarName = JavaClass.formatToJavaVariable(fkTableClassName); // mealItem
                         String newImport = fkTableClassInfo.getPackageName(packageName) + ".*";
 
-                        String items = fkTableVarName + "Items";
-                        String itemsToDelete = fkTableVarName + "ItemsToDelete";
+                        String customVarName = fkField.getVarName();
+                        String listVarName = customVarName != null && !customVarName.isEmpty() ?
+                                JavaClass.formatToJavaVariable(customVarName, entityName) :
+                                JavaClass.formatToJavaVariable(fkTableClassName);
+
+                        String items = listVarName + "Items";
+                        String itemsToDelete = listVarName + "ItemsToDelete";
 
                         myClass.addImport(newImport);
 
@@ -588,7 +592,7 @@ public class AndroidBaseRecordClassRenderer {
                         // addItem method
                         JavaMethod addMethod = new JavaMethod("add" + fkTableClassName);
                         addMethod.setAccess(Access.PUBLIC);
-                        addMethod.addParameter(new JavaVariable(fkTableClassName, fkTableVarName));
+                        addMethod.addParameter(new JavaVariable(fkTableClassName, listVarName));
                         String addMethodContent = "";
 
                         ClassInfo myTableClassInfo = database.getTableClassInfo(fkField.getForeignKeyTable());
@@ -602,8 +606,8 @@ public class AndroidBaseRecordClassRenderer {
 
                         String setterMethodName = "set" + fieldName.toUpperCase().charAt(0) + fieldName.substring(1, fieldName.length());
 
-                        addMethodContent += fkTableVarName + "." + setterMethodName + "((" + tableClassName + ")this);\n";
-                        addMethodContent += items + ".add(" + fkTableVarName + ");\n";
+                        addMethodContent += listVarName + "." + setterMethodName + "((" + tableClassName + ")this);\n";
+                        addMethodContent += items + ".add(" + listVarName + ");\n";
                         addMethod.setContent(addMethodContent);
                         myClass.addMethod(addMethod);
 
@@ -613,22 +617,22 @@ public class AndroidBaseRecordClassRenderer {
 
                         JavaMethod removeMethod = new JavaMethod("delete" + fkTableClassName);
                         removeMethod.setAccess(Access.PUBLIC);
-                        removeMethod.addParameter(new JavaVariable(fkTableClassName, fkTableVarName));
+                        removeMethod.addParameter(new JavaVariable(fkTableClassName, listVarName));
 
                         String removeMethodContent = "";
-                        removeMethodContent += "if (" + fkTableVarName + " == null) {\n";
+                        removeMethodContent += "if (" + listVarName + " == null) {\n";
                         removeMethodContent += TAB + "return;\n";
                         removeMethodContent += "}\n\n";
                         removeMethodContent += "java.util.Iterator<" + fkTableClassName + "> itr = " + items + ".iterator();\n";
                         removeMethodContent += "while (itr.hasNext()) {\n";
                         removeMethodContent += TAB + fkTableClassName + " item = itr.next();\n";
-                        removeMethodContent += TAB + "if (item.equals(" + fkTableVarName + ")) {\n";
+                        removeMethodContent += TAB + "if (item.equals(" + listVarName + ")) {\n";
                         removeMethodContent += TAB + TAB + "itr.remove();\n";
                         removeMethodContent += TAB + TAB + itemsToDelete + ".add(item);\n";
                         removeMethodContent += TAB + TAB + "break;\n";
                         removeMethodContent += TAB + "}\n";
                         removeMethodContent += TAB + "if (!itr.hasNext()) {\n";
-                        removeMethodContent += TAB + TAB + "throw new IllegalStateException(\"deleteItem failed: Cannot find itemID \"+ " + fkTableVarName + ".getPrimaryKeyID());\n";
+                        removeMethodContent += TAB + TAB + "throw new IllegalStateException(\"deleteItem failed: Cannot find itemID \"+ " + listVarName + ".getPrimaryKeyID());\n";
                         removeMethodContent += TAB + "}\n";
                         removeMethodContent += "}";
 

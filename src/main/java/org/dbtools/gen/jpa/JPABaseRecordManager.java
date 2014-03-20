@@ -130,6 +130,25 @@ public class JPABaseRecordManager {
         String findCountContent = "Query q = getEntityManager().createNativeQuery(\"SELECT count(0) FROM \" + " + recordClassName + ".TABLE);\n"
                 + "return ((Number) q.getSingleResult()).longValue();\n";
         myClass.addMethod(Access.PUBLIC, "long", "findCount", findCountContent);
+
+        addFindAllMethod(myClass, recordClassName);
+        addFindCountMethod(myClass, recordClassName);
+    }
+
+    public void addFindCountMethod(JavaClass myClass, String recordClassName) {
+        myClass.addImport("javax.persistence.Query");
+        String content = "Query q = getEntityManager().createNativeQuery(\"SELECT count(0) FROM \" + " + recordClassName + ".TABLE);\n"
+                + "return ((Number) q.getSingleResult()).longValue();\n";
+        myClass.addMethod(Access.PUBLIC, "long", "findCount", content);
+    }
+
+    public void addFindAllMethod(JavaClass myClass, String recordClassName) {
+        myClass.addImport("javax.persistence.Query");
+        String content = "Query q = getEntityManager().createQuery(\"SELECT o FROM \" + " + recordClassName + ".TABLE_CLASSNAME + \" o\");\n"
+                + "return q.getResultList();\n";
+
+        myClass.addImport("java.util.List");
+        myClass.addMethod(Access.PUBLIC, "List<" + recordClassName + ">", "findAll", content);
     }
 
     private void addSpringSupport(JavaMethod method) {
