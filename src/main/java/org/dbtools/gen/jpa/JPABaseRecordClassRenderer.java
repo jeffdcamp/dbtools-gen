@@ -44,11 +44,13 @@ public class JPABaseRecordClassRenderer {
     public JPABaseRecordClassRenderer() {
     }
 
-    public void generate(SchemaDatabase schemaDatabase, SchemaTable table, String packageName) {
-        String className = createClassName(table);
+    public void generate(SchemaDatabase schemaDatabase, SchemaEntity entity, String packageName) {
+        String className = createClassName(entity);
 
-        if (table.isEnumerationTable()) {
-            String enumClassName = createClassName(table);
+        if (entity.isEnumerationTable() && entity.getType() == SchemaEntityType.TABLE) {
+            SchemaTable table = (SchemaTable) entity;
+
+            String enumClassName = createClassName(entity);
             myClass = new JavaEnum(packageName, enumClassName, table.getTableEnumsText());
             myClass.setCreateDefaultConstructor(false);
 
@@ -118,12 +120,12 @@ public class JPABaseRecordClassRenderer {
         boolean primaryKeyAdded = false;
 
         // constants and variables
-        String tableName = table.getName();
+        String tableName = entity.getName();
         myClass.addConstant("String", "TABLE", tableName);
-        myClass.addConstant("String", "TABLE_CLASSNAME", JPARecordClassRenderer.createClassName(table));
+        myClass.addConstant("String", "TABLE_CLASSNAME", JPARecordClassRenderer.createClassName(entity));
 
-        List<SchemaTableField> fields = table.getFields();
-        for (SchemaTableField field : fields) {
+        List<? extends SchemaField> fields = entity.getFields();
+        for (SchemaField field : fields) {
             boolean primaryKey = field.isPrimaryKey();
 
             String fieldNameJavaStyle = field.getName(true);
@@ -248,7 +250,7 @@ public class JPABaseRecordClassRenderer {
         // constructors
 
         // methods
-        addForeignKeyData(schemaDatabase, table, packageName);
+        addForeignKeyData(schemaDatabase, entity, packageName);
 
         // add method to cleanup many-to-one left-overs (till support CascadeType.DELETE-ORPHAN is supported in JPA)
         if (!myClass.isEnum()) {
@@ -268,7 +270,7 @@ public class JPABaseRecordClassRenderer {
         }
     }
 
-    private void addFieldVariableAnnotations(SchemaTableField field, String fieldNameJavaStyle, JavaVariable newVariable) {
+    private void addFieldVariableAnnotations(SchemaField field, String fieldNameJavaStyle, JavaVariable newVariable) {
         myClass.addImport("javax.persistence.Id");
         newVariable.addAnnotation("@Id");
 
@@ -289,7 +291,7 @@ public class JPABaseRecordClassRenderer {
         myClass.addMethod(Access.PUBLIC, field.getJavaTypeText(), "getID", "return " + fieldNameJavaStyle + ";");
     }
 
-    private void createToStringMethodContent(final SchemaTableField field, final String fieldNameJavaStyle) {
+    private void createToStringMethodContent(final SchemaField field, final String fieldNameJavaStyle) {
 
         SchemaFieldType fieldType = field.getJdbcDataType();
         if (fieldType != SchemaFieldType.BLOB && fieldType != SchemaFieldType.CLOB) {
@@ -298,7 +300,7 @@ public class JPABaseRecordClassRenderer {
         }
     }
 
-    private JavaVariable generateEnumeration(SchemaTableField field, String fieldNameJavaStyle, String packageName, JavaVariable newVariable, SchemaDatabase dbSchema) {
+    private JavaVariable generateEnumeration(SchemaField field, String fieldNameJavaStyle, String packageName, JavaVariable newVariable, SchemaDatabase dbSchema) {
         myClass.addImport("javax.persistence.Enumerated");
         myClass.addImport("javax.persistence.EnumType");
         if (field.getJdbcDataType().isNumberDataType()) {
@@ -358,7 +360,7 @@ public class JPABaseRecordClassRenderer {
         return newVariable;
     }
 
-    private JavaVariable generateFieldVariable(String fieldNameJavaStyle, SchemaTableField field) {
+    private JavaVariable generateFieldVariable(String fieldNameJavaStyle, SchemaField field) {
         JavaVariable newVariable;
 
         String typeText = field.getJavaTypeText();
@@ -402,7 +404,7 @@ public class JPABaseRecordClassRenderer {
         return newVariable;
     }
 
-    private void generateManyToOne(SchemaDatabase schemaDatabase, String packageName, SchemaTableField field) {
+    private void generateManyToOne(SchemaDatabase schemaDatabase, String packageName, SchemaField field) {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = schemaDatabase.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
@@ -431,7 +433,7 @@ public class JPABaseRecordClassRenderer {
         myClass.addVariable(manyToOneVar, true);
     }
 
-    private void generateOneToMany(SchemaDatabase schemaDatabase, String packageName, SchemaTableField field) {
+    private void generateOneToMany(SchemaDatabase schemaDatabase, String packageName, SchemaField field) {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = schemaDatabase.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
@@ -460,7 +462,7 @@ public class JPABaseRecordClassRenderer {
         myClass.addVariable(manyToOneVar, true);
     }
 
-    private void generateOneToOne(SchemaDatabase schemaDatabase, String packageName, SchemaTableField field) {
+    private void generateOneToOne(SchemaDatabase schemaDatabase, String packageName, SchemaField field) {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = schemaDatabase.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
@@ -498,12 +500,12 @@ public class JPABaseRecordClassRenderer {
         myClass.addVariable(oneToOneVar, true);
     }
 
-    private void addForeignKeyData(SchemaDatabase dbSchema, SchemaTable table, String packageName) {
+    private void addForeignKeyData(SchemaDatabase dbSchema, SchemaEntity entity, String packageName) {
         String TAB = JavaClass.getTab();
 
         // find any other tables that depend on this one (MANYTOONE) or other tables this table depends on (ONETOONE)
         for (SchemaTable tmpTable : dbSchema.getTables()) {
-            List<SchemaTableField> fkFields = tmpTable.getForeignKeyFields(table.getName());
+            List<SchemaTableField> fkFields = tmpTable.getForeignKeyFields(entity.getName());
 
             for (SchemaTableField fkField : fkFields) {
                 switch (fkField.getForeignKeyType()) {
@@ -625,11 +627,11 @@ public class JPABaseRecordClassRenderer {
         }
     }
 
-    public static String createClassName(SchemaTable table) {
-        if (table.isEnumerationTable()) {
-            return table.getClassName();
+    public static String createClassName(SchemaEntity entity) {
+        if (entity.isEnumerationTable()) {
+            return entity.getClassName();
         } else {
-            return table.getClassName() + "BaseRecord";
+            return entity.getClassName() + "BaseRecord";
         }
     }
 

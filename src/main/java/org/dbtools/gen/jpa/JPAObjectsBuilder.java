@@ -1,26 +1,20 @@
 package org.dbtools.gen.jpa;
 
+import org.dbtools.gen.DBObjectsBuilder;
 import org.dbtools.gen.DBObjectBuilder;
-import org.dbtools.gen.DBTableObjectBuilder;
-import org.dbtools.gen.DBViewObjectBuilder;
 
 /**
  * User: jcampbell
  * Date: 2/12/14
  */
-public class JPAObjectBuilder extends DBObjectBuilder {
+public class JPAObjectsBuilder extends DBObjectsBuilder {
     @Override
-    public DBTableObjectBuilder getTableObjectBuilder() {
-        return new JPADBTableObjectBuilder();
-    }
-
-    @Override
-    public DBViewObjectBuilder getViewObjectBuilder() {
-        return null;
+    public DBObjectBuilder getObjectBuilder() {
+        return new JPADBObjectBuilder();
     }
 
     public static void buildAll(String schemaFilename, String baseOutputDir, String basePackageName, boolean injectionSupport, boolean dateTimeSupport) {
-        DBObjectBuilder builder = new JPAObjectBuilder();
+        DBObjectsBuilder builder = new JPAObjectsBuilder();
         builder.setXmlFilename(schemaFilename);
         builder.setOutputBaseDir(baseOutputDir);
         builder.setPackageBase(basePackageName);
@@ -28,7 +22,7 @@ public class JPAObjectBuilder extends DBObjectBuilder {
         builder.setDateTimeSupport(dateTimeSupport);
 
         builder.build();
-        System.out.println("Generated [" + builder.getTableObjectBuilder().getNumberFilesGenerated() + "] files.");
+        System.out.println("Generated [" + builder.getObjectBuilder().getNumberFilesGenerated() + "] files.");
     }
 
 }

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Root
-public class SchemaTable {
+public class SchemaTable extends SchemaEntity {
     @Attribute
     private String name;
 
@@ -33,6 +33,27 @@ public class SchemaTable {
 
     public SchemaTable(String name) {
         this.name = name;
+    }
+
+    public boolean validate() {
+        int primaryKeyCount = 0;
+        for (SchemaTableField field : fields) {
+            if (field.isPrimaryKey()) {
+                primaryKeyCount++;
+
+                if (primaryKeyCount > 1) {
+                    throw new IllegalStateException("Cannot have 2 primary key fields for table [" + getName() + "].[" + field.getName() + "]");
+                }
+            }
+            field.validate();
+        }
+        return true;
+    }
+
+
+    @Override
+    public SchemaEntityType getType() {
+        return SchemaEntityType.TABLE;
     }
 
     public String getParameter(String tableType) {
@@ -194,25 +215,6 @@ public class SchemaTable {
         }
 
         return new TableEnum(enumItem, value);
-    }
-
-
-    public boolean validate() {
-        int primaryKeyCount = 0;
-        for (SchemaTableField field : fields) {
-            if (field.isPrimaryKey()) {
-                primaryKeyCount++;
-
-                if (primaryKeyCount > 1) {
-                    throw new IllegalStateException("Cannot have 2 primary key fields for table [" + getName() + "].[" + field.getName() + "]");
-                }
-            }
-
-            field.validate();
-        }
-
-
-        return true;
     }
 
     public String getName() {

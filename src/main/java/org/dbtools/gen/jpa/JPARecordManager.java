@@ -12,7 +12,7 @@ package org.dbtools.gen.jpa;
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaVariable;
-import org.dbtools.schema.schemafile.SchemaTable;
+import org.dbtools.schema.schemafile.SchemaEntity;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -33,10 +33,10 @@ public class JPARecordManager {
     public JPARecordManager() {
     }
 
-    public void generateObjectCode(SchemaTable table, String packageName) {
-        String className = getClassName(table);
+    public void generateObjectCode(SchemaEntity entity, String packageName) {
+        String className = getClassName(entity);
         myClass = new JavaClass(packageName, className);
-        myClass.setExtends(JPABaseRecordManager.getClassName(table)); // extend the generated base class
+        myClass.setExtends(JPABaseRecordManager.getClassName(entity)); // extend the generated base class
 
         if (springSupport) {
             myClass.addImport("javax.inject.Named");
@@ -70,8 +70,8 @@ public class JPARecordManager {
         myClass.addConstructor(Access.PUBLIC, constParams, constContent);
     }
 
-    public static String getClassName(SchemaTable table) {
-        String recordClassName = JPARecordClassRenderer.createClassName(table);
+    public static String getClassName(SchemaEntity entity) {
+        String recordClassName = JPARecordClassRenderer.createClassName(entity);
         return recordClassName + "Manager";
     }
 

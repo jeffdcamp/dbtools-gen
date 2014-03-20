@@ -42,7 +42,7 @@ public class DatabaseSchema {
         }
     }
 
-    public static DatabaseSchema readXMLSchema(String path) {
+    public static DatabaseSchema readXMLSchema(String path)  {
         DatabaseSchema schema = null;
 
         // read schema xml file
@@ -52,6 +52,7 @@ public class DatabaseSchema {
             schema = serializer.read(DatabaseSchema.class, source);
         } catch (Exception e) {
             e.printStackTrace();
+            throw new IllegalStateException("Failure reading schema file [" + path + "] Error: [" + e.getMessage() + "]");
         }
 
         // validate

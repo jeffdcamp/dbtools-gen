@@ -12,7 +12,7 @@ package org.dbtools.gen.android;
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaVariable;
-import org.dbtools.schema.schemafile.SchemaTable;
+import org.dbtools.schema.schemafile.SchemaEntity;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class AndroidRecordManager {
     /**
      * Creates a new instance of AndroidRecordManager.
      */
-    public void generate(SchemaTable table, String packageName) {
+    public void generate(SchemaEntity table, String packageName) {
         String className = getClassName(table);
         myClass = new JavaClass(packageName, className);
         myClass.setExtends(AndroidBaseRecordManager.getClassName(table)); // extend the generated base class
@@ -61,7 +61,7 @@ public class AndroidRecordManager {
         myClass.addConstructor(Access.PUBLIC, constParams, constContent);
     }
 
-    public static String getClassName(SchemaTable table) {
+    public static String getClassName(SchemaEntity table) {
         String recordClassName = AndroidRecordClassRenderer.createClassName(table);
         return recordClassName + "Manager";
     }

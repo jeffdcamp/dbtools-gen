@@ -13,9 +13,10 @@ package org.dbtools.gen.android;
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaVariable;
-import org.dbtools.schema.schemafile.SchemaTable;
+import org.dbtools.schema.schemafile.SchemaEntity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -26,12 +27,13 @@ public class AndroidBaseRecordManager {
     private JavaClass myClass;
 
     private boolean injectionSupport = false;
+    private boolean encryptionSupport = false; // use SQLCipher?
 
     /**
      * Creates a new instance of AndroidBaseRecordManager.
      */
 
-    public void generate(SchemaTable table, String packageName) {
+    public void generate(SchemaEntity table, String packageName) {
         String TAB = JavaClass.getTab();
         String recordClassName = AndroidRecordClassRenderer.createClassName(table);
         String className = getClassName(table);
@@ -55,14 +57,18 @@ public class AndroidBaseRecordManager {
         // constructor
         myClass.setCreateDefaultConstructor(true);
 
-        myClass.addImport(packageName.substring(0, packageName.lastIndexOf('.')) + ".BaseManager");
+        if (!encryptionSupport) {
+            myClass.addImport("org.dbtools.android.domain.AndroidBaseManager");
+        } else {
+            myClass.addImport("org.dbtools.android.domain.secure.AndroidBaseManager");
+        }
 
         String baseManagerCall = injectionSupport ? "" : "BaseManager.";
 
         // both inject and non-inject must use the passed in db for database updates
 
         if (injectionSupport) {
-            myClass.setExtends("BaseManager<" + recordClassName + ">");
+            myClass.setExtends("AndroidBaseManager<" + recordClassName + ">");
             myClass.addMethod(Access.PUBLIC, "String", "getDatabaseName", "return " + recordClassName + ".DATABASE;");
             myClass.addMethod(Access.PUBLIC, "String", "getTableName", "return " + recordClassName + ".TABLE;");
             myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return " + recordClassName + "." + AndroidBaseRecordClassRenderer.PRIMARY_KEY_COLUMN + ";");
@@ -70,6 +76,20 @@ public class AndroidBaseRecordManager {
             myClass.addMethod(Access.PUBLIC, "String", "getDropTableSQL", "return " + recordClassName + ".DROP_TABLE;");
             myClass.addMethod(Access.PUBLIC, "String", "getCreateTableSQL", "return " + recordClassName + ".CREATE_TABLE;");
             myClass.addMethod(Access.PUBLIC, recordClassName, "newRecord", "return new " + recordClassName + "();");
+
+            myClass.addImport(packageName.substring(0, packageName.lastIndexOf('.')) + ".DatabaseManager");
+            JavaVariable dbManagerVariable = myClass.addVariable("DatabaseManager", "databaseManager");
+            dbManagerVariable.setAccess(Access.DEFAULT_NONE);
+            dbManagerVariable.addAnnotation("javax.inject.Inject");
+
+            myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getReadableDatabase", Arrays.asList(new JavaVariable("String", "databaseName")), "return databaseManager.getReadableDatabase(databaseName);");
+            myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getWritableDatabase", Arrays.asList(new JavaVariable("String", "databaseName")), "return databaseManager.getWritableDatabase(databaseName);");
+
+            if (!encryptionSupport) {
+                myClass.addImport("android.database.sqlite.SQLiteDatabase");
+            } else {
+                myClass.addImport("net.sqlcipher.database.SQLiteDatabase");
+            }
         } else {
             myClass.addImport("android.content.ContentValues");
             myClass.addImport("android.database.Cursor");
@@ -252,7 +272,7 @@ public class AndroidBaseRecordManager {
         }
     }
 
-    public static String getClassName(SchemaTable table) {
+    public static String getClassName(SchemaEntity table) {
         String recordClassName = AndroidRecordClassRenderer.createClassName(table);
         return recordClassName + "BaseManager";
     }
@@ -263,5 +283,9 @@ public class AndroidBaseRecordManager {
 
     public void setInjectionSupport(boolean injectionSupport) {
         this.injectionSupport = injectionSupport;
+    }
+
+    public void setEncryptionSupport(boolean encryptionSupport) {
+        this.encryptionSupport = encryptionSupport;
     }
 }

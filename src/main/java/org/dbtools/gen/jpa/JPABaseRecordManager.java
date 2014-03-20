@@ -13,7 +13,7 @@ import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaMethod;
 import org.dbtools.codegen.JavaVariable;
-import org.dbtools.schema.schemafile.SchemaTable;
+import org.dbtools.schema.schemafile.SchemaEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,10 +32,10 @@ public class JPABaseRecordManager {
     public JPABaseRecordManager() {
     }
 
-    public void generateObjectCode(SchemaTable table, String packageName) {
+    public void generateObjectCode(SchemaEntity entity, String packageName) {
         String TAB = JavaClass.getTab();
-        String recordClassName = JPARecordClassRenderer.createClassName(table);
-        String className = getClassName(table);
+        String recordClassName = JPARecordClassRenderer.createClassName(entity);
+        String className = getClassName(entity);
         myClass = new JavaClass(packageName, className);
 
         // header comment
@@ -67,7 +67,7 @@ public class JPABaseRecordManager {
         myClass.addConstructor(Access.PUBLIC, constParams, constContent);
 
         // singleton factory
-        String managerClassName = JPARecordClassRenderer.createClassName(table) + "Manager";
+        String managerClassName = JPARecordClassRenderer.createClassName(entity) + "Manager";
         JavaVariable managerFactoryVar = myClass.addVariable(managerClassName, "manager");
         managerFactoryVar.setStatic(true);
         managerFactoryVar.setVolatile(true);
@@ -138,8 +138,8 @@ public class JPABaseRecordManager {
         }
     }
 
-    public static String getClassName(SchemaTable table) {
-        String recordClassName = JPARecordClassRenderer.createClassName(table);
+    public static String getClassName(SchemaEntity entity) {
+        String recordClassName = JPARecordClassRenderer.createClassName(entity);
         return recordClassName + "BaseManager";
     }
 

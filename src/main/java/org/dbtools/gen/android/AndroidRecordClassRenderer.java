@@ -12,7 +12,7 @@ package org.dbtools.gen.android;
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaVariable;
-import org.dbtools.schema.schemafile.SchemaTable;
+import org.dbtools.schema.schemafile.SchemaEntity;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,9 +32,9 @@ public class AndroidRecordClassRenderer {
     public AndroidRecordClassRenderer() {
     }
 
-    public void generate(SchemaTable table, String packageName) {
-        String baseClassName = AndroidBaseRecordClassRenderer.createClassName(table);
-        String className = createClassName(table);
+    public void generate(SchemaEntity entity, String packageName) {
+        String baseClassName = AndroidBaseRecordClassRenderer.createClassName(false, entity.getClassName());
+        String className = createClassName(entity);
         myClass = new JavaClass(packageName, className);
         myClass.setExtends(baseClassName);
 
@@ -62,8 +62,8 @@ public class AndroidRecordClassRenderer {
         }
     }
 
-    public static String createClassName(SchemaTable table) {
-        return table.getClassName();
+    public static String createClassName(SchemaEntity entity) {
+        return entity.getClassName();
     }
 
     public void writeToFile(String directoryname) {

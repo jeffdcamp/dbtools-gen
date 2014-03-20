@@ -10,13 +10,15 @@
 package org.dbtools.gen.android;
 
 import org.dbtools.codegen.*;
-import org.dbtools.schema.ClassInfo;
 import org.dbtools.renderer.SchemaRenderer;
 import org.dbtools.renderer.SqliteRenderer;
+import org.dbtools.schema.ClassInfo;
 import org.dbtools.schema.dbmappings.DatabaseMapping;
 import org.dbtools.schema.schemafile.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author Jeff
@@ -41,17 +43,21 @@ public class AndroidBaseRecordClassRenderer {
     public AndroidBaseRecordClassRenderer() {
     }
 
-    public void generate(SchemaDatabase database, SchemaTable table, String packageName, DatabaseMapping databaseMapping) {
+    public void generate(SchemaDatabase database, SchemaEntity entity, String packageName, DatabaseMapping databaseMapping) {
         final String TAB = JavaClass.getTab();
 
-        String className = createClassName(table);
+        boolean enumTable = entity.isEnumerationTable();
+        String entityClassName = entity.getClassName();
 
-        if (table.isEnumerationTable()) {
-            initClassAsEnum(packageName, table);
+        String className = createClassName(enumTable, entityClassName);
+
+        if (enumTable) {
+            initClassAsEnum(packageName, className, entity);
         } else {
             myClass = new JavaClass(packageName, className);
-            myClass.addImport(packageName.substring(0, packageName.lastIndexOf('.')) + ".BaseRecord");
-            myClass.setExtends("BaseRecord");
+
+            myClass.addImport("org.dbtools.android.domain.AndroidBaseRecord");
+            myClass.setExtends("AndroidBaseRecord");
         }
 
         // prep
@@ -68,7 +74,7 @@ public class AndroidBaseRecordClassRenderer {
         String databaseName = database.getName();
         myClass.addConstant("String", "DATABASE", databaseName);
 
-        String tableName = table.getName();
+        String tableName = entity.getName();
         myClass.addConstant("String", "TABLE", tableName);
         myClass.addConstant("String", "FULL_TABLE", databaseName + "." + tableName);
 
@@ -83,7 +89,7 @@ public class AndroidBaseRecordClassRenderer {
         String setContentCursorContent = "";
 
         List<String> keys = new ArrayList<>();
-        for (SchemaTableField field : table.getFields()) {
+        for (SchemaField field : entity.getFields()) {
             boolean primaryKey = field.isPrimaryKey();
 
             String fieldName = field.getName();
@@ -176,11 +182,14 @@ public class AndroidBaseRecordClassRenderer {
         }
 
         // SchemaDatabase variables
-        String createTable = SqliteRenderer.generateTableSchema(table, databaseMapping);
-        createTable = createTable.replace("\n", "\" + \n" + TAB + TAB + "\"");
-        createTable = createTable.replace("\t", ""); // remove tabs
-        myClass.addConstant("String", "CREATE_TABLE", createTable);
-        myClass.addConstant("String", "DROP_TABLE", SchemaRenderer.generateDropSchema(true, table));
+        if (entity.getType() == SchemaEntityType.TABLE) {
+            SchemaTable table = (SchemaTable) entity;
+            String createTable = SqliteRenderer.generateTableSchema(table, databaseMapping);
+            createTable = createTable.replace("\n", "\" + \n" + TAB + TAB + "\"");
+            createTable = createTable.replace("\t", ""); // remove tabs
+            myClass.addConstant("String", "CREATE_TABLE", createTable);
+            myClass.addConstant("String", "DROP_TABLE", SchemaRenderer.generateDropSchema(true, table));
+        }
 
         // Content values
 
@@ -217,7 +226,7 @@ public class AndroidBaseRecordClassRenderer {
         }
 
         // methods
-        addForeignKeyData(database, table, packageName);
+        addForeignKeyData(database, entity.getName(), packageName);
 
         // add method to cleanup many-to-one left-overs
         if (!myClass.isEnum()) {
@@ -267,8 +276,12 @@ public class AndroidBaseRecordClassRenderer {
         myClass.addAnnotation("@SuppressWarnings(\"all\")");
     }
 
-    private void initClassAsEnum(String packageName, SchemaTable table) {
-        String enumClassName = createClassName(table);
+    private void initClassAsEnum(String packageName, String enumClassName, SchemaEntity entity) {
+        if (entity.getType() != SchemaEntityType.TABLE) {
+            return;
+        }
+
+        SchemaTable table = (SchemaTable) entity;
         List<TableEnum> enums = table.getTableEnums();
 
         myClass = new JavaEnum(packageName, enumClassName, table.getTableEnumsText());
@@ -308,7 +321,7 @@ public class AndroidBaseRecordClassRenderer {
     /**
      * For method setContent(ContentValues values).
      */
-    private String getContentValuesGetterMethod(SchemaTableField field, String paramValue, JavaVariable newVariable) {
+    private String getContentValuesGetterMethod(SchemaField field, String paramValue, JavaVariable newVariable) {
         if (field.isEnumeration()) {
             return newVariable.getDataType() + ".values()[values.getAsInteger(" + paramValue + ")]";
         }
@@ -349,7 +362,7 @@ public class AndroidBaseRecordClassRenderer {
     /**
      * For method setContent(Cursor cursor).
      */
-    private String getContentValuesCursorGetterMethod(SchemaTableField field, String paramValue, JavaVariable newVariable) {
+    private String getContentValuesCursorGetterMethod(SchemaField field, String paramValue, JavaVariable newVariable) {
         if (field.isEnumeration()) {
             return newVariable.getDataType() + ".values()[cursor.getInt(cursor.getColumnIndex(" + paramValue + "))]";
         }
@@ -387,14 +400,14 @@ public class AndroidBaseRecordClassRenderer {
         }
     }
 
-    private void createToStringMethodContent(final SchemaTableField field, final String fieldNameJavaStyle) {
+    private void createToStringMethodContent(final SchemaField field, final String fieldNameJavaStyle) {
         if (field.getJdbcDataType() != SchemaFieldType.BLOB && field.getJdbcDataType() != SchemaFieldType.CLOB) {
             // toString
             toStringContent.append("text += \"").append(fieldNameJavaStyle).append(" = \"+ ").append(fieldNameJavaStyle).append(" +\"\\n\";\n");
         }
     }
 
-    private JavaVariable generateEnumeration(SchemaTableField field, String fieldNameJavaStyle, String packageName, SchemaDatabase database) {
+    private JavaVariable generateEnumeration(SchemaField field, String fieldNameJavaStyle, String packageName, SchemaDatabase database) {
         JavaVariable newVariable;
         if (field.getJdbcDataType().isNumberDataType()) {
             if (field.getForeignKeyTable().length() > 0) {
@@ -447,7 +460,7 @@ public class AndroidBaseRecordClassRenderer {
         return newVariable;
     }
 
-    private JavaVariable generateFieldVariable(String fieldNameJavaStyle, SchemaTableField field) {
+    private JavaVariable generateFieldVariable(String fieldNameJavaStyle, SchemaField field) {
         JavaVariable newVariable;
 
         String typeText = field.getJavaTypeText();
@@ -491,7 +504,7 @@ public class AndroidBaseRecordClassRenderer {
         return newVariable;
     }
 
-    private void generateManyToOne(SchemaDatabase dbSchema, String packageName, SchemaTableField field) {
+    private void generateManyToOne(SchemaDatabase dbSchema, String packageName, SchemaField field) {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = dbSchema.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
@@ -507,7 +520,7 @@ public class AndroidBaseRecordClassRenderer {
         myClass.addVariable(manyToOneVar, true);
     }
 
-    private void generateOneToMany(SchemaDatabase database, String packageName, SchemaTableField field) {
+    private void generateOneToMany(SchemaDatabase database, String packageName, SchemaField field) {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = database.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
@@ -523,7 +536,7 @@ public class AndroidBaseRecordClassRenderer {
         myClass.addVariable(manyToOneVar, true);
     }
 
-    private void generateOneToOne(SchemaDatabase database, String packageName, SchemaTableField field) {
+    private void generateOneToOne(SchemaDatabase database, String packageName, SchemaField field) {
         String fkTableName = field.getForeignKeyTable();
         ClassInfo fkTableClassInfo = database.getTableClassInfo(fkTableName);
         String fkTableClassName = fkTableClassInfo.getClassName();
@@ -539,12 +552,12 @@ public class AndroidBaseRecordClassRenderer {
         myClass.addVariable(oneToOneVar, true);
     }
 
-    private void addForeignKeyData(SchemaDatabase database, SchemaTable table, String packageName) {
+    private void addForeignKeyData(SchemaDatabase database, String entityName, String packageName) {
         String TAB = JavaClass.getTab();
 
         // find any other tables that depend on this one (MANYTOONE) or other tables this table depends on (ONETOONE)
         for (SchemaTable tmpTable : database.getTables()) {
-            List<SchemaTableField> fkFields = tmpTable.getForeignKeyFields(table.getName());
+            List<SchemaTableField> fkFields = tmpTable.getForeignKeyFields(entityName);
 
             for (SchemaTableField fkField : fkFields) {
                 switch (fkField.getForeignKeyType()) {
@@ -641,12 +654,8 @@ public class AndroidBaseRecordClassRenderer {
         }
     }
 
-    public static String createClassName(SchemaTable table) {
-        if (table.isEnumerationTable()) {
-            return table.getClassName();
-        } else {
-            return table.getClassName() + "BaseRecord";
-        }
+    public static String createClassName(boolean enumTable, String className) {
+        return enumTable ? className : className + "BaseRecord";
     }
 
     public void writeToFile(String directoryName) {

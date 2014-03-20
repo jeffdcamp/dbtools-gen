@@ -1,97 +1,94 @@
 /*
- * AndroidDBObjectBuilder.java
+ * JPADBObjectBuilder.java
  *
- * Created on Sep 9, 2010
+ * Created on November 1, 2006, 7:30 PM
  *
- * Copyright 2010 Jeff Campbell. All rights reserved. Unauthorized reproduction
+ * Copyright 2007 Jeff Campbell. All rights reserved. Unauthorized reproduction
  * is a violation of applicable law. This material contains certain
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
-package org.dbtools.gen.android;
+package org.dbtools.gen.jpa;
 
-
-import org.dbtools.gen.DBTableObjectBuilder;
-import org.dbtools.renderer.SchemaRenderer;
-import org.dbtools.schema.dbmappings.DatabaseMapping;
+import org.dbtools.gen.DBObjectBuilder;
 import org.dbtools.schema.schemafile.SchemaDatabase;
-import org.dbtools.schema.schemafile.SchemaTable;
+import org.dbtools.schema.schemafile.SchemaEntity;
 
 import java.io.File;
-import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Jeff
  */
-public class AndroidDBTableObjectBuilder implements DBTableObjectBuilder {
+public class JPADBObjectBuilder implements DBObjectBuilder {
 
-    private AndroidBaseRecordClassRenderer baseRecordClass = new AndroidBaseRecordClassRenderer();
-    private AndroidRecordClassRenderer recordClass = new AndroidRecordClassRenderer();
-    private AndroidBaseRecordManager baseManagerClass = new AndroidBaseRecordManager();
-    private AndroidRecordManager managerClass = new AndroidRecordManager();
-
+    private JPABaseRecordManager baseManagerClass = new JPABaseRecordManager();
+    private JPARecordManager managerClass = new JPARecordManager();
+    private JPABaseRecordClassRenderer baseRecordClass = new JPABaseRecordClassRenderer();
+    private JPARecordClassRenderer recordClass = new JPARecordClassRenderer();
     private int filesGeneratedCount = 0;
     private List<String> filesGenerated = new ArrayList<>();
 
+    private boolean springSupport = false;
     private SchemaDatabase database;
-    private SchemaTable table;
+    private SchemaEntity table;
     private String packageName;
     private String outDir;
-    private PrintStream psLog;
+
+    /**
+     * Creates a new instance of JPADBObjectBuilder
+     */
+    public JPADBObjectBuilder() {
+    }
 
     @Override
     public String getName() {
-        return "Android Object Builder";
+        return "JPA Object Builder";
     }
 
     @Override
     public boolean build() {
-        if (psLog == null) {
-            psLog = System.out;
-        }
-
-        if (table != null) {
-            psLog.println("SchemaTable: " + table.getName());
-        } else {
-            psLog.println("ERROR: SchemaTable is null");
-            return false;
-        }
-
         char lastDirChar = outDir.charAt(outDir.length() - 1);
-        if (lastDirChar != File.separatorChar) {
-            outDir += File.separatorChar;
+        if (lastDirChar != '\\' || lastDirChar != '/') {
+            if (outDir.charAt(0) == '/') {
+                outDir += "/";
+            } else {
+                outDir += "\\";
+            }
         }
-
-        DatabaseMapping databaseMapping = SchemaRenderer.readXMLTypes(this.getClass(), SchemaRenderer.DEFAULT_TYPE_MAPPING_FILENAME, "sqlite");
 
         // Managers
         if (!table.isEnumerationTable()) {
-            String managerFileName = outDir + AndroidRecordManager.getClassName(table) + ".java";
+            //String baseSEManagerFileName = outDir + JPABaseRecordManager.getClassName(table)+".java";
+            String managerFileName = outDir + JPARecordManager.getClassName(table) + ".java";
+
+            //File baseManagerFile = new File(baseSEManagerFileName);
             File managerFile = new File(managerFileName);
 
             // Base Manager
-            baseManagerClass.generate(table, packageName);
+            baseManagerClass.generateObjectCode(table, packageName);
             baseManagerClass.writeToFile(outDir);
+
             filesGeneratedCount++;
 
             // Manager
             if (!managerFile.exists()) {
-                managerClass.generate(table, packageName);
+                managerClass.generateObjectCode(table, packageName);
                 managerClass.writeToFile(outDir);
+
                 filesGeneratedCount++;
             }
         }
 
         // Entities
-        String baseRecordFileName = outDir + AndroidRecordClassRenderer.createClassName(table) + ".java";
-        String recordFileName = outDir + AndroidRecordClassRenderer.createClassName(table) + ".java";
+        String baseRecordFileName = outDir + JPABaseRecordClassRenderer.createClassName(table) + ".java";
+        String recordFileName = outDir + JPARecordClassRenderer.createClassName(table) + ".java";
         File baseRecordFile = new File(baseRecordFileName);
         File recordFile = new File(recordFileName);
 
+
         // BaseRecord
-        baseRecordClass.generate(database, table, packageName, databaseMapping);
+        baseRecordClass.generate(database, table, packageName);
         baseRecordClass.writeToFile(outDir);
 
         filesGenerated.add(baseRecordFile.getPath());
@@ -117,7 +114,7 @@ public class AndroidDBTableObjectBuilder implements DBTableObjectBuilder {
 
     @Override
     public List<String> getFilesGenerated() {
-        return Collections.unmodifiableList(filesGenerated);
+        return filesGenerated;
     }
 
     @Override
@@ -127,12 +124,22 @@ public class AndroidDBTableObjectBuilder implements DBTableObjectBuilder {
 
     @Override
     public void setInjectionSupport(boolean b) {
-        baseManagerClass.setInjectionSupport(b);
-        managerClass.setInjectionSupport(b);
+        baseRecordClass.setInjectionSupport(b);
     }
 
     @Override
-    public void setTable(SchemaTable table) {
+    public void setEncryptionSupport(boolean b) {
+        // do nothing
+    }
+
+    public void setSpringSupport(boolean springSupport) {
+        this.springSupport = springSupport;
+        baseManagerClass.setSpringSupport(springSupport);
+        managerClass.setSpringSupport(springSupport);
+    }
+
+    @Override
+    public void setEntity(SchemaEntity table) {
         this.table = table;
     }
 
@@ -149,9 +156,5 @@ public class AndroidDBTableObjectBuilder implements DBTableObjectBuilder {
     @Override
     public void setDatabase(SchemaDatabase dbSchema) {
         this.database = dbSchema;
-    }
-
-    @Override
-    public void setSpringSupport(boolean b) {
     }
 }

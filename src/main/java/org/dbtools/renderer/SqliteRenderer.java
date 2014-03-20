@@ -135,8 +135,8 @@ public class SqliteRenderer extends SchemaRenderer {
 
         // add fields
         List<SchemaTableField> fields = table.getFields();
-        List<SchemaTableField> indexFields = new ArrayList<SchemaTableField>();
-        List<SchemaTableField> uniqueFields = new ArrayList<SchemaTableField>();
+        List<SchemaTableField> indexFields = new ArrayList<>();
+        List<SchemaTableField> uniqueFields = new ArrayList<>();
         SchemaTableField enumPKField = null;
         SchemaTableField enumValueField = null;
 
@@ -244,7 +244,7 @@ public class SqliteRenderer extends SchemaRenderer {
             tableSchema.append(" (").append(iField.getName()).append(");\n\n");
         }
 
-        Map<String, SchemaTable> alreadyCreatedEnum = new HashMap<String, SchemaTable>();
+        Map<String, SchemaTable> alreadyCreatedEnum = new HashMap<>();
         generateEnumSchema(tableSchema, table, alreadyCreatedEnum, enumPKField, enumValueField, true);
 
         return tableSchema.toString();

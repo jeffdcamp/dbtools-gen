@@ -2,7 +2,7 @@ package org.dbtools.gen.android;
 
 import org.junit.Test;
 
-public class AndroidDBTableObjectBuilderTest {
+public class AndroidDBObjectBuilderTest {
     @Test
     public void testBasicGen() {
         String userDir = System.getProperty("user.dir");
@@ -12,7 +12,7 @@ public class AndroidDBTableObjectBuilderTest {
         boolean dateTimeSupport = true; // support for jsr DateTime (Joda Time)
         String baseOutputDir = userDir + "/target/test-src/src/main/java/org/mycompany/domain";
         String basePackageName = "org.mycompany.domain";
-        AndroidObjectBuilder.buildAll(schemaFilename, baseOutputDir, basePackageName, injectionSupport, dateTimeSupport);
+        AndroidObjectsBuilder.buildAll(schemaFilename, baseOutputDir, basePackageName, injectionSupport, dateTimeSupport);
     }
 
 }

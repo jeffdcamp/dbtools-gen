@@ -1,252 +1,64 @@
 package org.dbtools.schema.schemafile;
 
 import org.dbtools.schema.ForeignKeyType;
-import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Root;
 
+import java.util.List;
+
 @Root
-public class SchemaViewField {
-    @Attribute
-    private String name;
-    @Attribute
-    private SchemaFieldType jdbcDataType;
-    @Attribute(required = false)
-    private String varName = "";
-
-    @Attribute(required = false)
-    private int size = 0;
-    @Attribute(required = false)
-    private int decimals = 0;
-
-    @Attribute(required = false)
-    private String defaultValue = "";
-
-    @Attribute(required = false)
-    private boolean notNull = false;
-
-    @Attribute(required = false)
-    private String foreignKeyTable = "";
-    @Attribute(required = false)
-    private String foreignKeyField = "";
-    @Attribute(required = false)
-    private ForeignKeyType foreignKeyType = ForeignKeyType.IGNORE;
-    @Attribute(required = false)
-    private ForeignKeyFetchType foreignKeyFetchType = ForeignKeyFetchType.LAZY;
-    @Attribute(required = false)
-    private String enumerationDefault = "";
-
+public class SchemaViewField extends SchemaField {
     public SchemaViewField() {
     }
 
     public SchemaViewField(String name, SchemaFieldType jdbcDataType) {
-        this.name = name;
-        this.jdbcDataType = jdbcDataType;
+        setName(name);
+        setJdbcDataType(jdbcDataType);
     }
 
     public void validate() {
         if (getForeignKeyType() == ForeignKeyType.ENUM) {
-            setNotNull(true);
+//            setNotNull(true);
         }
     }
 
-    public Class<?> getJavaClassType() {
-        return getJdbcDataType().getJavaClassType(!isNotNull());
+    @Override
+    public boolean isIncrement() {
+        return false;
     }
 
-    public String getJavaTypeText() {
-        return getJdbcDataType().getJavaTypeText(!isNotNull());
+
+    @Override
+    public boolean isUnique() {
+        return false;
     }
 
-    public String getFormattedClassDefaultValue() {
-        return formatValueForField(defaultValue);
+    @Override
+    public boolean isEnumeration() {
+        return false;
     }
 
-    public String formatValueForField(String inValue) {
-        if (inValue == null) {
-            return inValue;
-        }
-
-        String retValue = inValue;
-        Class c = jdbcDataType.getJavaClassType(isNotNull());
-        if ((c == Float.class || c == float.class) && !inValue.isEmpty()) {
-            if (!inValue.endsWith("f")) {
-                retValue = inValue + 'f';
-            }
-        } else if ((c == Long.class || c == long.class) && !inValue.isEmpty()) {
-            if (!inValue.endsWith("l")) {
-                retValue = inValue + 'l';
-            }
-        } else if ((c == Double.class || c == double.class) && !inValue.isEmpty()) {
-            if (!inValue.endsWith("d")) {
-                retValue = inValue + 'd';
-            }
-        }
-
-        return retValue;
+    @Override
+    public List<String> getEnumValues() {
+        return null;
     }
 
-    private String javaFieldNameStyleName = "";
-    public String getName(boolean javaFieldNameStyle) {
-        if (javaFieldNameStyle) {
-            // check to see if the name of this variable is being overridden
-            String customVarName = getVarName();
-            if (customVarName != null && customVarName.length() > 0) {
-                return customVarName;
-            }
-
-            if (javaFieldNameStyleName == null || javaFieldNameStyleName.equals("")) {
-                // check to see if all letters are uppercase
-                boolean isAllUppercase = false;
-                for (char currentChar : name.toCharArray()) {
-                    if (Character.isUpperCase(currentChar) && Character.isLetter(currentChar)) {
-                        isAllUppercase = true;
-                    } else if (Character.isLetter(currentChar)) {
-                        isAllUppercase = false;
-                        break;
-                    }
-                }
-
-                String nameToConvert;
-                // if all uppercase force lowercase on all letter
-                if (isAllUppercase) {
-                    nameToConvert = name.toLowerCase();
-                } else {
-                    nameToConvert = name;
-                }
-
-                for (int i = 0; i < nameToConvert.length(); i++) {
-                    char currentChar = nameToConvert.charAt(i);
-
-                    // REMOVE _ and replace next letter with an uppercase letter
-                    switch (currentChar) {
-                        case '_':
-                            // move to the next letter
-                            i++;
-                            currentChar = nameToConvert.charAt(i);
-
-                            if (!javaFieldNameStyleName.isEmpty()) {
-                                javaFieldNameStyleName += Character.toString(currentChar).toUpperCase();
-                            } else {
-                                javaFieldNameStyleName += Character.toString(currentChar);
-                            }
-                            break;
-                        default:
-                            javaFieldNameStyleName += currentChar;
-                    }
-                }
-            }
-
-            return javaFieldNameStyleName;
-        } else {
-            return name;
-        }
+    @Override
+    public String getForeignKeyCascadeType() {
+        return null;
     }
 
-    public boolean isForeignKeyIsEnumeration() {
-        return foreignKeyType == ForeignKeyType.ENUM;
+    @Override
+    public String getSequencerName() {
+        return null;
     }
 
-    public String getName() {
-        return name;
+    @Override
+    public boolean isPrimaryKey() {
+        return false;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getVarName() {
-        return varName;
-    }
-
-    public void setVarName(String varName) {
-        this.varName = varName;
-    }
-
-    public SchemaFieldType getJdbcDataType() {
-        return jdbcDataType;
-    }
-
-    public void setJdbcDataType(SchemaFieldType jdbcDataType) {
-        this.jdbcDataType = jdbcDataType;
-    }
-
-    public int getSize() {
-        return size;
-    }
-
-    public void setSize(int size) {
-        this.size = size;
-    }
-
-    public int getDecimals() {
-        return decimals;
-    }
-
-    public void setDecimals(int decimals) {
-        this.decimals = decimals;
-    }
-
-    public String getDefaultValue() {
-        return defaultValue;
-    }
-
-    public void setDefaultValue(String defaultValue) {
-        this.defaultValue = defaultValue;
-    }
-
+    @Override
     public boolean isNotNull() {
-        return notNull;
-    }
-
-    public void setNotNull(boolean notNull) {
-        this.notNull = notNull;
-    }
-
-    public String getJavaFieldNameStyleName() {
-        return javaFieldNameStyleName;
-    }
-
-    public void setJavaFieldNameStyleName(String javaFieldNameStyleName) {
-        this.javaFieldNameStyleName = javaFieldNameStyleName;
-    }
-
-    public String getForeignKeyTable() {
-        return foreignKeyTable;
-    }
-
-    public void setForeignKeyTable(String foreignKeyTable) {
-        this.foreignKeyTable = foreignKeyTable;
-    }
-
-    public String getForeignKeyField() {
-        return foreignKeyField;
-    }
-
-    public void setForeignKeyField(String foreignKeyField) {
-        this.foreignKeyField = foreignKeyField;
-    }
-
-    public ForeignKeyType getForeignKeyType() {
-        return foreignKeyType;
-    }
-
-    public void setForeignKeyType(ForeignKeyType foreignKeyType) {
-        this.foreignKeyType = foreignKeyType;
-    }
-
-    public ForeignKeyFetchType getForeignKeyFetchType() {
-        return foreignKeyFetchType;
-    }
-
-    public void setForeignKeyFetchType(ForeignKeyFetchType foreignKeyFetchType) {
-        this.foreignKeyFetchType = foreignKeyFetchType;
-    }
-
-    public String getEnumerationDefault() {
-        return enumerationDefault;
-    }
-
-    public void setEnumerationDefault(String enumerationDefault) {
-        this.enumerationDefault = enumerationDefault;
+        return false;
     }
 }
