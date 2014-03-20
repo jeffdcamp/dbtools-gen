@@ -276,7 +276,7 @@ public class SchemaRenderer implements Runnable {
         databaseMapping = readXMLTypes(this.getClass(), mappingFilename, dbVendorName);
 
         showProgress("Reading XML Schema...", true);
-        dbSchema.readXMLSchema(schemaXMLFilename);
+        dbSchema = DatabaseSchema.readXMLSchema(schemaXMLFilename);
 
         if (databaseName != null && databaseName.isEmpty()) {
             return renderDatabase(dbSchema.getDatabase(databaseName));
