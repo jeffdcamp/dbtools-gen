@@ -9,7 +9,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.dbtools</groupId>
     <artifactId>dbtools-gen</artifactId>
-    <version>1.4.12-SNAPSHOT</version>
+    <version>1.4.12</version>
     <packaging>jar</packaging>
     <name>DBTools Generator</name>
     <description>DBTools ORM Class Generator</description>
