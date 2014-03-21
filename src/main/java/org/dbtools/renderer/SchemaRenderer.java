@@ -282,7 +282,14 @@ public class SchemaRenderer implements Runnable {
         if (databaseName != null && databaseName.isEmpty()) {
             return renderDatabase(dbSchema.getDatabase(databaseName));
         } else {
-            for (SchemaDatabase database : dbSchema.getDatabases()) {
+            List<SchemaDatabase> databases = dbSchema.getDatabases();
+            if (databases.size() == 0) {
+                showProgress("Cannot find any databases in the schema file.  Be sure that there is a <database> section.", true);
+                return false;
+            }
+
+            // since no database was given, cycle through all of the databases
+            for (SchemaDatabase database : databases) {
                 if (!renderDatabase(database)) {
                     return false;
                 }
