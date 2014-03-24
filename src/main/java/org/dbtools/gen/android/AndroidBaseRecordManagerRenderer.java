@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * @author Jeff
  */
-public class AndroidBaseRecordManager {
+public class AndroidBaseRecordManagerRenderer {
 
     private JavaClass myClass;
 

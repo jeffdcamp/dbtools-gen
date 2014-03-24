@@ -13,19 +13,6 @@
                                     <xsd:attribute name="type" type="xsd:string" use="optional" />
                                 </xsd:complexType>
                             </xsd:element>
-                            <xsd:element name="references" minOccurs="0" maxOccurs="unbounded">
-                                <xsd:complexType>
-                                    <xsd:sequence>
-                                        <xsd:element name="schema">
-                                            <xsd:complexType>
-                                                <xsd:attribute name="path" type="xsd:string"/>
-                                                <xsd:attribute name="baseJavaPackage" type="xsd:string"/>
-                                                <xsd:attribute name="readFromClasspath" type="xsd:string"/>
-                                            </xsd:complexType>
-                                        </xsd:element>
-                                    </xsd:sequence>
-                                </xsd:complexType>
-                            </xsd:element>
                             <xsd:element name="table" maxOccurs="unbounded">
                                 <xsd:complexType>
                                     <xsd:sequence>
@@ -218,7 +205,7 @@
                                                 </xsd:attribute>
                                                 <xsd:attribute name="decimals" type="xsd:NMTOKEN" use="optional" default="0" >
                                                     <xsd:annotation>
-                                                        <xsd:documentation>Number of decimal spaces to be used by the database (below the . in a number).  This is also refered to as scale or precision in some databases.</xsd:documentation>
+                                                        <xsd:documentation>Number of decimal spaces to be used by the database (below the . in a number).  This is also referred to as scale or precision in some databases.</xsd:documentation>
                                                     </xsd:annotation>
                                                 </xsd:attribute>
                                                 <xsd:attribute name="foreignKeyType" use="optional" default="IGNORE">

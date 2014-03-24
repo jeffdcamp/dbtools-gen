@@ -10,13 +10,19 @@
 package org.dbtools.gen;
 
 
+import org.dbtools.gen.android.DatabaseBaseManagerRenderer;
+import org.dbtools.gen.android.DatabaseManagerRenderer;
 import org.dbtools.renderer.SchemaRenderer;
+import org.dbtools.schema.schemafile.DatabaseSchema;
 import org.dbtools.schema.schemafile.SchemaDatabase;
 import org.dbtools.schema.schemafile.SchemaTable;
 import org.dbtools.schema.schemafile.SchemaView;
+import org.dbtools.util.JavaUtil;
 import org.dbtools.util.PackageUtil;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -80,12 +86,25 @@ public abstract class DBObjectsBuilder {
     }
 
     private boolean buildAllDatabases() {
-        for (SchemaDatabase database : schemaRenderer.getDbSchema().getDatabases()) {
+        DatabaseSchema databaseSchema = schemaRenderer.getDbSchema();
+        for (SchemaDatabase database : databaseSchema.getDatabases()) {
             resetData(); // prepare for new database
             if (!build(database)) {
                 return false;
             }
         }
+
+        DatabaseBaseManagerRenderer databaseBaseManager = new DatabaseBaseManagerRenderer();
+        databaseBaseManager.setPackageBase(packageBase);
+        databaseBaseManager.setOutDir(outputBaseDir);
+        databaseBaseManager.setEncryptionSupport(encryptionSupport);
+        databaseBaseManager.generate(databaseSchema);
+
+        DatabaseManagerRenderer databaseManager = new DatabaseManagerRenderer();
+        databaseManager.setPackageBase(packageBase);
+        databaseManager.setOutDir(outputBaseDir);
+        databaseManager.setInjectionSupport(injectionSupport);
+        databaseManager.generate(databaseSchema); // this file will only be created if it does not already exist
 
         return true;
     }
@@ -114,7 +133,7 @@ public abstract class DBObjectsBuilder {
                 String outDir = createOutputDir(table.getClassName().toLowerCase());
 
                 // package
-                String packageName = packageBase + "." + table.getClassName().toLowerCase();
+                String packageName = JavaUtil.createTablePackageName(packageBase, table.getClassName());
 
                 objectBuilder.setDatabase(database);
                 objectBuilder.setEntity(table);

@@ -21,15 +21,15 @@ import java.util.List;
 /**
  * @author Jeff
  */
-public class JPABaseRecordManager {
+public class JPABaseRecordManagerRenderer {
 
     private JavaClass myClass;
     private boolean springSupport = false;
 
     /**
-     * Creates a new instance of JPABaseRecordManager.
+     * Creates a new instance of JPABaseRecordManagerRenderer.
      */
-    public JPABaseRecordManager() {
+    public JPABaseRecordManagerRenderer() {
     }
 
     public void generateObjectCode(SchemaEntity entity, String packageName) {

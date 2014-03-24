@@ -51,4 +51,32 @@ public class JavaUtil {
 
         return javaFieldNameStyleName;
     }
+
+    public static String nameToJavaConst(String nameToConvert) {
+        StringBuilder constName = new StringBuilder();
+
+        for (int i = 0; i < nameToConvert.length(); i++) {
+            char currentChar = nameToConvert.charAt(i);
+
+            // add _ if current character is upper and last is lower
+            if (Character.isUpperCase(currentChar) && i > 0) {
+                char lastChar = nameToConvert.charAt(i - 1);
+                if (Character.isLowerCase(lastChar)) {
+                    constName.append('_');
+                }
+            }
+
+            constName.append(Character.toUpperCase(currentChar));
+        }
+
+        return constName.toString();
+    }
+
+    public static String createTablePackageName(String packageBase, String tableClassName) {
+        return packageBase + "." + tableClassName.toLowerCase();
+    }
+
+    public static String createTableImport(String packageBase, String tableClassName) {
+        return createTablePackageName(packageBase, tableClassName) + "." + tableClassName;
+    }
 }

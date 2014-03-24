@@ -22,8 +22,8 @@ import java.util.List;
  */
 public class JPADBObjectBuilder implements DBObjectBuilder {
 
-    private JPABaseRecordManager baseManagerClass = new JPABaseRecordManager();
-    private JPARecordManager managerClass = new JPARecordManager();
+    private JPABaseRecordManagerRenderer baseManagerClass = new JPABaseRecordManagerRenderer();
+    private JPARecordManagerRenderer managerClass = new JPARecordManagerRenderer();
     private JPABaseRecordClassRenderer baseRecordClass = new JPABaseRecordClassRenderer();
     private JPARecordClassRenderer recordClass = new JPARecordClassRenderer();
     private int filesGeneratedCount = 0;
@@ -59,8 +59,7 @@ public class JPADBObjectBuilder implements DBObjectBuilder {
 
         // Managers
         if (!table.isEnumerationTable()) {
-            //String baseSEManagerFileName = outDir + JPABaseRecordManager.getClassName(table)+".java";
-            String managerFileName = outDir + JPARecordManager.getClassName(table) + ".java";
+            String managerFileName = outDir + JPARecordManagerRenderer.getClassName(table) + ".java";
 
             //File baseManagerFile = new File(baseSEManagerFileName);
             File managerFile = new File(managerFileName);

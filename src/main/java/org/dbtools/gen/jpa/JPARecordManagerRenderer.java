@@ -1,13 +1,13 @@
 /*
- * AndroidRecordManager.java
+ * JPAJSERecordManager.java
  *
- * Created on Sep 9, 2010
+ * Created on February 24, 2007, 11:03 AM
  *
- * Copyright 2010 Jeff Campbell. All rights reserved. Unauthorized reproduction
- * is a violation of applicable law. This material contains certain
+ * Copyright 2007 Jeff Campbell. All rights reserved. Unauthorized reproduction 
+ * is a violation of applicable law. This material contains certain 
  * confidential or proprietary information and trade secrets of Jeff Campbell.
  */
-package org.dbtools.gen.android;
+package org.dbtools.gen.jpa;
 
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
@@ -22,19 +22,26 @@ import java.util.List;
 /**
  * @author Jeff
  */
-public class AndroidRecordManager {
+public class JPARecordManagerRenderer {
 
     private JavaClass myClass;
-
-    private boolean injectionSupport = false;
+    private boolean springSupport = false;
 
     /**
-     * Creates a new instance of AndroidRecordManager.
+     * Creates a new instance of JPARecordManagerRenderer.
      */
-    public void generate(SchemaEntity table, String packageName) {
-        String className = getClassName(table);
+    public JPARecordManagerRenderer() {
+    }
+
+    public void generateObjectCode(SchemaEntity entity, String packageName) {
+        String className = getClassName(entity);
         myClass = new JavaClass(packageName, className);
-        myClass.setExtends(AndroidBaseRecordManager.getClassName(table)); // extend the generated base class
+        myClass.setExtends(JPABaseRecordManagerRenderer.getClassName(entity)); // extend the generated base class
+
+        if (springSupport) {
+            myClass.addImport("javax.inject.Named");
+            myClass.addAnnotation("@Named");
+        }
 
         // header comment
         Date now = new Date();
@@ -48,21 +55,23 @@ public class AndroidRecordManager {
         fileHeaderComment += " */\n";
         myClass.setFileHeaderComment(fileHeaderComment);
 
-        // Injection support
-        if (injectionSupport) {
-            myClass.addAnnotation("javax.inject.Singleton");
-        }
-
         // constructor
         myClass.setCreateDefaultConstructor(false);
 
+        if (springSupport) {
+            // Spring requires a default constructor
+            myClass.addConstructor(Access.PUBLIC, null, "super(null);");
+        }
+
         List<JavaVariable> constParams = new ArrayList<>();
-        String constContent = "";
+        myClass.addImport("javax.persistence.EntityManager");
+        constParams.add(new JavaVariable("EntityManager", "em"));
+        String constContent = "super(em);";
         myClass.addConstructor(Access.PUBLIC, constParams, constContent);
     }
 
-    public static String getClassName(SchemaEntity table) {
-        String recordClassName = AndroidRecordClassRenderer.createClassName(table);
+    public static String getClassName(SchemaEntity entity) {
+        String recordClassName = JPARecordClassRenderer.createClassName(entity);
         return recordClassName + "Manager";
     }
 
@@ -70,7 +79,7 @@ public class AndroidRecordManager {
         myClass.writeToDisk(outDir);
     }
 
-    public void setInjectionSupport(boolean injectionSupport) {
-        this.injectionSupport = injectionSupport;
+    void setSpringSupport(boolean b) {
+        this.springSupport = b;
     }
 }

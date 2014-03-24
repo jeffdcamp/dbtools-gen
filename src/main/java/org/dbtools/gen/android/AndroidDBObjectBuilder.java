@@ -29,8 +29,8 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
 
     private AndroidBaseRecordClassRenderer baseRecordClass = new AndroidBaseRecordClassRenderer();
     private AndroidRecordClassRenderer recordClass = new AndroidRecordClassRenderer();
-    private AndroidBaseRecordManager baseManagerClass = new AndroidBaseRecordManager();
-    private AndroidRecordManager managerClass = new AndroidRecordManager();
+    private AndroidBaseRecordManagerRenderer baseManagerClass = new AndroidBaseRecordManagerRenderer();
+    private AndroidRecordManagerRenderer managerClass = new AndroidRecordManagerRenderer();
 
     private int filesGeneratedCount = 0;
     private List<String> filesGenerated = new ArrayList<>();
@@ -68,7 +68,7 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
 
         // Managers
         if (!entity.isEnumerationTable()) {
-            String managerFileName = outDir + AndroidRecordManager.getClassName(entity) + ".java";
+            String managerFileName = outDir + AndroidRecordManagerRenderer.getClassName(entity) + ".java";
             File managerFile = new File(managerFileName);
 
             // Base Manager
