@@ -143,14 +143,14 @@ public class AndroidBaseRecordClassRenderer {
 
             // Primary key / not enum methods
             if (primaryKey && !myClass.isEnum()) {
-                myClass.addMethod(Access.PUBLIC, "String", "getRowIDKey", "return " + fieldKey + ";").addAnnotation("Override");
+                myClass.addMethod(Access.PUBLIC, "String", "getRowIdKey", "return " + fieldKey + ";").addAnnotation("Override");
 
-                // add vanilla getPrimaryKeyID() / setPrimaryKeyID(...) for the primary key
-                myClass.addMethod(Access.PUBLIC, field.getJavaTypeText(), "getPrimaryKeyID", "return " + fieldNameJavaStyle + ";").addAnnotation("Override");
+                // add vanilla getPrimaryKeyId() / setPrimaryKeyId(...) for the primary key
+                myClass.addMethod(Access.PUBLIC, field.getJavaTypeText(), "getPrimaryKeyId", "return " + fieldNameJavaStyle + ";").addAnnotation("Override");
 
-                List<JavaVariable> setIDParams = new ArrayList<>();
-                setIDParams.add(new JavaVariable(newVariable.getDataType(), "id"));
-                myClass.addMethod(Access.PUBLIC, "void", "setPrimaryKeyID", setIDParams, "this." + fieldNameJavaStyle + " = id;").addAnnotation("Override");
+                List<JavaVariable> setIdParams = new ArrayList<>();
+                setIdParams.add(new JavaVariable(newVariable.getDataType(), "id"));
+                myClass.addMethod(Access.PUBLIC, "void", "setPrimaryKeyId", setIdParams, "this." + fieldNameJavaStyle + " = id;").addAnnotation("Override");
             }
 
             if (!myClass.isEnum()) {
@@ -242,7 +242,7 @@ public class AndroidBaseRecordClassRenderer {
             toStringMethod.addAnnotation("Override");
 
             // new record check
-            myClass.addMethod(Access.PUBLIC, "boolean", "isNewRecord", "return getPrimaryKeyID() <= 0;");
+            myClass.addMethod(Access.PUBLIC, "boolean", "isNewRecord", "return getPrimaryKeyId() <= 0;");
         }
 
         // Enum classes need a cleanTable and createTable
@@ -632,7 +632,7 @@ public class AndroidBaseRecordClassRenderer {
                         removeMethodContent += TAB + TAB + "break;\n";
                         removeMethodContent += TAB + "}\n";
                         removeMethodContent += TAB + "if (!itr.hasNext()) {\n";
-                        removeMethodContent += TAB + TAB + "throw new IllegalStateException(\"deleteItem failed: Cannot find itemID \"+ " + listVarName + ".getPrimaryKeyID());\n";
+                        removeMethodContent += TAB + TAB + "throw new IllegalStateException(\"deleteItem failed: Cannot find itemId \"+ " + listVarName + ".getPrimaryKeyId());\n";
                         removeMethodContent += TAB + "}\n";
                         removeMethodContent += "}";
 

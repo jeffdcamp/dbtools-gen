@@ -120,9 +120,9 @@ public class AndroidBaseRecordManagerRenderer {
         List<JavaVariable> updateParams3 = new ArrayList<>();
         updateParams3.add(new JavaVariable("SQLiteDatabase", "db"));
         updateParams3.add(new JavaVariable("ContentValues", "values"));
-        updateParams3.add(new JavaVariable("long", "rowID"));
+        updateParams3.add(new JavaVariable("long", "rowId"));
         myClass.addMethod(Access.PUBLIC, "int", "update", updateParams3,
-                "return " + baseManagerCall + "update(" + dbParam + recordClassName + ".TABLE, values, " + recordClassName + "." + AndroidBaseRecordClassRenderer.PRIMARY_KEY_COLUMN + ", rowID);").setStatic(!injectionSupport);
+                "return " + baseManagerCall + "update(" + dbParam + recordClassName + ".TABLE, values, " + recordClassName + "." + AndroidBaseRecordClassRenderer.PRIMARY_KEY_COLUMN + ", rowId);").setStatic(!injectionSupport);
 
         List<JavaVariable> updateParams4 = new ArrayList<>();
         updateParams4.add(new JavaVariable("SQLiteDatabase", "db"));
@@ -135,9 +135,9 @@ public class AndroidBaseRecordManagerRenderer {
         // DELETE
         List<JavaVariable> deleteParams2 = new ArrayList<>();
         deleteParams2.add(new JavaVariable("SQLiteDatabase", "db"));
-        deleteParams2.add(new JavaVariable("long", "rowID"));
+        deleteParams2.add(new JavaVariable("long", "rowId"));
         myClass.addMethod(Access.PUBLIC, "long", "delete", deleteParams2,
-                "return " + baseManagerCall + "delete(" + dbParam + recordClassName + ".TABLE, " + recordClassName + "." + AndroidBaseRecordClassRenderer.PRIMARY_KEY_COLUMN + ", rowID);").setStatic(!injectionSupport);
+                "return " + baseManagerCall + "delete(" + dbParam + recordClassName + ".TABLE, " + recordClassName + "." + AndroidBaseRecordClassRenderer.PRIMARY_KEY_COLUMN + ", rowId);").setStatic(!injectionSupport);
 
         List<JavaVariable> deleteParams3 = new ArrayList<>();
         deleteParams3.add(new JavaVariable("SQLiteDatabase", "db"));
@@ -169,14 +169,14 @@ public class AndroidBaseRecordManagerRenderer {
         myClass.addMethod(Access.PUBLIC, "Cursor", "findCursorBySelection", findParams, findCursorBySelectionContent).setStatic(!injectionSupport);
 
         // FIND BY ROW ID
-        String selectionByRowID = recordClassName + "." + AndroidBaseRecordClassRenderer.PRIMARY_KEY_COLUMN +  "+ \"=\" + rowID";
+        String selectionByRowId = recordClassName + "." + AndroidBaseRecordClassRenderer.PRIMARY_KEY_COLUMN +  "+ \"=\" + rowId";
 
-        String findCursorByRowIDContent = "return findCursorBySelection(" + dbParam + selectionByRowID + ", null);";
+        String findCursorByRowIdContent = "return findCursorBySelection(" + dbParam + selectionByRowId + ", null);";
 
         List<JavaVariable> findByRowIdParams = new ArrayList<>();
         findByRowIdParams.add(new JavaVariable("SQLiteDatabase", "db"));
-        findByRowIdParams.add(new JavaVariable("long", "rowID"));
-        myClass.addMethod(Access.PUBLIC, "Cursor", "findCursorByRowID", findByRowIdParams, findCursorByRowIDContent).setStatic(!injectionSupport);
+        findByRowIdParams.add(new JavaVariable("long", "rowId"));
+        myClass.addMethod(Access.PUBLIC, "Cursor", "findCursorByRowId", findByRowIdParams, findCursorByRowIdContent).setStatic(!injectionSupport);
 
         // FIND Object by selection AND order
         String findObjectBySelectionContent = "Cursor cursor = findCursorBySelection(" + dbParam + "selection, null);\n";
@@ -229,12 +229,12 @@ public class AndroidBaseRecordManagerRenderer {
         myClass.addMethod(Access.PUBLIC, "List<" + recordClassName + ">", "findAllBySelection", findAllNoOrderByParams, "return findAllBySelection(" + dbParam + "selection, null);").setStatic(!injectionSupport);
 
         // Find Object by Row ID
-        String findObjectByRowIDContent = "return findBySelection(" + dbParam + selectionByRowID + ", null);\n";
+        String findObjectByRowIdContent = "return findBySelection(" + dbParam + selectionByRowId + ", null);\n";
 
         List<JavaVariable> findParams3 = new ArrayList<>();
         findParams3.add(new JavaVariable("SQLiteDatabase", "db"));
-        findParams3.add(new JavaVariable("long", "rowID"));
-        myClass.addMethod(Access.PUBLIC, recordClassName, "findByRowID", findParams3, findObjectByRowIDContent).setStatic(!injectionSupport);
+        findParams3.add(new JavaVariable("long", "rowId"));
+        myClass.addMethod(Access.PUBLIC, recordClassName, "findByRowId", findParams3, findObjectByRowIdContent).setStatic(!injectionSupport);
 
         // FIND COUNT
         String findCountContent = "long count = -1;\n\n";
