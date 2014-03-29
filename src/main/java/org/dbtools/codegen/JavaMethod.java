@@ -182,7 +182,7 @@ public class JavaMethod {
             }
         }
 
-        if (interfaceOnly) {
+        if (interfaceOnly || isAbstract()) {
             methodString += ";\n";
             return methodString;
         } else {
