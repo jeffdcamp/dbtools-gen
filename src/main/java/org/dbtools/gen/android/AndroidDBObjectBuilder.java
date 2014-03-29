@@ -53,7 +53,7 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
         }
 
         if (entity != null) {
-            psLog.println("SchemaTable: " + entity.getName());
+            psLog.println(entity.getType() +": " + entity.getName());
         } else {
             psLog.println("ERROR: SchemaTable is null");
             return false;

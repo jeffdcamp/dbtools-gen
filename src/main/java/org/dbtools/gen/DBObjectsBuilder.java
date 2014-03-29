@@ -112,6 +112,8 @@ public abstract class DBObjectsBuilder {
     private boolean build(SchemaDatabase database) {
         boolean success = true;
 
+        System.out.println("DATABASE: " + database.getName());
+
         // if tables is null... assume all tables
         if (tables == null) {
             tables = schemaRenderer.getTablesToGenerate(database, null);
