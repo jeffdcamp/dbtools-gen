@@ -45,6 +45,7 @@ public class DatabaseManagerRenderer {
 
         createIdentifyDatabases(databaseSchema);
         createOnUpgrade();
+        createOnUpgradeViews();
 
         myClass.writeToDisk(outDir, false);
     }
@@ -75,6 +76,23 @@ public class DatabaseManagerRenderer {
                 new JavaVariable("int", "oldVersion"),
                 new JavaVariable("int", "newVersion"));
         myClass.addMethod(Access.PUBLIC, "void", "onUpgrade", params, content.toString());
+    }
+
+    private void createOnUpgradeViews() {
+        StringBuilder content = new StringBuilder();
+
+        content.append("String databaseName = androidDatabase.getName();\n");
+        content.append("Log.i(TAG, \"Upgrading database [\" + databaseName + \"] VIEWS from version \" + oldVersion + \" to \" + newVersion);\n");
+
+
+        List<JavaVariable> params = Arrays.asList(new JavaVariable("AndroidDatabase", "androidDatabase"),
+                new JavaVariable("int", "oldVersion"),
+                new JavaVariable("int", "newVersion"));
+
+        content.append("// automatically drop/create views\n");
+        content.append("super.onUpgradeViews(androidDatabase, oldVersion, newVersion);\n");
+
+        myClass.addMethod(Access.PUBLIC, "void", "onUpgradeViews", params, content.toString());
     }
 
     private void addImports() {

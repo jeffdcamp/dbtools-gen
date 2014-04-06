@@ -27,10 +27,10 @@ import java.util.List;
  */
 public class AndroidDBObjectBuilder implements DBObjectBuilder {
 
-    private AndroidBaseRecordClassRenderer baseRecordClass = new AndroidBaseRecordClassRenderer();
-    private AndroidRecordClassRenderer recordClass = new AndroidRecordClassRenderer();
-    private AndroidBaseRecordManagerRenderer baseManagerClass = new AndroidBaseRecordManagerRenderer();
-    private AndroidRecordManagerRenderer managerClass = new AndroidRecordManagerRenderer();
+    private AndroidBaseRecordRenderer baseRecordClass = new AndroidBaseRecordRenderer();
+    private AndroidRecordRenderer recordClass = new AndroidRecordRenderer();
+    private AndroidBaseManagerRenderer baseManagerClass = new AndroidBaseManagerRenderer();
+    private AndroidManagerRenderer managerClass = new AndroidManagerRenderer();
 
     private int filesGeneratedCount = 0;
     private List<String> filesGenerated = new ArrayList<>();
@@ -68,7 +68,7 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
 
         // Managers
         if (!entity.isEnumerationTable()) {
-            String managerFileName = outDir + AndroidRecordManagerRenderer.getClassName(entity) + ".java";
+            String managerFileName = outDir + AndroidManagerRenderer.getClassName(entity) + ".java";
             File managerFile = new File(managerFileName);
 
             // Base Manager
@@ -85,8 +85,8 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
         }
 
         // Entities
-        String baseRecordFileName = outDir + AndroidRecordClassRenderer.createClassName(entity) + ".java";
-        String recordFileName = outDir + AndroidRecordClassRenderer.createClassName(entity) + ".java";
+        String baseRecordFileName = outDir + AndroidRecordRenderer.createClassName(entity) + ".java";
+        String recordFileName = outDir + AndroidRecordRenderer.createClassName(entity) + ".java";
         File baseRecordFile = new File(baseRecordFileName);
         File recordFile = new File(recordFileName);
 

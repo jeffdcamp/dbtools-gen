@@ -22,19 +22,19 @@ import java.util.List;
 /**
  * @author Jeff
  */
-public class AndroidRecordManagerRenderer {
+public class AndroidManagerRenderer {
 
     private JavaClass myClass;
 
     private boolean injectionSupport = false;
 
     /**
-     * Creates a new instance of AndroidRecordManagerRenderer.
+     * Creates a new instance of AndroidManagerRenderer.
      */
-    public void generate(SchemaEntity table, String packageName) {
-        String className = getClassName(table);
+    public void generate(SchemaEntity entity, String packageName) {
+        String className = getClassName(entity);
         myClass = new JavaClass(packageName, className);
-        myClass.setExtends(AndroidBaseRecordManagerRenderer.getClassName(table)); // extend the generated base class
+        myClass.setExtends(AndroidBaseManagerRenderer.getClassName(entity)); // extend the generated base class
 
         // header comment
         Date now = new Date();
@@ -61,8 +61,8 @@ public class AndroidRecordManagerRenderer {
         myClass.addConstructor(Access.PUBLIC, constParams, constContent);
     }
 
-    public static String getClassName(SchemaEntity table) {
-        String recordClassName = AndroidRecordClassRenderer.createClassName(table);
+    public static String getClassName(SchemaEntity entity) {
+        String recordClassName = AndroidRecordRenderer.createClassName(entity);
         return recordClassName + "Manager";
     }
 

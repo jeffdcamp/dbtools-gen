@@ -471,13 +471,14 @@ public class JavaClass {
             out.append(getFileHeaderComment()).append("\n\n");
         }
 
+        out.append("\n");
+        out.append(buildPackage());
+        out.append(buildImports());
+
         if (getClassHeaderComment().length() > 0) {
             out.append(getClassHeaderComment()).append("\n\n");
         }
 
-        out.append("\n");
-        out.append(buildPackage());
-        out.append(buildImports());
         out.append(buildClassHeader(null)); // TODO... get rid of first parameter
         out.append(buildPostClassHeader()); // Support for ENUM type
 //        out.append(constants);  // do not need this.... just use variables

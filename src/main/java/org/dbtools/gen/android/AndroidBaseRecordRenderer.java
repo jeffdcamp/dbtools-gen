@@ -17,13 +17,15 @@ import org.dbtools.schema.dbmappings.DatabaseMapping;
 import org.dbtools.schema.schemafile.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 /**
  * @author Jeff
  */
-public class AndroidBaseRecordClassRenderer {
+public class AndroidBaseRecordRenderer {
+    private static final String TAB = JavaClass.getTab();
 
     private JavaClass myClass;
     private List<JavaEnum> enumerationClasses = new ArrayList<>();
@@ -38,14 +40,12 @@ public class AndroidBaseRecordClassRenderer {
     public static final String PRIMARY_KEY_COLUMN = "PRIMARY_KEY_COLUMN";
 
     /**
-     * Creates a new instance of AndroidBaseRecordClassRenderer.
+     * Creates a new instance of AndroidBaseRecordRenderer.
      */
-    public AndroidBaseRecordClassRenderer() {
+    public AndroidBaseRecordRenderer() {
     }
 
     public void generate(SchemaDatabase database, SchemaEntity entity, String packageName, DatabaseMapping databaseMapping) {
-        final String TAB = JavaClass.getTab();
-
         boolean enumTable = entity.isEnumerationTable();
         String entityClassName = entity.getClassName();
 
@@ -55,6 +55,7 @@ public class AndroidBaseRecordClassRenderer {
             initClassAsEnum(packageName, className, entity);
         } else {
             myClass = new JavaClass(packageName, className);
+            myClass.setAbstract(true);
 
             myClass.addImport("org.dbtools.android.domain.AndroidBaseRecord");
             myClass.setExtends("AndroidBaseRecord");
@@ -98,10 +99,12 @@ public class AndroidBaseRecordClassRenderer {
             String fieldNameJavaStyle = field.getName(true);
 
             // check for second primary key
-            if (primaryKey && primaryKeyAdded) {
-                throw new IllegalStateException("Cannot have more than 1 Primary Key [" + fieldNameJavaStyle + "]");
-            } else {
-                primaryKeyAdded = true;
+            if (primaryKey) {
+                if (primaryKeyAdded) {
+                    throw new IllegalStateException("Cannot have more than 1 Primary Key [" + fieldNameJavaStyle + "]");
+                } else {
+                    primaryKeyAdded = true;
+                }
             }
 
             // constants
@@ -143,7 +146,7 @@ public class AndroidBaseRecordClassRenderer {
 
             // Primary key / not enum methods
             if (primaryKey && !myClass.isEnum()) {
-                myClass.addMethod(Access.PUBLIC, "String", "getRowIdKey", "return " + fieldKey + ";").addAnnotation("Override");
+                myClass.addMethod(Access.PUBLIC, "String", "getIdColumnName", "return " + fieldKey + ";").addAnnotation("Override");
 
                 // add vanilla getPrimaryKeyId() / setPrimaryKeyId(...) for the primary key
                 myClass.addMethod(Access.PUBLIC, field.getJavaTypeText(), "getPrimaryKeyId", "return " + fieldNameJavaStyle + ";").addAnnotation("Override");
@@ -179,6 +182,14 @@ public class AndroidBaseRecordClassRenderer {
             }
 
             setContentCursorContent += fieldNameJavaStyle + " = " + getContentValuesCursorGetterMethod(field, fieldKey, newVariable) + ";\n";
+        }
+
+        if (!primaryKeyAdded && entity.getType() == SchemaEntityType.VIEW) {
+            myClass.addMethod(Access.PUBLIC, "String", "getIdColumnName", "return null;").addAnnotation("Override");
+
+            // add vanilla getPrimaryKeyId() / setPrimaryKeyId() for the primary key
+            myClass.addMethod(Access.PUBLIC, "long", "getPrimaryKeyId", "return 0;").addAnnotation("Override");
+            myClass.addMethod(Access.PUBLIC, "void", "setPrimaryKeyId", Arrays.asList(new JavaVariable("long", "id")), "").addAnnotation("Override");
         }
 
         // SchemaDatabase variables

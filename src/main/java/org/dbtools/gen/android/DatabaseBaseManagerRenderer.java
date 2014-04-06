@@ -3,10 +3,7 @@ package org.dbtools.gen.android;
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaVariable;
-import org.dbtools.schema.schemafile.DatabaseSchema;
-import org.dbtools.schema.schemafile.SchemaDatabase;
-import org.dbtools.schema.schemafile.SchemaEntity;
-import org.dbtools.schema.schemafile.SchemaTable;
+import org.dbtools.schema.schemafile.*;
 import org.dbtools.util.JavaUtil;
 
 import java.text.SimpleDateFormat;
@@ -51,6 +48,7 @@ public class DatabaseBaseManagerRenderer {
         myClass.setCreateDefaultConstructor(false);
 
         createOnCreate(databaseSchema);
+        createOnCreateViews(databaseSchema);
 
         myClass.writeToDisk(outDir, true);
     }
@@ -74,16 +72,17 @@ public class DatabaseBaseManagerRenderer {
         content.append("Log.i(TAG, \"Creating database: \" + androidDatabase.getName());\n");
 
         for (SchemaDatabase database : databaseSchema.getDatabases()) {
-            String databaseConstName = JavaUtil.nameToJavaConst(database.getName()) + "_DATABASE_NAME";
+            String databaseConstName = JavaUtil.nameToJavaConst(database.getName()) + "_DATABASE" + "_NAME";
+            String databaseMethodName = JavaUtil.nameToJavaConst(database.getName()) + "_TABLES";
             myClass.addConstant("String", databaseConstName, database.getName());
-            createCreateDatabase(content, databaseConstName, database);
+            createCreateDatabase(content, databaseConstName, databaseMethodName, database);
         }
 
         myClass.addMethod(Access.PUBLIC, "void", "onCreate", Arrays.asList(new JavaVariable("AndroidDatabase", "androidDatabase")), content.toString());
     }
 
-    private void createCreateDatabase(StringBuilder content, String databaseConstName, SchemaDatabase database) {
-        String varName = JavaUtil.sqlNameToJavaVariableName(databaseConstName);
+    private void createCreateDatabase(StringBuilder content, String databaseConstName, String databaseMethodName, SchemaDatabase database) {
+        String varName = JavaUtil.sqlNameToJavaVariableName(databaseMethodName);
         String createDatabaseMethodName = "create" + Character.toUpperCase(varName.charAt(0)) + varName.substring(1);
 
         content.append("if (androidDatabase.getName().equals(" + databaseConstName + ")) {\n");
@@ -114,11 +113,84 @@ public class DatabaseBaseManagerRenderer {
         createDatabaseContent.append("database.setTransactionSuccessful();\n");
         createDatabaseContent.append("database.endTransaction();\n");
         myClass.addMethod(Access.PUBLIC, "void", createDatabaseMethodName, Arrays.asList(new JavaVariable("AndroidDatabase", "androidDatabase")), createDatabaseContent.toString());
+    }
 
+    private void createOnCreateViews(DatabaseSchema databaseSchema) {
+        StringBuilder createContent = new StringBuilder();
+        StringBuilder dropContent = new StringBuilder();
+
+        createContent.append("Log.i(TAG, \"Creating database views: \" + androidDatabase.getName());\n");
+        dropContent.append("Log.i(TAG, \"Dropping database views: \" + androidDatabase.getName());\n");
+
+        for (SchemaDatabase database : databaseSchema.getDatabases()) {
+            String databaseConstName = JavaUtil.nameToJavaConst(database.getName()) + "_DATABASE_NAME";
+            String databaseMethodName = JavaUtil.nameToJavaConst(database.getName()) + "_VIEWS";
+            createCreateViews(createContent, databaseConstName, databaseMethodName, database);
+            createDropViews(dropContent, databaseConstName, databaseMethodName, database);
+        }
+
+        myClass.addMethod(Access.PUBLIC, "void", "onCreateViews", Arrays.asList(new JavaVariable("AndroidDatabase", "androidDatabase")), createContent.toString());
+        myClass.addMethod(Access.PUBLIC, "void", "onDropViews", Arrays.asList(new JavaVariable("AndroidDatabase", "androidDatabase")), dropContent.toString());
+    }
+
+    private void createCreateViews(StringBuilder content, String databaseConstName, String databaseMethodName, SchemaDatabase database) {
+        if (database.getViews().isEmpty()) {
+            return;
+        }
+
+        String varName = JavaUtil.sqlNameToJavaVariableName(databaseMethodName);
+        String createDatabaseViewsMethodName = "create" + Character.toUpperCase(varName.charAt(0)) + varName.substring(1);
+
+        content.append("if (androidDatabase.getName().equals(" + databaseConstName + ")) {\n");
+        content.append(TAB).append(createDatabaseViewsMethodName).append("(androidDatabase);\n");
+        content.append("}\n");
+
+        StringBuilder createDatabaseViewsContent = new StringBuilder();
+        createDatabaseViewsContent.append("SQLiteDatabase database = androidDatabase.getSqLiteDatabase();\n");
+        createDatabaseViewsContent.append("database.beginTransaction();\n");
+
+        createDatabaseViewsContent.append("\n// Views\n");
+        for (SchemaView view : database.getViews()) {
+            myClass.addImport(JavaUtil.createTableImport(packageBase, view.getClassName()));
+            createDatabaseViewsContent.append("AndroidBaseManager.createTable(database, " + view.getClassName() + ".CREATE_VIEW);\n");
+        }
+
+        createDatabaseViewsContent.append("\n");
+        createDatabaseViewsContent.append("database.setTransactionSuccessful();\n");
+        createDatabaseViewsContent.append("database.endTransaction();\n");
+        myClass.addMethod(Access.PUBLIC, "void", createDatabaseViewsMethodName, Arrays.asList(new JavaVariable("AndroidDatabase", "androidDatabase")), createDatabaseViewsContent.toString());
+    }
+
+    private void createDropViews(StringBuilder content, String databaseConstName, String databaseMethodName, SchemaDatabase database) {
+        if (database.getViews().isEmpty()) {
+            return;
+        }
+
+        String varName = JavaUtil.sqlNameToJavaVariableName(databaseMethodName);
+        String createDatabaseViewsMethodName = "drop" + Character.toUpperCase(varName.charAt(0)) + varName.substring(1);
+
+        content.append("if (androidDatabase.getName().equals(" + databaseConstName + ")) {\n");
+        content.append(TAB).append(createDatabaseViewsMethodName).append("(androidDatabase);\n");
+        content.append("}\n");
+
+        StringBuilder createDatabaseViewsContent = new StringBuilder();
+        createDatabaseViewsContent.append("SQLiteDatabase database = androidDatabase.getSqLiteDatabase();\n");
+        createDatabaseViewsContent.append("database.beginTransaction();\n");
+
+        createDatabaseViewsContent.append("\n// Views\n");
+        for (SchemaView view : database.getViews()) {
+            myClass.addImport(JavaUtil.createTableImport(packageBase, view.getClassName()));
+            createDatabaseViewsContent.append("AndroidBaseManager.dropTable(database, " + view.getClassName() + ".DROP_VIEW);\n");
+        }
+
+        createDatabaseViewsContent.append("\n");
+        createDatabaseViewsContent.append("database.setTransactionSuccessful();\n");
+        createDatabaseViewsContent.append("database.endTransaction();\n");
+        myClass.addMethod(Access.PUBLIC, "void", createDatabaseViewsMethodName, Arrays.asList(new JavaVariable("AndroidDatabase", "androidDatabase")), createDatabaseViewsContent.toString());
     }
 
     public static String getClassName(SchemaEntity table) {
-        String recordClassName = AndroidRecordClassRenderer.createClassName(table);
+        String recordClassName = AndroidRecordRenderer.createClassName(table);
         return recordClassName + "Manager";
     }
 
