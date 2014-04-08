@@ -44,7 +44,6 @@ public class AndroidBaseManagerRenderer {
         fileHeaderComment += " * " + className + ".java\n";
         fileHeaderComment += " *\n";
         fileHeaderComment += " * GENERATED FILE - DO NOT EDIT\n";
-        fileHeaderComment += " * CHECKSTYLE:OFF\n";
         fileHeaderComment += " * \n";
         fileHeaderComment += " */\n";
         myClass.setFileHeaderComment(fileHeaderComment);
@@ -80,7 +79,10 @@ public class AndroidBaseManagerRenderer {
         myClass.addMethod(Access.PUBLIC, "String[]", "getAllKeys", "return " + recordClassName + ".ALL_KEYS;");
 
         myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getReadableDatabase", Arrays.asList(new JavaVariable("String", "databaseName")), "return databaseManager.getReadableDatabase(databaseName);");
+        myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getReadableDatabase", null, "return databaseManager.getReadableDatabase(getDatabaseName());");
+
         myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getWritableDatabase", Arrays.asList(new JavaVariable("String", "databaseName")), "return databaseManager.getWritableDatabase(databaseName);");
+        myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getWritableDatabase", null, "return databaseManager.getWritableDatabase(getDatabaseName());");
 
         JavaVariable dbManagerVariable = myClass.addVariable("DatabaseManager", "databaseManager");
         dbManagerVariable.setAccess(Access.DEFAULT_NONE);

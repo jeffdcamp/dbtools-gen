@@ -6,9 +6,7 @@ import org.dbtools.codegen.JavaVariable;
 import org.dbtools.schema.schemafile.*;
 import org.dbtools.util.JavaUtil;
 
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 
 /**
  * User: jcampbell
@@ -33,16 +31,17 @@ public class DatabaseBaseManagerRenderer {
         addImports();
 
         // header comment
-        Date now = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss");
         String fileHeaderComment;
         fileHeaderComment = "/*\n";
         fileHeaderComment += " * " + className + ".java\n";
         fileHeaderComment += " *\n";
-        fileHeaderComment += " * Generated on: " + dateFormat.format(now) + "\n";
+        fileHeaderComment += " * GENERATED FILE - DO NOT EDIT\n";
         fileHeaderComment += " *\n";
         fileHeaderComment += " */\n";
         myClass.setFileHeaderComment(fileHeaderComment);
+
+        // Since this is generated code.... suppress all warnings
+        myClass.addAnnotation("@SuppressWarnings(\"all\")");
 
         // constructor
         myClass.setCreateDefaultConstructor(false);
@@ -56,12 +55,13 @@ public class DatabaseBaseManagerRenderer {
     private void addImports() {
         myClass.addImport("android.util.Log");
         myClass.addImport("org.dbtools.android.domain.AndroidDatabase");
-        myClass.addImport("org.dbtools.android.domain.AndroidDatabaseManager");
 
         if (!encryptionSupport) {
+            myClass.addImport("org.dbtools.android.domain.AndroidDatabaseManager");
             myClass.addImport("android.database.sqlite.SQLiteDatabase");
             myClass.addImport("org.dbtools.android.domain.AndroidBaseManager");
         } else {
+            myClass.addImport("org.dbtools.android.domain.secure.AndroidDatabaseManager");
             myClass.addImport("org.dbtools.android.domain.secure.AndroidBaseManager");
             myClass.addImport("net.sqlcipher.database.SQLiteDatabase");
         }
@@ -90,7 +90,11 @@ public class DatabaseBaseManagerRenderer {
         content.append("}\n");
 
         StringBuilder createDatabaseContent = new StringBuilder();
-        createDatabaseContent.append("SQLiteDatabase database = androidDatabase.getSqLiteDatabase();\n");
+        if (!encryptionSupport) {
+            createDatabaseContent.append("SQLiteDatabase database = androidDatabase.getSqLiteDatabase();\n");
+        } else {
+            createDatabaseContent.append("SQLiteDatabase database = androidDatabase.getSecureSqLiteDatabase();\n");
+        }
         createDatabaseContent.append("database.beginTransaction();\n");
 
         createDatabaseContent.append("\n// Enum Tables\n");
@@ -146,7 +150,12 @@ public class DatabaseBaseManagerRenderer {
         content.append("}\n");
 
         StringBuilder createDatabaseViewsContent = new StringBuilder();
-        createDatabaseViewsContent.append("SQLiteDatabase database = androidDatabase.getSqLiteDatabase();\n");
+
+        if (!encryptionSupport) {
+            createDatabaseViewsContent.append("SQLiteDatabase database = androidDatabase.getSqLiteDatabase();\n");
+        } else {
+            createDatabaseViewsContent.append("SQLiteDatabase database = androidDatabase.getSecureSqLiteDatabase();\n");
+        }
         createDatabaseViewsContent.append("database.beginTransaction();\n");
 
         createDatabaseViewsContent.append("\n// Views\n");
@@ -174,7 +183,11 @@ public class DatabaseBaseManagerRenderer {
         content.append("}\n");
 
         StringBuilder createDatabaseViewsContent = new StringBuilder();
-        createDatabaseViewsContent.append("SQLiteDatabase database = androidDatabase.getSqLiteDatabase();\n");
+        if (!encryptionSupport) {
+            createDatabaseViewsContent.append("SQLiteDatabase database = androidDatabase.getSqLiteDatabase();\n");
+        } else {
+            createDatabaseViewsContent.append("SQLiteDatabase database = androidDatabase.getSecureSqLiteDatabase();\n");
+        }
         createDatabaseViewsContent.append("database.beginTransaction();\n");
 
         createDatabaseViewsContent.append("\n// Views\n");
