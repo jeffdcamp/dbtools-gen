@@ -34,7 +34,7 @@ public class SchemaViewField extends SchemaField {
 
     @Override
     public boolean isEnumeration() {
-        return false;
+        return isForeignKeyIsEnumeration();
     }
 
     @Override

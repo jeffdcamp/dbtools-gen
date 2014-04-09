@@ -12,6 +12,7 @@ package org.dbtools.gen.android;
 
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
+import org.dbtools.codegen.JavaMethod;
 import org.dbtools.codegen.JavaVariable;
 import org.dbtools.schema.schemafile.SchemaEntity;
 import org.dbtools.schema.schemafile.SchemaEntityType;
@@ -65,6 +66,14 @@ public class AndroidBaseManagerRenderer {
             createInjectionManager(entity, packageName, recordClassName);
         } else {
             createNoInjectionManager(entity, recordClassName);
+        }
+
+        if (entity.getType() == SchemaEntityType.VIEW) {
+            List<JavaVariable> params = new ArrayList<>();
+            params.add(new JavaVariable("String", "databaseName"));
+            params.add(new JavaVariable(recordClassName, "e"));
+            JavaMethod method = myClass.addMethod(Access.PUBLIC, "boolean", "save", params, "throw new IllegalStateException(\"Cannot call SAVE on " + recordClassName + " View\");");
+            method.addAnnotation("Override");
         }
     }
 
