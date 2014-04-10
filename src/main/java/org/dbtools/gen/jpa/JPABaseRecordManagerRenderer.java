@@ -126,11 +126,6 @@ public class JPABaseRecordManagerRenderer {
         findParams.add(new JavaVariable("Object", "pk"));
         myClass.addMethod(Access.PUBLIC, recordClassName, "find", findParams, "return (" + recordClassName + ") entityManager.find(" + recordClassName + ".class, pk);");
 
-        myClass.addImport("javax.persistence.Query");
-        String findCountContent = "Query q = getEntityManager().createNativeQuery(\"SELECT count(0) FROM \" + " + recordClassName + ".TABLE);\n"
-                + "return ((Number) q.getSingleResult()).longValue();\n";
-        myClass.addMethod(Access.PUBLIC, "long", "findCount", findCountContent);
-
         addFindAllMethod(myClass, recordClassName);
         addFindCountMethod(myClass, recordClassName);
     }
