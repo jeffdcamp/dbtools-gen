@@ -2,6 +2,7 @@ package org.dbtools.gen.android;
 
 import org.dbtools.gen.DBObjectBuilder;
 import org.dbtools.gen.DBObjectsBuilder;
+import org.dbtools.schema.schemafile.DatabaseSchema;
 
 /**
  * User: jcampbell
@@ -28,5 +29,20 @@ public class AndroidObjectsBuilder extends DBObjectsBuilder {
 
         builder.build();
         System.out.println("Generated [" + builder.getObjectBuilder().getNumberFilesGenerated() + "] files.");
+    }
+
+    @Override
+    public void onPostBuild(DatabaseSchema databaseSchema, String packageBase, String outputBaseDir, boolean injectionSupport, boolean encryptionSupport) {
+        DatabaseBaseManagerRenderer databaseBaseManager = new DatabaseBaseManagerRenderer();
+        databaseBaseManager.setPackageBase(packageBase);
+        databaseBaseManager.setOutDir(outputBaseDir);
+        databaseBaseManager.setEncryptionSupport(encryptionSupport);
+        databaseBaseManager.generate(databaseSchema);
+
+        DatabaseManagerRenderer databaseManager = new DatabaseManagerRenderer();
+        databaseManager.setPackageBase(packageBase);
+        databaseManager.setOutDir(outputBaseDir);
+        databaseManager.setInjectionSupport(injectionSupport);
+        databaseManager.generate(databaseSchema); // this file will only be created if it does not already exist
     }
 }

@@ -10,8 +10,6 @@
 package org.dbtools.gen;
 
 
-import org.dbtools.gen.android.DatabaseBaseManagerRenderer;
-import org.dbtools.gen.android.DatabaseManagerRenderer;
 import org.dbtools.renderer.SchemaRenderer;
 import org.dbtools.schema.schemafile.DatabaseSchema;
 import org.dbtools.schema.schemafile.SchemaDatabase;
@@ -94,19 +92,12 @@ public abstract class DBObjectsBuilder {
             }
         }
 
-        DatabaseBaseManagerRenderer databaseBaseManager = new DatabaseBaseManagerRenderer();
-        databaseBaseManager.setPackageBase(packageBase);
-        databaseBaseManager.setOutDir(outputBaseDir);
-        databaseBaseManager.setEncryptionSupport(encryptionSupport);
-        databaseBaseManager.generate(databaseSchema);
-
-        DatabaseManagerRenderer databaseManager = new DatabaseManagerRenderer();
-        databaseManager.setPackageBase(packageBase);
-        databaseManager.setOutDir(outputBaseDir);
-        databaseManager.setInjectionSupport(injectionSupport);
-        databaseManager.generate(databaseSchema); // this file will only be created if it does not already exist
+        onPostBuild(databaseSchema, packageBase, outputBaseDir, injectionSupport, encryptionSupport);
 
         return true;
+    }
+
+    public void onPostBuild(DatabaseSchema databaseSchema, String packageBase, String outputBaseDir, boolean injectionSupport, boolean encryptionSupport) {
     }
 
     private boolean build(SchemaDatabase database) {

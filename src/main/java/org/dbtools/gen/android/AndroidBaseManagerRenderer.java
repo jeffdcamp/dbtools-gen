@@ -67,14 +67,6 @@ public class AndroidBaseManagerRenderer {
         } else {
             createNoInjectionManager(entity, recordClassName);
         }
-
-        if (entity.getType() == SchemaEntityType.VIEW) {
-            List<JavaVariable> params = new ArrayList<>();
-            params.add(new JavaVariable("String", "databaseName"));
-            params.add(new JavaVariable(recordClassName, "e"));
-            JavaMethod method = myClass.addMethod(Access.PUBLIC, "boolean", "save", params, "throw new IllegalStateException(\"Cannot call SAVE on " + recordClassName + " View\");");
-            method.addAnnotation("Override");
-        }
     }
 
     private void createInjectionManager(SchemaEntity entity, String packageName, String recordClassName) {
@@ -112,6 +104,14 @@ public class AndroidBaseManagerRenderer {
             myClass.addImport("android.database.sqlite.SQLiteDatabase");
         } else {
             myClass.addImport("net.sqlcipher.database.SQLiteDatabase");
+        }
+
+        if (entity.getType() == SchemaEntityType.VIEW) {
+            List<JavaVariable> params = new ArrayList<>();
+            params.add(new JavaVariable("String", "databaseName"));
+            params.add(new JavaVariable(recordClassName, "e"));
+            JavaMethod method = myClass.addMethod(Access.PUBLIC, "boolean", "save", params, "throw new IllegalStateException(\"Cannot call SAVE on " + recordClassName + " View\");");
+            method.addAnnotation("Override");
         }
     }
 
