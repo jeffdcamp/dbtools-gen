@@ -375,37 +375,37 @@ public class AndroidBaseRecordRenderer {
      */
     private String getContentValuesCursorGetterMethod(SchemaField field, String paramValue, JavaVariable newVariable) {
         if (field.isEnumeration()) {
-            return newVariable.getDataType() + ".values()[cursor.getInt(cursor.getColumnIndex(" + paramValue + "))]";
+            return newVariable.getDataType() + ".values()[cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + "))]";
         }
 
         Class<?> type = field.getJavaClassType();
         if (type == int.class || type == Integer.class) {
-            return "cursor.getInt(cursor.getColumnIndex(" + paramValue + "))";
+            return "cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + "))";
         } else if (type == String.class) {
-            return "cursor.getString(cursor.getColumnIndex(" + paramValue + "))";
+            return "cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + "))";
         } else if (type == long.class || type == Long.class) {
-            return "cursor.getLong(cursor.getColumnIndex(" + paramValue + "))";
+            return "cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))";
         } else if (type == boolean.class || type == Boolean.class) {
-            return "cursor.getInt(cursor.getColumnIndex(" + paramValue + ")) != 0 ? true : false";
+            return "cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + ")) != 0 ? true : false";
         } else if (type == Date.class) {
             SchemaFieldType fieldType = field.getJdbcDataType();
             if (fieldType == SchemaFieldType.DATE) {
                 if (dateTimeSupport) {
-                    return "dbStringToDateTime(cursor.getString(cursor.getColumnIndex(" + paramValue + ")))";
+                    return "dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
                 } else {
-                    return "dbStringToDate(cursor.getString(cursor.getColumnIndex(" + paramValue + ")))";
+                    return "dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
                 }
             } else {
                 if (dateTimeSupport) {
-                    return "!cursor.isNull(cursor.getColumnIndex(" + paramValue + ")) ? new org.joda.time.DateTime(cursor.getLong(cursor.getColumnIndex(" + paramValue + "))) : null";
+                    return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? new org.joda.time.DateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) : null";
                 } else {
-                    return "!cursor.isNull(cursor.getColumnIndex(" + paramValue + ")) ? new java.util.Date(cursor.getLong(cursor.getColumnIndex(" + paramValue + "))) : null";
+                    return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? new java.util.Date(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) : null";
                 }
             }
         } else if (type == float.class || type == Float.class) { // || type == Fraction.class || type == Money.class) {
-            return "cursor.getFloat(cursor.getColumnIndex(" + paramValue + "))";
+            return "cursor.getFloat(cursor.getColumnIndexOrThrow(" + paramValue + "))";
         } else if (type == double.class || type == Double.class) {
-            return "cursor.getDouble(cursor.getColumnIndex(" + paramValue + "))";
+            return "cursor.getDouble(cursor.getColumnIndexOrThrow(" + paramValue + "))";
         } else {
             return "[[UNHANDLED FIELD TYPE: " + type + "]]";
         }
