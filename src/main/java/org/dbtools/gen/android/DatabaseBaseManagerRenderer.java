@@ -72,8 +72,11 @@ public class DatabaseBaseManagerRenderer {
         content.append("Log.i(TAG, \"Creating database: \" + androidDatabase.getName());\n");
 
         for (SchemaDatabase database : databaseSchema.getDatabases()) {
-            String databaseConstName = JavaUtil.nameToJavaConst(database.getName()) + "_DATABASE" + "_NAME";
-            String databaseMethodName = JavaUtil.nameToJavaConst(database.getName()) + "_TABLES";
+            String databaseName = database.getName();
+            databaseName = databaseName.replace(".", ""); // remove any periods (example: "mydb.sqlite")
+
+            String databaseConstName = JavaUtil.nameToJavaConst(databaseName) + "_DATABASE_NAME";
+            String databaseMethodName = JavaUtil.nameToJavaConst(databaseName) + "_TABLES";
             myClass.addConstant("String", databaseConstName, database.getName());
             createCreateDatabase(content, databaseConstName, databaseMethodName, database);
         }
@@ -127,8 +130,11 @@ public class DatabaseBaseManagerRenderer {
         dropContent.append("Log.i(TAG, \"Dropping database views: \" + androidDatabase.getName());\n");
 
         for (SchemaDatabase database : databaseSchema.getDatabases()) {
-            String databaseConstName = JavaUtil.nameToJavaConst(database.getName()) + "_DATABASE_NAME";
-            String databaseMethodName = JavaUtil.nameToJavaConst(database.getName()) + "_VIEWS";
+            String databaseName = database.getName();
+            databaseName = databaseName.replace(".", ""); // remove any periods (example: "mydb.sqlite")
+
+            String databaseConstName = JavaUtil.nameToJavaConst(databaseName) + "_DATABASE_NAME";
+            String databaseMethodName = JavaUtil.nameToJavaConst(databaseName) + "_VIEWS";
             createCreateViews(createContent, databaseConstName, databaseMethodName, database);
             createDropViews(dropContent, databaseConstName, databaseMethodName, database);
         }
