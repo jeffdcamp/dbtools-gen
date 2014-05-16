@@ -22,6 +22,7 @@ public class DatabaseManagerRenderer {
     private String packageBase;
     private String outDir;
     private boolean injectionSupport = false;
+    private boolean jsr305Support = false;
     private boolean encryptionSupport = false; // use SQLCipher
 
     public void generate(DatabaseSchema databaseSchema) {
@@ -116,6 +117,10 @@ public class DatabaseManagerRenderer {
 
     public void setInjectionSupport(boolean injectionSupport) {
         this.injectionSupport = injectionSupport;
+    }
+
+    public void setJsr305Support(boolean jsr305Support) {
+        this.jsr305Support = jsr305Support;
     }
 
     public void setEncryptionSupport(boolean encryptionSupport) {

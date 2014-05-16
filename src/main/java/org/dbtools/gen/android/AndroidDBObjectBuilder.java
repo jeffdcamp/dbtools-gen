@@ -132,6 +132,11 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
     }
 
     @Override
+    public void setJsr305Support(boolean b) {
+        baseManagerClass.setJsr305Support(b);
+    }
+
+    @Override
     public void setEncryptionSupport(boolean b) {
         baseManagerClass.setEncryptionSupport(b);
     }

@@ -32,17 +32,19 @@ public class AndroidObjectsBuilder extends DBObjectsBuilder {
     }
 
     @Override
-    public void onPostBuild(DatabaseSchema databaseSchema, String packageBase, String outputBaseDir, boolean injectionSupport, boolean encryptionSupport) {
+    public void onPostBuild(DatabaseSchema databaseSchema, String packageBase, String outputBaseDir, boolean injectionSupport, boolean encryptionSupport, boolean jsr305Support) {
         DatabaseBaseManagerRenderer databaseBaseManager = new DatabaseBaseManagerRenderer();
         databaseBaseManager.setPackageBase(packageBase);
         databaseBaseManager.setOutDir(outputBaseDir);
         databaseBaseManager.setEncryptionSupport(encryptionSupport);
+        databaseBaseManager.setJsr305Support(jsr305Support);
         databaseBaseManager.generate(databaseSchema);
 
         DatabaseManagerRenderer databaseManager = new DatabaseManagerRenderer();
         databaseManager.setPackageBase(packageBase);
         databaseManager.setOutDir(outputBaseDir);
         databaseManager.setInjectionSupport(injectionSupport);
+        databaseManager.setJsr305Support(jsr305Support);
         databaseManager.generate(databaseSchema); // this file will only be created if it does not already exist
     }
 }

@@ -32,6 +32,8 @@ public interface DBObjectBuilder {
 
     public void setInjectionSupport(boolean b);
 
+    public void setJsr305Support(boolean b);
+
     public void setSpringSupport(boolean b);
 
     public void setDatabase(SchemaDatabase schemaDatabase);

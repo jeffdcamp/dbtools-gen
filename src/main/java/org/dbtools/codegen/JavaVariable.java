@@ -24,7 +24,7 @@ public class JavaVariable {
     private boolean staticVar = false;
     private boolean finalVar = false;
     private boolean volatileVar = false;
-    private List<String> annotations = new ArrayList<String>();
+    private List<String> annotations = new ArrayList<>();
     private String defaultValue;
     // vars used by code generator
     private boolean generateSetter = false;
@@ -113,7 +113,7 @@ public class JavaVariable {
                 varText += JavaClass.getTab();
             }
 
-            varText += annotation + "\n";
+            varText += annotation + " ";
         }
 
         // access

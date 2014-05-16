@@ -14,6 +14,7 @@ import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaMethod;
 import org.dbtools.codegen.JavaVariable;
+import org.dbtools.gen.AnnotationConsts;
 import org.dbtools.schema.schemafile.SchemaEntity;
 import org.dbtools.schema.schemafile.SchemaEntityType;
 
@@ -31,6 +32,7 @@ public class AndroidBaseManagerRenderer {
 
     private boolean injectionSupport = false;
     private boolean encryptionSupport = false; // use SQLCipher
+    private boolean jsr305Support = false;
 
     public void generate(SchemaEntity entity, String packageName) {
         String recordClassName = AndroidRecordRenderer.createClassName(entity);
@@ -74,30 +76,35 @@ public class AndroidBaseManagerRenderer {
 
         myClass.addImport(packageName.substring(0, packageName.lastIndexOf('.')) + ".DatabaseManager");
         myClass.setExtends("AndroidBaseManager<" + recordClassName + ">");
-        myClass.addMethod(Access.PUBLIC, "String", "getDatabaseName", "return " + recordClassName + ".DATABASE;");
-        myClass.addMethod(Access.PUBLIC, recordClassName, "newRecord", "return new " + recordClassName + "();");
-        myClass.addMethod(Access.PUBLIC, "String", "getTableName", "return " + recordClassName + ".TABLE;");
-        myClass.addMethod(Access.PUBLIC, "String[]", "getAllKeys", "return " + recordClassName + ".ALL_KEYS;");
+        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getDatabaseName", "return " + recordClassName + ".DATABASE;"));
+        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, recordClassName, "newRecord", "return new " + recordClassName + "();"));
+        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getTableName", "return " + recordClassName + ".TABLE;"));
+        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String[]", "getAllKeys", "return " + recordClassName + ".ALL_KEYS;"));
 
-        myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getReadableDatabase", Arrays.asList(new JavaVariable("String", "databaseName")), "return databaseManager.getReadableDatabase(databaseName);");
-        myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getReadableDatabase", null, "return databaseManager.getReadableDatabase(getDatabaseName());");
+        JavaVariable databaseNameParam = new JavaVariable("String", "databaseName");
+        if (jsr305Support) {
+            databaseNameParam.addAnnotation(AnnotationConsts.NONNULL);
+        }
 
-        myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getWritableDatabase", Arrays.asList(new JavaVariable("String", "databaseName")), "return databaseManager.getWritableDatabase(databaseName);");
-        myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getWritableDatabase", null, "return databaseManager.getWritableDatabase(getDatabaseName());");
+        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getReadableDatabase", Arrays.asList(databaseNameParam), "return databaseManager.getReadableDatabase(databaseName);"));
+        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getReadableDatabase", null, "return databaseManager.getReadableDatabase(getDatabaseName());"));
+
+        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getWritableDatabase", Arrays.asList(databaseNameParam), "return databaseManager.getWritableDatabase(databaseName);"));
+        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getWritableDatabase", null, "return databaseManager.getWritableDatabase(getDatabaseName());"));
 
         JavaVariable dbManagerVariable = myClass.addVariable("DatabaseManager", "databaseManager");
         dbManagerVariable.setAccess(Access.DEFAULT_NONE);
         dbManagerVariable.addAnnotation("javax.inject.Inject");
 
         if (type == SchemaEntityType.TABLE) {
-            myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return " + recordClassName + "." + AndroidBaseRecordRenderer.PRIMARY_KEY_COLUMN + ";");
-            myClass.addMethod(Access.PUBLIC, "String", "getDropSql", "return " + recordClassName + ".DROP_TABLE;");
-            myClass.addMethod(Access.PUBLIC, "String", "getCreateSql", "return " + recordClassName + ".CREATE_TABLE;");
+            addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return " + recordClassName + "." + AndroidBaseRecordRenderer.PRIMARY_KEY_COLUMN + ";"));
+            addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getDropSql", "return " + recordClassName + ".DROP_TABLE;"));
+            addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getCreateSql", "return " + recordClassName + ".CREATE_TABLE;"));
 
         } else {
-            myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return null;");
-            myClass.addMethod(Access.PUBLIC, "String", "getDropSql", "return " + recordClassName + ".DROP_VIEW;");
-            myClass.addMethod(Access.PUBLIC, "String", "getCreateSql", "return " + recordClassName + ".CREATE_VIEW;");
+            addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return null;"));
+            addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getDropSql", "return " + recordClassName + ".DROP_VIEW;"));
+            addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getCreateSql", "return " + recordClassName + ".CREATE_VIEW;"));
         }
 
         if (!encryptionSupport) {
@@ -108,10 +115,22 @@ public class AndroidBaseManagerRenderer {
 
         if (entity.getType() == SchemaEntityType.VIEW) {
             List<JavaVariable> params = new ArrayList<>();
-            params.add(new JavaVariable("String", "databaseName"));
-            params.add(new JavaVariable(recordClassName, "e"));
+            params.add(databaseNameParam);
+
+            JavaVariable recordParam = new JavaVariable(recordClassName, "e");
+            if (jsr305Support) {
+                recordParam.addAnnotation(AnnotationConsts.NONNULL);
+            }
+
+            params.add(recordParam);
             JavaMethod method = myClass.addMethod(Access.PUBLIC, "boolean", "save", params, "throw new IllegalStateException(\"Cannot call SAVE on " + recordClassName + " View\");");
             method.addAnnotation("Override");
+        }
+    }
+
+    private void addMethodAnnotations(String annotation, JavaMethod javaMethod) {
+        if (jsr305Support) {
+            javaMethod.addAnnotation(annotation);
         }
     }
 
@@ -297,5 +316,9 @@ public class AndroidBaseManagerRenderer {
 
     public void setEncryptionSupport(boolean encryptionSupport) {
         this.encryptionSupport = encryptionSupport;
+    }
+
+    public void setJsr305Support(boolean jsr305Support) {
+        this.jsr305Support = jsr305Support;
     }
 }

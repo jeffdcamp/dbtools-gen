@@ -34,6 +34,7 @@ public class JPADBObjectBuilder implements DBObjectBuilder {
     private SchemaEntity table;
     private String packageName;
     private String outDir;
+    private boolean jsr305Support = false;
 
     /**
      * Creates a new instance of JPADBObjectBuilder
@@ -124,6 +125,11 @@ public class JPADBObjectBuilder implements DBObjectBuilder {
     @Override
     public void setInjectionSupport(boolean b) {
         baseRecordClass.setInjectionSupport(b);
+    }
+
+    @Override
+    public void setJsr305Support(boolean b) {
+        jsr305Support = b;
     }
 
     @Override

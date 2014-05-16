@@ -37,6 +37,7 @@ public abstract class DBObjectsBuilder {
     // used internally
     private SchemaRenderer schemaRenderer;
     private boolean injectionSupport;
+    private boolean jsr305Support;
     private boolean encryptionSupport;
     private boolean dateTimeSupport;
     private boolean springSupport;
@@ -92,12 +93,12 @@ public abstract class DBObjectsBuilder {
             }
         }
 
-        onPostBuild(databaseSchema, packageBase, outputBaseDir, injectionSupport, encryptionSupport);
+        onPostBuild(databaseSchema, packageBase, outputBaseDir, injectionSupport, encryptionSupport, jsr305Support);
 
         return true;
     }
 
-    public void onPostBuild(DatabaseSchema databaseSchema, String packageBase, String outputBaseDir, boolean injectionSupport, boolean encryptionSupport) {
+    public void onPostBuild(DatabaseSchema databaseSchema, String packageBase, String outputBaseDir, boolean injectionSupport, boolean encryptionSupport, boolean jsr305Support) {
     }
 
     private boolean build(SchemaDatabase database) {
@@ -264,6 +265,14 @@ public abstract class DBObjectsBuilder {
 
     public boolean hasInjectionSupport() {
         return injectionSupport;
+    }
+
+    public void setJsr305Support(boolean jsr305Support) {
+        this.jsr305Support = jsr305Support;
+    }
+
+    public boolean hasJsr305Support() {
+        return jsr305Support;
     }
 
     public boolean hasEncryptionSupport() {

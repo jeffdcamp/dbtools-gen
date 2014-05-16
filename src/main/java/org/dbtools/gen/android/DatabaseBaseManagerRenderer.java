@@ -3,6 +3,7 @@ package org.dbtools.gen.android;
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaVariable;
+import org.dbtools.gen.AnnotationConsts;
 import org.dbtools.schema.schemafile.*;
 import org.dbtools.util.JavaUtil;
 
@@ -19,6 +20,7 @@ public class DatabaseBaseManagerRenderer {
 
     private String packageBase;
     private String outDir;
+    private boolean jsr305Support = false; // @Nonnull support
     private boolean encryptionSupport = false; // use SQLCipher
 
     public void generate(DatabaseSchema databaseSchema) {
@@ -81,7 +83,12 @@ public class DatabaseBaseManagerRenderer {
             createCreateDatabase(content, databaseConstName, databaseMethodName, database);
         }
 
-        myClass.addMethod(Access.PUBLIC, "void", "onCreate", Arrays.asList(new JavaVariable("AndroidDatabase", "androidDatabase")), content.toString());
+        JavaVariable param = new JavaVariable("AndroidDatabase", "androidDatabase");
+        if (jsr305Support) {
+            param.addAnnotation(AnnotationConsts.NONNULL);
+        }
+
+        myClass.addMethod(Access.PUBLIC, "void", "onCreate", Arrays.asList(param), content.toString());
     }
 
     private void createCreateDatabase(StringBuilder content, String databaseConstName, String databaseMethodName, SchemaDatabase database) {
@@ -119,7 +126,13 @@ public class DatabaseBaseManagerRenderer {
         createDatabaseContent.append("\n");
         createDatabaseContent.append("database.setTransactionSuccessful();\n");
         createDatabaseContent.append("database.endTransaction();\n");
-        myClass.addMethod(Access.PUBLIC, "void", createDatabaseMethodName, Arrays.asList(new JavaVariable("AndroidDatabase", "androidDatabase")), createDatabaseContent.toString());
+
+        JavaVariable param = new JavaVariable("AndroidDatabase", "androidDatabase");
+        if (jsr305Support) {
+            param.addAnnotation(AnnotationConsts.NONNULL);
+        }
+
+        myClass.addMethod(Access.PUBLIC, "void", createDatabaseMethodName, Arrays.asList(param), createDatabaseContent.toString());
     }
 
     private void createOnCreateViews(DatabaseSchema databaseSchema) {
@@ -139,8 +152,13 @@ public class DatabaseBaseManagerRenderer {
             createDropViews(dropContent, databaseConstName, databaseMethodName, database);
         }
 
-        myClass.addMethod(Access.PUBLIC, "void", "onCreateViews", Arrays.asList(new JavaVariable("AndroidDatabase", "androidDatabase")), createContent.toString());
-        myClass.addMethod(Access.PUBLIC, "void", "onDropViews", Arrays.asList(new JavaVariable("AndroidDatabase", "androidDatabase")), dropContent.toString());
+        JavaVariable param = new JavaVariable("AndroidDatabase", "androidDatabase");
+        if (jsr305Support) {
+            param.addAnnotation(AnnotationConsts.NONNULL);
+        }
+
+        myClass.addMethod(Access.PUBLIC, "void", "onCreateViews", Arrays.asList(param), createContent.toString());
+        myClass.addMethod(Access.PUBLIC, "void", "onDropViews", Arrays.asList(param), dropContent.toString());
     }
 
     private void createCreateViews(StringBuilder content, String databaseConstName, String databaseMethodName, SchemaDatabase database) {
@@ -173,7 +191,13 @@ public class DatabaseBaseManagerRenderer {
         createDatabaseViewsContent.append("\n");
         createDatabaseViewsContent.append("database.setTransactionSuccessful();\n");
         createDatabaseViewsContent.append("database.endTransaction();\n");
-        myClass.addMethod(Access.PUBLIC, "void", createDatabaseViewsMethodName, Arrays.asList(new JavaVariable("AndroidDatabase", "androidDatabase")), createDatabaseViewsContent.toString());
+
+        JavaVariable param = new JavaVariable("AndroidDatabase", "androidDatabase");
+        if (jsr305Support) {
+            param.addAnnotation(AnnotationConsts.NONNULL);
+        }
+
+        myClass.addMethod(Access.PUBLIC, "void", createDatabaseViewsMethodName, Arrays.asList(param), createDatabaseViewsContent.toString());
     }
 
     private void createDropViews(StringBuilder content, String databaseConstName, String databaseMethodName, SchemaDatabase database) {
@@ -205,7 +229,13 @@ public class DatabaseBaseManagerRenderer {
         createDatabaseViewsContent.append("\n");
         createDatabaseViewsContent.append("database.setTransactionSuccessful();\n");
         createDatabaseViewsContent.append("database.endTransaction();\n");
-        myClass.addMethod(Access.PUBLIC, "void", createDatabaseViewsMethodName, Arrays.asList(new JavaVariable("AndroidDatabase", "androidDatabase")), createDatabaseViewsContent.toString());
+
+        JavaVariable param = new JavaVariable("AndroidDatabase", "androidDatabase");
+        if (jsr305Support) {
+            param.addAnnotation(AnnotationConsts.NONNULL);
+        }
+
+        myClass.addMethod(Access.PUBLIC, "void", createDatabaseViewsMethodName, Arrays.asList(param), createDatabaseViewsContent.toString());
     }
 
     public static String getClassName(SchemaEntity table) {
@@ -223,5 +253,9 @@ public class DatabaseBaseManagerRenderer {
 
     public void setEncryptionSupport(boolean encryptionSupport) {
         this.encryptionSupport = encryptionSupport;
+    }
+
+    public void setJsr305Support(boolean jsr305Support) {
+        this.jsr305Support = jsr305Support;
     }
 }
