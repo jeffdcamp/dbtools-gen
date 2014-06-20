@@ -34,7 +34,7 @@ public interface DBViewObjectBuilder {
 
     public void setInjectionSupport(boolean b);
 
-    public void setSpringSupport(boolean b);
+    public void setJavaEESupport(boolean b);
 
     public void setDatabase(SchemaDatabase schemaDatabase);
 

@@ -162,6 +162,6 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
     }
 
     @Override
-    public void setSpringSupport(boolean b) {
+    public void setJavaeeSupport(boolean b) {
     }
 }

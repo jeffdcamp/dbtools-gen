@@ -113,7 +113,7 @@ public class JavaVariable {
                 varText += JavaClass.getTab();
             }
 
-            varText += annotation + " ";
+            varText += annotation + "\n";
         }
 
         // access

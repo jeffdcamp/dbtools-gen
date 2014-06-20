@@ -40,7 +40,7 @@ public abstract class DBObjectsBuilder {
     private boolean jsr305Support;
     private boolean encryptionSupport;
     private boolean dateTimeSupport;
-    private boolean springSupport;
+    private boolean javaeeSupport;
 
     public abstract DBObjectBuilder getObjectBuilder();
 
@@ -135,7 +135,7 @@ public abstract class DBObjectsBuilder {
                 objectBuilder.setSourceOutputDir(outDir);
                 objectBuilder.setInjectionSupport(hasInjectionSupport());
                 objectBuilder.setDateTimeSupport(hasDateTimeSupport());
-                objectBuilder.setSpringSupport(hasSpringSupport());
+                objectBuilder.setJavaeeSupport(hasJavaEESupport());
                 objectBuilder.setEncryptionSupport(hasEncryptionSupport());
 
                 success = objectBuilder.build();
@@ -155,7 +155,7 @@ public abstract class DBObjectsBuilder {
                 objectBuilder.setSourceOutputDir(outDir);
                 objectBuilder.setInjectionSupport(hasInjectionSupport());
                 objectBuilder.setDateTimeSupport(hasDateTimeSupport());
-                objectBuilder.setSpringSupport(hasSpringSupport());
+                objectBuilder.setJavaeeSupport(hasJavaEESupport());
                 objectBuilder.setEncryptionSupport(hasEncryptionSupport());
 
                 success = objectBuilder.build();
@@ -291,12 +291,12 @@ public abstract class DBObjectsBuilder {
         return dateTimeSupport;
     }
 
-    public boolean hasSpringSupport() {
-        return springSupport;
+    public boolean hasJavaEESupport() {
+        return javaeeSupport;
     }
 
-    public void setSpringSupport(boolean springSupport) {
-        this.springSupport = springSupport;
+    public void setJavaeeSupport(boolean javaeeSupport) {
+        this.javaeeSupport = javaeeSupport;
     }
 
     public int getNumberFilesGenerated() {

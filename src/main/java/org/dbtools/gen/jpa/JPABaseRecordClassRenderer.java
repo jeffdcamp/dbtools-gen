@@ -216,29 +216,38 @@ public class JPABaseRecordClassRenderer {
                 String temporalImport = "javax.persistence.Temporal";
                 String temporalTypeImport = "javax.persistence.TemporalType";
                 String temporalAnnotation = "@Temporal(value = TemporalType.{0})";
-                if (!dateTimeSupport && fieldType == SchemaFieldType.TIMESTAMP) {
+                if (fieldType == SchemaFieldType.TIMESTAMP) {
                     myClass.addImport(temporalImport);
                     myClass.addImport(temporalTypeImport);
 
                     newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "TIMESTAMP"));
-                } else if (!dateTimeSupport && fieldType == SchemaFieldType.DATE) {
+                } else if (fieldType == SchemaFieldType.DATE) {
                     myClass.addImport(temporalImport);
                     myClass.addImport(temporalTypeImport);
 
                     newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "DATE"));
-                } else if (!dateTimeSupport && fieldType == SchemaFieldType.TIMESTAMP) {
+                } else if (fieldType == SchemaFieldType.TIMESTAMP) {
                     myClass.addImport(temporalImport);
                     myClass.addImport(temporalTypeImport);
 
                     newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "TIMESTAMP"));
                 }
 
-                if (dateTimeSupport && newVariable.getDataType().endsWith("DateTime")) {
-                    myClass.addImport("org.hibernate.annotations.Type");
-                    myClass.addImport("org.springframework.format.annotation.DateTimeFormat");
+                if (dateTimeSupport && newVariable.getDataType().endsWith("Date")) {
+                    newVariable.setGenerateSetterGetter(false);
 
-                    newVariable.addAnnotation("@Type(type=\"org.jadira.usertype.dateandtime.joda.PersistentDateTime\")");
-                    newVariable.addAnnotation("@DateTimeFormat(style=\"SS\")");
+                    String type = "org.joda.time.DateTime";
+
+                    // create setter / getter
+                    String getterContent = "return new org.joda.time.DateTime(" + newVariable.getName() + ");";
+                    myClass.addMethod(newVariable.getGenerateGetterAccess(), type, newVariable.getGetterMethodName(), getterContent);
+
+                    String varName = newVariable.getName();
+                    String setterContent = "this." + varName + " = " + varName + ".toDate();";
+                    JavaMethod setterMethod = new JavaMethod(newVariable.getGenerateSetterAccess(), "void", newVariable.getSetterMethodName());
+                    setterMethod.addParameter(new JavaVariable(type, varName));
+                    setterMethod.setContent(setterContent);
+                    myClass.addMethod(setterMethod);
                 }
             } // end of JPA stuff
 
@@ -279,7 +288,7 @@ public class JPABaseRecordClassRenderer {
         if (field.isIncrement() && !hasSequencer) {
             myClass.addImport("javax.persistence.GeneratedValue");
             myClass.addImport("javax.persistence.GenerationType");
-            newVariable.addAnnotation("@GeneratedValue(strategy=GenerationType.AUTO)");
+            newVariable.addAnnotation("@GeneratedValue(strategy=GenerationType.IDENTITY)");
         } else if (hasSequencer) {
             myClass.addImport("javax.persistence.GeneratedValue");
             myClass.addImport("javax.persistence.SequenceGenerator");
@@ -386,14 +395,14 @@ public class JPABaseRecordClassRenderer {
 //            getterMethod.setContent("return new " + typeText + "(" + newVariable.getName() + ");");
 //            myClass.addMethod(getterMethod);
 //        } else {
-        if (dateType && dateTimeSupport) {
-            newVariable = new JavaVariable("org.joda.time.DateTime", fieldNameJavaStyle);
-        } else {
+//        if (dateType && dateTimeSupport) {
+//            newVariable = new JavaVariable("org.joda.time.DateTime", fieldNameJavaStyle);
+//        } else {
             newVariable = new JavaVariable(typeText, fieldNameJavaStyle);
-        }
+//        }
 
         SchemaFieldType fieldType = field.getJdbcDataType();
-        boolean immutableDate = field.getJavaClassType() == Date.class && dateTimeSupport; // org.joda.time.DateTime IS immutable
+        boolean immutableDate = field.getJavaClassType() == Date.class; // && dateTimeSupport; // org.joda.time.DateTime IS immutable
         if (!fieldType.isJavaTypePrimative() && !fieldType.isJavaTypeImmutable() && !immutableDate) {
             newVariable.setCloneSetterGetterVar(true);
         }

@@ -25,7 +25,8 @@ import java.util.List;
 public class JPARecordManagerRenderer {
 
     private JavaClass myClass;
-    private boolean springSupport = false;
+    private boolean injectionSupport = true;
+    private boolean javaeeSupport = false;
 
     /**
      * Creates a new instance of JPARecordManagerRenderer.
@@ -38,7 +39,7 @@ public class JPARecordManagerRenderer {
         myClass = new JavaClass(packageName, className);
         myClass.setExtends(JPABaseRecordManagerRenderer.getClassName(entity)); // extend the generated base class
 
-        if (springSupport) {
+        if (javaeeSupport) {
             myClass.addImport("javax.inject.Named");
             myClass.addAnnotation("@Named");
         }
@@ -58,16 +59,13 @@ public class JPARecordManagerRenderer {
         // constructor
         myClass.setCreateDefaultConstructor(false);
 
-        if (springSupport) {
-            // Spring requires a default constructor
-            myClass.addConstructor(Access.PUBLIC, null, "super(null);");
+        if (!injectionSupport) {
+            List<JavaVariable> constParams = new ArrayList<>();
+            myClass.addImport("javax.persistence.EntityManager");
+            constParams.add(new JavaVariable("EntityManager", "em"));
+            String constContent = "super(em);";
+            myClass.addConstructor(Access.PUBLIC, constParams, constContent);
         }
-
-        List<JavaVariable> constParams = new ArrayList<>();
-        myClass.addImport("javax.persistence.EntityManager");
-        constParams.add(new JavaVariable("EntityManager", "em"));
-        String constContent = "super(em);";
-        myClass.addConstructor(Access.PUBLIC, constParams, constContent);
     }
 
     public static String getClassName(SchemaEntity entity) {
@@ -79,7 +77,11 @@ public class JPARecordManagerRenderer {
         myClass.writeToDisk(outDir);
     }
 
-    void setSpringSupport(boolean b) {
-        this.springSupport = b;
+    void setJavaeeSupport(boolean b) {
+        this.javaeeSupport = b;
+    }
+
+    public void setInjectionSupport(boolean injectionSupport) {
+        this.injectionSupport = injectionSupport;
     }
 }
