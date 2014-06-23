@@ -166,6 +166,7 @@
                                                 <xsd:attribute name="sequencerName" type="xsd:string"/>
                                                 <xsd:attribute name="sequencerStartValue" type="xsd:NMTOKEN" use="optional" default="0"/>
                                                 <xsd:attribute name="varName" type="xsd:string"/>
+                                                <xsd:attribute name="sqliteCollate" type="xsd:string" use="optional"/>
                                             </xsd:complexType>
                                         </xsd:element>
                                         <xsd:element name="unique" minOccurs="0" maxOccurs="unbounded">
@@ -177,6 +178,20 @@
                                                         </xsd:complexType>
                                                     </xsd:element>
                                                 </xsd:sequence>
+                                                <xsd:attribute name="sqliteOnConflict" use="optional">
+                                                    <xsd:simpleType>
+                                                        <xsd:restriction base="xsd:string">
+                                                            <xsd:enumeration value="ROLLBACK" />
+                                                            <xsd:enumeration value="ABORT" />
+                                                            <xsd:enumeration value="FAIL" />
+                                                            <xsd:enumeration value="IGNORE" />
+                                                            <xsd:enumeration value="REPLACE" />
+                                                        </xsd:restriction>
+                                                    </xsd:simpleType>
+                                                    <xsd:annotation>
+                                                        <xsd:documentation>This is only used by the Sqlite database.</xsd:documentation>
+                                                    </xsd:annotation>
+                                                </xsd:attribute>
                                             </xsd:complexType>
                                         </xsd:element>
                                     </xsd:sequence>
@@ -280,6 +295,7 @@
                                                     </xsd:annotation>
                                                 </xsd:attribute>
                                                 <xsd:attribute name="varName" type="xsd:string"/>
+                                                <xsd:attribute name="sqliteCollate" type="xsd:string" use="optional"/>
                                             </xsd:complexType>
                                         </xsd:element>
                                     </xsd:sequence>
