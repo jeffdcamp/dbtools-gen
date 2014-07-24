@@ -35,6 +35,8 @@ public abstract class SchemaField {
     private ForeignKeyFetchType foreignKeyFetchType = ForeignKeyFetchType.LAZY;
     @Attribute(required = false)
     private String enumerationDefault = "";
+    @Attribute(required = false)
+    private String sqliteCollate = null;
 
 
     public abstract boolean isPrimaryKey();
@@ -207,5 +209,13 @@ public abstract class SchemaField {
 
     public void setNotNull(boolean notNull) {
         this.notNull = notNull;
+    }
+
+    public String getSqliteCollate() {
+        return sqliteCollate;
+    }
+
+    public void setSqliteCollate(String sqliteCollate) {
+        this.sqliteCollate = sqliteCollate;
     }
 }
