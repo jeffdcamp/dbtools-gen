@@ -175,6 +175,9 @@ public class SqliteRenderer extends SchemaRenderer {
             if (field.isIndex()) {
                 indexFields.add(field); // add foreign key
             }
+            if (field.getSqliteCollate() != null) {
+                tableSchema.append(" COLLATE ").append(field.getSqliteCollate());
+            }
 
             tableSchema.append("");
 
@@ -233,6 +236,19 @@ public class SqliteRenderer extends SchemaRenderer {
             }
 
             tableSchema.append(",\n\tUNIQUE(").append(uniqueFieldString).append(")");
+
+            String resolution = " ON CONFLICT ";
+            switch (uniqueDeclaration.getSqliteOnConflict()) {
+                case NONE:
+                    resolution = null;
+                    break;
+                default:
+                    resolution += uniqueDeclaration.getSqliteOnConflict().toString();
+                    break;
+            }
+            if (resolution != null) {
+                tableSchema.append(resolution);
+            }
         }
 
         // add table footer
