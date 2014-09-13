@@ -12,7 +12,7 @@ public class SchemaTableUnique {
     @ElementList(entry = "uniqueField", inline = true, required = false)
     private List<SchemaUniqueField> uniqueFields;
 
-    @Attribute
+    @Attribute(required = false)
     private OnConflict sqliteOnConflict = OnConflict.NONE;
 
     public List<SchemaUniqueField> getUniqueFields() {

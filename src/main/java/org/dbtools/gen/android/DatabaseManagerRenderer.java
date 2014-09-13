@@ -57,10 +57,12 @@ public class DatabaseManagerRenderer {
         for (SchemaDatabase database : databaseSchema.getDatabases()) {
             String databaseConstName = JavaUtil.nameToJavaConst(database.getName()) + "_DATABASE_NAME";
             String databaseConstVersion = JavaUtil.nameToJavaConst(database.getName()) + "_VERSION";
+            String databaseViewsConstVersion = JavaUtil.nameToJavaConst(database.getName()) + "_VIEWS_VERSION";
 
-            content.append("addDatabase(context, " + databaseConstName + ", " + databaseConstVersion + ");\n");
+            content.append("addDatabase(context, " + databaseConstName + ", " + databaseConstVersion + ", " + databaseViewsConstVersion + ");\n");
 
             myClass.addConstant("int", databaseConstVersion, "1");
+            myClass.addConstant("int", databaseViewsConstVersion, "1");
         }
 
         myClass.addMethod(Access.PUBLIC, "void", "identifyDatabases", content.toString());
