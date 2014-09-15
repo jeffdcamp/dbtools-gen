@@ -113,7 +113,16 @@ public class JavaVariable {
                 varText += JavaClass.getTab();
             }
 
-            varText += annotation + "\n";
+            varText += annotation;
+            switch (variableType) {
+                default:
+                case CLASS_VARIABLE:
+                    varText += "\n";
+                    break;
+                case METHOD_PARAMETER:
+                    varText += " ";
+                    break;
+            }
         }
 
         // access
