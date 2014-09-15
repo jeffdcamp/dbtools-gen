@@ -56,9 +56,4 @@ public class SchemaViewField extends SchemaField {
     public boolean isPrimaryKey() {
         return false;
     }
-
-    @Override
-    public boolean isNotNull() {
-        return false;
-    }
 }
