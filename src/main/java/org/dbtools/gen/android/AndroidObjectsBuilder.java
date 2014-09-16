@@ -32,12 +32,17 @@ public class AndroidObjectsBuilder extends DBObjectsBuilder {
     }
 
     @Override
-    public void onPostBuild(DatabaseSchema databaseSchema, String packageBase, String outputBaseDir, boolean injectionSupport, boolean encryptionSupport, boolean jsr305Support) {
+    public void onPostBuild(DatabaseSchema databaseSchema, String packageBase, String outputBaseDir,
+                            boolean injectionSupport,
+                            boolean encryptionSupport,
+                            boolean jsr305Support,
+                            boolean includeDatabaseNameInPackage) {
         DatabaseBaseManagerRenderer databaseBaseManager = new DatabaseBaseManagerRenderer();
         databaseBaseManager.setPackageBase(packageBase);
         databaseBaseManager.setOutDir(outputBaseDir);
         databaseBaseManager.setEncryptionSupport(encryptionSupport);
         databaseBaseManager.setJsr305Support(jsr305Support);
+        databaseBaseManager.setIncludeDatabaseNameInPackage(includeDatabaseNameInPackage);
         databaseBaseManager.generate(databaseSchema);
 
         DatabaseManagerRenderer databaseManager = new DatabaseManagerRenderer();

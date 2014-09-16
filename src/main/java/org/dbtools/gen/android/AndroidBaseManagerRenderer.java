@@ -33,6 +33,7 @@ public class AndroidBaseManagerRenderer {
     private boolean injectionSupport = false;
     private boolean encryptionSupport = false; // use SQLCipher
     private boolean jsr305Support = false;
+    private boolean includeDatabaseNameInPackage = false;
 
     public void generate(SchemaEntity entity, String packageName) {
         String recordClassName = AndroidRecordRenderer.createClassName(entity);
@@ -74,7 +75,12 @@ public class AndroidBaseManagerRenderer {
     private void createInjectionManager(SchemaEntity entity, String packageName, String recordClassName) {
         SchemaEntityType type = entity.getType();
 
-        myClass.addImport(packageName.substring(0, packageName.lastIndexOf('.')) + ".DatabaseManager");
+        String databaseManagerPackage = packageName.substring(0, packageName.lastIndexOf('.'));
+        if (includeDatabaseNameInPackage) {
+            databaseManagerPackage = databaseManagerPackage.substring(0, databaseManagerPackage.lastIndexOf('.'));
+        }
+
+        myClass.addImport(databaseManagerPackage + ".DatabaseManager");
         myClass.setExtends("AndroidBaseManager<" + recordClassName + ">");
         addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getDatabaseName", "return " + recordClassName + ".DATABASE;"));
         addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, recordClassName, "newRecord", "return new " + recordClassName + "();"));
@@ -320,5 +326,9 @@ public class AndroidBaseManagerRenderer {
 
     public void setJsr305Support(boolean jsr305Support) {
         this.jsr305Support = jsr305Support;
+    }
+
+    public void setIncludeDatabaseNameInPackage(boolean includeDatabaseNameInPackage) {
+        this.includeDatabaseNameInPackage = includeDatabaseNameInPackage;
     }
 }

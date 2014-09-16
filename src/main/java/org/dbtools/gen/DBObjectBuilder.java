@@ -45,4 +45,6 @@ public interface DBObjectBuilder {
     public void setSourceOutputDir(String outDir);
 
     public void setEncryptionSupport(boolean b);
+
+    public void setIncludeDatabaseNameInPackage(boolean b);
 }

@@ -22,6 +22,7 @@ public class DatabaseBaseManagerRenderer {
     private String outDir;
     private boolean jsr305Support = false; // @Nonnull support
     private boolean encryptionSupport = false; // use SQLCipher
+    private boolean includeDatabaseNameInPackage  = false;
 
     public void generate(DatabaseSchema databaseSchema) {
         System.out.println("Generating DatabaseBaseManager...");
@@ -107,19 +108,24 @@ public class DatabaseBaseManagerRenderer {
         }
         createDatabaseContent.append("database.beginTransaction();\n");
 
+        // include database name in base package name
+        String databaseBasePackage = createDatabaseBasePackage(database);
+
         createDatabaseContent.append("\n// Enum Tables\n");
         for (SchemaTable table : database.getTables()) {
             if (table.isEnumerationTable()) {
-                myClass.addImport(JavaUtil.createTableImport(packageBase, table.getClassName()));
-                createDatabaseContent.append("AndroidBaseManager.createTable(database, " + table.getClassName() + ".CREATE_TABLE);\n");
+                createDatabaseContent.append("AndroidBaseManager.createTable(database, ")
+                        .append(JavaUtil.createTableImport(databaseBasePackage, table.getClassName()))
+                        .append(".CREATE_TABLE);\n");
             }
         }
 
         createDatabaseContent.append("\n// Tables\n");
         for (SchemaTable table : database.getTables()) {
             if (!table.isEnumerationTable()) {
-                myClass.addImport(JavaUtil.createTableImport(packageBase, table.getClassName()));
-                createDatabaseContent.append("AndroidBaseManager.createTable(database, " + table.getClassName() + ".CREATE_TABLE);\n");
+                createDatabaseContent.append("AndroidBaseManager.createTable(database, ")
+                        .append(JavaUtil.createTableImport(databaseBasePackage, table.getClassName()))
+                        .append(".CREATE_TABLE);\n");
             }
         }
 
@@ -182,10 +188,14 @@ public class DatabaseBaseManagerRenderer {
         }
         createDatabaseViewsContent.append("database.beginTransaction();\n");
 
+        // include database name in base package name
+        String databaseBasePackage = createDatabaseBasePackage(database);
+
         createDatabaseViewsContent.append("\n// Views\n");
         for (SchemaView view : database.getViews()) {
-            myClass.addImport(JavaUtil.createTableImport(packageBase, view.getClassName()));
-            createDatabaseViewsContent.append("AndroidBaseManager.createTable(database, " + view.getClassName() + ".CREATE_VIEW);\n");
+            createDatabaseViewsContent.append("AndroidBaseManager.createTable(database, ")
+                    .append(JavaUtil.createTableImport(databaseBasePackage, view.getClassName()))
+                    .append(".CREATE_VIEW);\n");
         }
 
         createDatabaseViewsContent.append("\n");
@@ -220,10 +230,14 @@ public class DatabaseBaseManagerRenderer {
         }
         createDatabaseViewsContent.append("database.beginTransaction();\n");
 
+        // include database name in base package name
+        String databaseBasePackage = createDatabaseBasePackage(database);
+
         createDatabaseViewsContent.append("\n// Views\n");
         for (SchemaView view : database.getViews()) {
-            myClass.addImport(JavaUtil.createTableImport(packageBase, view.getClassName()));
-            createDatabaseViewsContent.append("AndroidBaseManager.dropTable(database, " + view.getClassName() + ".DROP_VIEW);\n");
+            createDatabaseViewsContent.append("AndroidBaseManager.dropTable(database, ")
+                    .append(JavaUtil.createTableImport(databaseBasePackage, view.getClassName()))
+                    .append(".DROP_VIEW);\n");
         }
 
         createDatabaseViewsContent.append("\n");
@@ -243,6 +257,10 @@ public class DatabaseBaseManagerRenderer {
         return recordClassName + "Manager";
     }
 
+    private String createDatabaseBasePackage(SchemaDatabase database) {
+        return packageBase + (includeDatabaseNameInPackage ? "." + database.getName().toLowerCase() : "");
+    }
+
     public void setPackageBase(String packageBase) {
         this.packageBase = packageBase;
     }
@@ -257,5 +275,9 @@ public class DatabaseBaseManagerRenderer {
 
     public void setJsr305Support(boolean jsr305Support) {
         this.jsr305Support = jsr305Support;
+    }
+
+    public void setIncludeDatabaseNameInPackage(boolean includeDatabaseNameInPackage) {
+        this.includeDatabaseNameInPackage = includeDatabaseNameInPackage;
     }
 }

@@ -142,6 +142,11 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
     }
 
     @Override
+    public void setIncludeDatabaseNameInPackage(boolean b) {
+        baseManagerClass.setIncludeDatabaseNameInPackage(b);
+    }
+
+    @Override
     public void setEntity(SchemaEntity table) {
         this.entity = table;
     }

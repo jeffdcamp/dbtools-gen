@@ -136,6 +136,11 @@ public class JPADBObjectBuilder implements DBObjectBuilder {
         // do nothing
     }
 
+    @Override
+    public void setIncludeDatabaseNameInPackage(boolean b) {
+        // do nothing
+    }
+
     public void setJavaeeSupport(boolean javaeeSupport) {
         baseManagerClass.setJavaeeSupport(javaeeSupport);
         managerClass.setJavaeeSupport(javaeeSupport);

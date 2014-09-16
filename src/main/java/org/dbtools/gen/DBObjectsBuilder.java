@@ -41,6 +41,7 @@ public abstract class DBObjectsBuilder {
     private boolean encryptionSupport;
     private boolean dateTimeSupport;
     private boolean javaeeSupport;
+    private boolean includeDatabaseNameInPackage;
 
     public abstract DBObjectBuilder getObjectBuilder();
 
@@ -93,12 +94,16 @@ public abstract class DBObjectsBuilder {
             }
         }
 
-        onPostBuild(databaseSchema, packageBase, outputBaseDir, injectionSupport, encryptionSupport, jsr305Support);
+        onPostBuild(databaseSchema, packageBase, outputBaseDir, injectionSupport, encryptionSupport, jsr305Support, includeDatabaseNameInPackage);
 
         return true;
     }
 
-    public void onPostBuild(DatabaseSchema databaseSchema, String packageBase, String outputBaseDir, boolean injectionSupport, boolean encryptionSupport, boolean jsr305Support) {
+    public void onPostBuild(DatabaseSchema databaseSchema, String packageBase, String outputBaseDir,
+                            boolean injectionSupport,
+                            boolean encryptionSupport,
+                            boolean jsr305Support,
+                            boolean includeDatabaseNameInPackage) {
     }
 
     private boolean build(SchemaDatabase database) {
@@ -124,10 +129,17 @@ public abstract class DBObjectsBuilder {
 
             for (SchemaTable table : tables) {
                 // crete the directory
-                String outDir = createOutputDir(table.getClassName().toLowerCase());
+                String packageDir = table.getClassName().toLowerCase();
+
+                if (includeDatabaseNameInPackage) {
+                    packageDir = database.getName().toLowerCase() + "/" + packageDir;
+                }
+
+                String outDir = createOutputDir(outputBaseDir, packageDir);
 
                 // package
-                String packageName = JavaUtil.createTablePackageName(packageBase, table.getClassName());
+                String packageName = packageBase + (includeDatabaseNameInPackage ? '.' + database.getName().toLowerCase() : "");
+                packageName = JavaUtil.createTablePackageName(packageName, table.getClassName());
 
                 objectBuilder.setDatabase(database);
                 objectBuilder.setEntity(table);
@@ -137,6 +149,7 @@ public abstract class DBObjectsBuilder {
                 objectBuilder.setDateTimeSupport(hasDateTimeSupport());
                 objectBuilder.setJavaeeSupport(hasJavaEESupport());
                 objectBuilder.setEncryptionSupport(hasEncryptionSupport());
+                objectBuilder.setIncludeDatabaseNameInPackage(includeDatabaseNameInPackage);
 
                 success = objectBuilder.build();
                 numberFilesGenerated += objectBuilder.getNumberFilesGenerated();
@@ -144,10 +157,17 @@ public abstract class DBObjectsBuilder {
 
             for (SchemaView view : views) {
                 // crete the directory
-                String outDir = createOutputDir(view.getClassName().toLowerCase());
+                String packageDir = view.getClassName().toLowerCase();
+
+                if (includeDatabaseNameInPackage) {
+                    packageDir = database.getName().toLowerCase() + "/" + packageDir;
+                }
+
+                String outDir = createOutputDir(outputBaseDir, packageDir);
 
                 // package
-                String packageName = packageBase + "." + view.getClassName().toLowerCase();
+                String packageName = packageBase + (includeDatabaseNameInPackage ? '.' + database.getName().toLowerCase() : "");
+                packageName = packageName + "." + view.getClassName().toLowerCase();
 
                 objectBuilder.setDatabase(database);
                 objectBuilder.setEntity(view); // todo
@@ -157,6 +177,7 @@ public abstract class DBObjectsBuilder {
                 objectBuilder.setDateTimeSupport(hasDateTimeSupport());
                 objectBuilder.setJavaeeSupport(hasJavaEESupport());
                 objectBuilder.setEncryptionSupport(hasEncryptionSupport());
+                objectBuilder.setIncludeDatabaseNameInPackage(includeDatabaseNameInPackage);
 
                 success = objectBuilder.build();
                 numberFilesGenerated += objectBuilder.getNumberFilesGenerated();
@@ -166,8 +187,8 @@ public abstract class DBObjectsBuilder {
         return success;
     }
 
-    private String createOutputDir(String name) {
-        String outDir = outputBaseDir + "/" + name;
+    private String createOutputDir(String baseDir, String name) {
+        String outDir = baseDir + "/" + name;
         File newDir = new File(outDir);
         if (!newDir.exists()) {
             newDir.mkdirs();
@@ -301,5 +322,13 @@ public abstract class DBObjectsBuilder {
 
     public int getNumberFilesGenerated() {
         return numberFilesGenerated;
+    }
+
+    public boolean isIncludeDatabaseNameInPackage() {
+        return includeDatabaseNameInPackage;
+    }
+
+    public void setIncludeDatabaseNameInPackage(boolean includeDatabaseNameInPackage) {
+        this.includeDatabaseNameInPackage = includeDatabaseNameInPackage;
     }
 }
