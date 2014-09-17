@@ -37,11 +37,12 @@ public class DatabaseManagerRenderer {
         }
         addImports();
 
-        JavaVariable contextVariable = myClass.addVariable("Context", "context");
-        contextVariable.setGenerateSetter(true);
+        JavaVariable contextVariable = myClass.addVariable("Application", "application");
         if (injectionSupport) {
             contextVariable.setAccess(Access.DEFAULT_NONE);
             contextVariable.addAnnotation("Inject");
+        } else {
+            contextVariable.setGenerateSetter(true);
         }
 
         createIdentifyDatabases(databaseSchema);
@@ -59,7 +60,7 @@ public class DatabaseManagerRenderer {
             String databaseConstVersion = JavaUtil.nameToJavaConst(database.getName()) + "_VERSION";
             String databaseViewsConstVersion = JavaUtil.nameToJavaConst(database.getName()) + "_VIEWS_VERSION";
 
-            content.append("addDatabase(context, " + databaseConstName + ", " + databaseConstVersion + ", " + databaseViewsConstVersion + ");\n");
+            content.append("addDatabase(application, " + databaseConstName + ", " + databaseConstVersion + ", " + databaseViewsConstVersion + ");\n");
 
             myClass.addConstant("int", databaseConstVersion, "1");
             myClass.addConstant("int", databaseViewsConstVersion, "1");
@@ -100,7 +101,7 @@ public class DatabaseManagerRenderer {
 
     private void addImports() {
         myClass.addImport("android.util.Log");
-        myClass.addImport("android.content.Context");
+        myClass.addImport("android.app.Application");
         myClass.addImport("org.dbtools.android.domain.AndroidDatabase");
 
         if (injectionSupport) {
