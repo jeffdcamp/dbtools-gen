@@ -95,7 +95,8 @@ public class AndroidBaseRecordRenderer {
         }
 
         // post field method content
-        String contentValuesContent = "ContentValues values = new ContentValues();\n";
+        StringBuilder contentValuesContent = new StringBuilder("ContentValues values = new ContentValues();\n");
+        StringBuilder valuesContent = new StringBuilder("Object[] values = new Object[]{\n");
         String setContentValuesContent = "";
         String setContentCursorContent = "";
 
@@ -186,7 +187,8 @@ public class AndroidBaseRecordRenderer {
                         value = fieldNameJavaStyle + " != null ? " + fieldNameJavaStyle + getTimeMethod + " : null";
                     }
                 }
-                contentValuesContent += "values.put(" + fieldKey + ", " + value + ");\n";
+                contentValuesContent.append("values.put(").append(fieldKey).append(", ").append(value).append(");\n");
+                valuesContent.append(TAB).append(value).append(",\n");
 
                 setContentValuesContent += fieldNameJavaStyle + " = " + getContentValuesGetterMethod(field, fieldKey, newVariable) + ";\n";
             }
@@ -234,8 +236,12 @@ public class AndroidBaseRecordRenderer {
             allKeysVar.setAccess(Access.DEFAULT_NONE);
             myClass.addMethod(Access.PUBLIC, "String[]", "getAllKeys", "return " + ALL_KEYS_VAR_NAME + ".clone();").addAnnotation("Override");
 
-            contentValuesContent += "return values;";
-            myClass.addMethod(Access.PUBLIC, "ContentValues", "getContentValues", contentValuesContent).addAnnotation("Override");
+            contentValuesContent.append("return values;");
+            myClass.addMethod(Access.PUBLIC, "ContentValues", "getContentValues", contentValuesContent.toString()).addAnnotation("Override");
+
+            valuesContent.append("};\n");
+            valuesContent.append("return values;");
+            myClass.addMethod(Access.PUBLIC, "Object[]", "getValues", valuesContent.toString()).addAnnotation("Override");
 
             List<JavaVariable> setCValuesParams = new ArrayList<>();
             setCValuesParams.add(new JavaVariable("ContentValues", "values"));
