@@ -21,6 +21,9 @@ public class SchemaDatabase {
     @ElementList(entry = "view", inline = true, required = false)
     private List<SchemaView> views = new ArrayList<>();
 
+    @ElementList(entry = "query", inline = true, required = false)
+    private List<SchemaQuery> queries = new ArrayList<>();
+
     @ElementList(entry = "postSQLScriptFile", inline = true, required = false)
     private List<PostSQLScriptFile> postSQLScriptFiles;
 
@@ -53,6 +56,14 @@ public class SchemaDatabase {
 
     public void setViews(List<SchemaView> views) {
         this.views = views;
+    }
+
+    public List<SchemaQuery> getQueries() {
+        return queries;
+    }
+
+    public void setQueries(List<SchemaQuery> queries) {
+        this.queries = queries;
     }
 
     public List<PostSQLScriptFile> getPostSQLScriptFiles() {
@@ -101,6 +112,19 @@ public class SchemaDatabase {
         for (SchemaView view : views) {
             if (view.getName().equalsIgnoreCase(viewName)) {
                 return view;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Case insensitive search for queries
+     */
+    public SchemaQuery getQuery(String queryName) {
+        for (SchemaQuery query : queries) {
+            if (query.getName().equalsIgnoreCase(queryName)) {
+                return query;
             }
         }
 

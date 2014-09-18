@@ -67,6 +67,10 @@ public class AndroidRecordRenderer {
         if (entity.getType() == SchemaEntityType.VIEW) {
             createView(entity);
         }
+
+        if (entity.getType() == SchemaEntityType.QUERY) {
+            createQuery(entity);
+        }
     }
 
     private void createView(SchemaEntity entity) {
@@ -104,6 +108,43 @@ public class AndroidRecordRenderer {
 
         myClass.addMethod(Access.PUBLIC, "String", "getDropSql", "return DROP_VIEW;");
         myClass.addMethod(Access.PUBLIC, "String", "getCreateSql", "return CREATE_VIEW;");
+    }
+
+    private void createQuery(SchemaEntity entity) {
+        String entityClassName = AndroidRecordRenderer.createClassName(entity);
+
+        StringBuilder headerComment = new StringBuilder();
+        headerComment.append("// todo Replace the following the QUERY sql (The following is a template suggestion for your query)\n");
+        headerComment.append("// todo BE SURE TO KEEP THE OPENING AND CLOSING PARENTHESES (so queries can be run as sub-select: select * from (select a, b from t) )\n");
+        headerComment.append("// todo SUGGESTION: Keep the \" AS ").append(entityClassName).append(".<columnname>\" portion of the sql");
+        myClass.setClassHeaderComment(headerComment.toString());
+
+        StringBuilder createContent = new StringBuilder();
+        createContent.append("\"(\" +\n");
+        createContent.append(TAB).append(TAB).append(TAB).append("\"SELECT \" +\n");
+
+        for (int i = 0; i < entity.getFields().size(); i++) {
+            if (i > 0) {
+                createContent.append(" + \", \" +\n");
+            }
+
+            createContent.append(TAB).append(TAB).append(TAB);
+            SchemaField schemaField = entity.getFields().get(i);
+
+            String fieldConstName = JavaClass.formatConstant(schemaField.getName(true));
+            createContent.append(entityClassName).append(".").append("FULL_C_").append(fieldConstName);
+            createContent.append(" + \" AS \" + ");
+            createContent.append(entityClassName).append(".").append("C_").append(fieldConstName);
+        }
+
+        createContent.append(" +\n");
+        createContent.append(TAB).append(TAB).append(TAB);
+        createContent.append("\" FROM SOME TABLE(S)\" +\n");
+        createContent.append(TAB).append(TAB).append(TAB);
+        createContent.append("\")\"");
+
+        myClass.addConstant("String", "QUERY", createContent.toString(), false);
+        myClass.addConstant("String", "QUERY_RAW", "\"SELECT * FROM \" + QUERY", false);
     }
 
     public static String createClassName(SchemaEntity entity) {

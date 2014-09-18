@@ -11,10 +11,7 @@ package org.dbtools.gen;
 
 
 import org.dbtools.renderer.SchemaRenderer;
-import org.dbtools.schema.schemafile.DatabaseSchema;
-import org.dbtools.schema.schemafile.SchemaDatabase;
-import org.dbtools.schema.schemafile.SchemaTable;
-import org.dbtools.schema.schemafile.SchemaView;
+import org.dbtools.schema.schemafile.*;
 import org.dbtools.util.JavaUtil;
 import org.dbtools.util.PackageUtil;
 
@@ -32,6 +29,7 @@ public abstract class DBObjectsBuilder {
     private String schemaDatabaseName;
     private List<SchemaTable> tables;
     private List<SchemaView> views;
+    private List<SchemaQuery> queries;
     private String outputBaseDir;
     private String packageBase;
     // used internally
@@ -63,6 +61,7 @@ public abstract class DBObjectsBuilder {
     private void resetData() {
         tables = null;
         views = null;
+        queries = null;
         numberFilesGenerated = 0;
     }
 
@@ -120,6 +119,10 @@ public abstract class DBObjectsBuilder {
             views = schemaRenderer.getViewsToGenerate(database, null);
         }
 
+        if (queries == null) {
+            queries = schemaRenderer.getQueriesToGenerate(database, null);
+        }
+
         if (validate()) {
             DBObjectBuilder objectBuilder = getObjectBuilder();
 
@@ -170,7 +173,35 @@ public abstract class DBObjectsBuilder {
                 packageName = packageName + "." + view.getClassName().toLowerCase();
 
                 objectBuilder.setDatabase(database);
-                objectBuilder.setEntity(view); // todo
+                objectBuilder.setEntity(view);
+                objectBuilder.setPackageName(packageName);
+                objectBuilder.setSourceOutputDir(outDir);
+                objectBuilder.setInjectionSupport(hasInjectionSupport());
+                objectBuilder.setDateTimeSupport(hasDateTimeSupport());
+                objectBuilder.setJavaeeSupport(hasJavaEESupport());
+                objectBuilder.setEncryptionSupport(hasEncryptionSupport());
+                objectBuilder.setIncludeDatabaseNameInPackage(includeDatabaseNameInPackage);
+
+                success = objectBuilder.build();
+                numberFilesGenerated += objectBuilder.getNumberFilesGenerated();
+            }
+
+            for (SchemaQuery query : queries) {
+                // crete the directory
+                String packageDir = query.getClassName().toLowerCase();
+
+                if (includeDatabaseNameInPackage) {
+                    packageDir = database.getName().toLowerCase() + "/" + packageDir;
+                }
+
+                String outDir = createOutputDir(outputBaseDir, packageDir);
+
+                // package
+                String packageName = packageBase + (includeDatabaseNameInPackage ? '.' + database.getName().toLowerCase() : "");
+                packageName = packageName + "." + query.getClassName().toLowerCase();
+
+                objectBuilder.setDatabase(database);
+                objectBuilder.setEntity(query);
                 objectBuilder.setPackageName(packageName);
                 objectBuilder.setSourceOutputDir(outDir);
                 objectBuilder.setInjectionSupport(hasInjectionSupport());

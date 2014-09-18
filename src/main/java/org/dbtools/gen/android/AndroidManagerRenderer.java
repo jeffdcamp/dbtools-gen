@@ -13,6 +13,7 @@ import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaVariable;
 import org.dbtools.schema.schemafile.SchemaEntity;
+import org.dbtools.schema.schemafile.SchemaEntityType;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -59,6 +60,11 @@ public class AndroidManagerRenderer {
         List<JavaVariable> constParams = new ArrayList<>();
         String constContent = "";
         myClass.addConstructor(Access.PUBLIC, constParams, constContent);
+
+        if (entity.getType() == SchemaEntityType.QUERY) {
+            String recordClassName = AndroidRecordRenderer.createClassName(entity);
+            myClass.addMethod(Access.PUBLIC, "String", "getQuery", "return " + recordClassName + ".QUERY;").addAnnotation("Override");
+        }
     }
 
     public static String getClassName(SchemaEntity entity) {

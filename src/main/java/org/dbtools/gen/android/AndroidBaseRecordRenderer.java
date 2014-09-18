@@ -47,6 +47,7 @@ public class AndroidBaseRecordRenderer {
 
     public void generate(SchemaDatabase database, SchemaEntity entity, String packageName, DatabaseMapping databaseMapping) {
         boolean enumTable = entity.isEnumerationTable();
+        SchemaEntityType entityType = entity.getType();
         String entityClassName = entity.getClassName();
 
         String className = createClassName(enumTable, entityClassName);
@@ -76,12 +77,21 @@ public class AndroidBaseRecordRenderer {
         myClass.addConstant("String", "DATABASE", databaseName);
 
         String tableName = entity.getName();
-        myClass.addConstant("String", "TABLE", tableName);
-        myClass.addConstant("String", "FULL_TABLE", databaseName + "." + tableName);
+        if (entityType != SchemaEntityType.QUERY) {
+            myClass.addConstant("String", "TABLE", tableName);
+            myClass.addConstant("String", "FULL_TABLE", databaseName + "." + tableName);
+        }
 
         if (!myClass.isEnum()) {
             myClass.addMethod(Access.PUBLIC, "String", "getDatabaseName", "return DATABASE;").addAnnotation("Override");
+        }
+
+        if (!myClass.isEnum() && entityType != SchemaEntityType.QUERY) {
             myClass.addMethod(Access.PUBLIC, "String", "getTableName", "return TABLE;").addAnnotation("Override");
+        }
+
+        if (entityType == SchemaEntityType.QUERY) {
+            myClass.addMethod(Access.PUBLIC, "String", "getTableName", "return \"\";").addAnnotation("Override");
         }
 
         // post field method content
@@ -184,7 +194,7 @@ public class AndroidBaseRecordRenderer {
             setContentCursorContent += fieldNameJavaStyle + " = " + getContentValuesCursorGetterMethod(field, fieldKey, newVariable) + ";\n";
         }
 
-        if (!primaryKeyAdded && entity.getType() == SchemaEntityType.VIEW) {
+        if (!primaryKeyAdded && (entityType == SchemaEntityType.VIEW || entityType == SchemaEntityType.QUERY)) {
             myClass.addMethod(Access.PUBLIC, "String", "getIdColumnName", "return null;").addAnnotation("Override");
 
             // add vanilla getPrimaryKeyId() / setPrimaryKeyId() for the primary key
@@ -193,7 +203,7 @@ public class AndroidBaseRecordRenderer {
         }
 
         // SchemaDatabase variables
-        if (entity.getType() == SchemaEntityType.TABLE) {
+        if (entityType == SchemaEntityType.TABLE) {
             SchemaTable table = (SchemaTable) entity;
             String createTable = SqliteRenderer.generateTableSchema(table, databaseMapping);
             createTable = createTable.replace("\n", "\" + \n" + TAB + TAB + "\"");

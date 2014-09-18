@@ -43,6 +43,7 @@ public class SchemaRenderer implements Runnable {
     private String[] tablesToGenerate;
     private boolean createSchema = true; // includes tables & views
     private String[] viewsToGenerate;
+    private String[] queriesToGenerate;
     private boolean dropTables = false;
     private boolean executeSQLScriptFiles;
     private boolean createONLYOtherInserts = false;
@@ -654,6 +655,25 @@ public class SchemaRenderer implements Runnable {
         }
 
         return requestedViews;
+    }
+
+    public List<SchemaQuery> getQueriesToGenerate(SchemaDatabase database, String[] queriesToGenerate) {
+        // determine which views to generate
+        List<SchemaQuery> requestedQueries = new ArrayList<>();
+        if (queriesToGenerate == null || (queriesToGenerate.length > 0 && queriesToGenerate[0] == null)) {
+            requestedQueries.addAll(database.getQueries());
+        } else {
+            for (String queryToGenerate : queriesToGenerate) {
+                SchemaQuery query = database.getQuery(queryToGenerate);//(SchemaView) viewsByName.get(viewsToGenerate[i]);
+                if (query != null) {
+                    requestedQueries.add(query);
+                } else {
+                    showProgress("WARNING: Could not find requested query [" + queryToGenerate + "].", true);
+                }
+            }
+        }
+
+        return requestedQueries;
     }
 
     public String formatDefaultValue(SchemaTableField field) {
