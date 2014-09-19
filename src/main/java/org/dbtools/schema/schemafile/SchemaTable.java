@@ -19,6 +19,9 @@ public class SchemaTable extends SchemaEntity {
     @Attribute(required = false)
     private String enumerations = "";
 
+    @Attribute(required = false)
+    private Boolean fieldsDefaultNotNull = null;
+
     @ElementList(entry = "unique", inline = true, required = false)
     private List<SchemaTableUnique> uniqueDeclarations = new ArrayList<>();
 
@@ -261,10 +264,27 @@ public class SchemaTable extends SchemaEntity {
     }
 
     public List<SchemaTableField> getFields() {
+        setFieldDefaults();
         return fields;
     }
 
     public void setFields(List<SchemaTableField> fields) {
         this.fields = fields;
+    }
+
+    public Boolean isFieldsDefaultNotNull() {
+        return fieldsDefaultNotNull;
+    }
+
+    public void setFieldsDefaultNotNull(Boolean fieldsDefaultNotNull) {
+        this.fieldsDefaultNotNull = fieldsDefaultNotNull;
+    }
+
+    private void setFieldDefaults() {
+        if (fieldsDefaultNotNull != null) {
+            for (SchemaField field : fields) {
+                field.setNotNullDefaultValue(fieldsDefaultNotNull);
+            }
+        }
     }
 }

@@ -19,6 +19,9 @@ public class SchemaQuery extends SchemaEntity {
     @ElementList(entry = "field", inline = true)
     List<SchemaQueryField> fields = new ArrayList<>();
 
+    @Attribute(required = false)
+    private Boolean fieldsDefaultNotNull = null;
+
     @Override
     public SchemaEntityType getType() {
         return SchemaEntityType.QUERY;
@@ -49,10 +52,27 @@ public class SchemaQuery extends SchemaEntity {
     }
 
     public List<? extends SchemaField> getFields() {
+        setFieldDefaults();
         return fields;
     }
 
     public void setFields(List<SchemaQueryField> fields) {
         this.fields = fields;
+    }
+
+    public Boolean isFieldsDefaultNotNull() {
+        return fieldsDefaultNotNull;
+    }
+
+    public void setFieldsDefaultNotNull(Boolean fieldsDefaultNotNull) {
+        this.fieldsDefaultNotNull = fieldsDefaultNotNull;
+    }
+
+    private void setFieldDefaults() {
+        if (fieldsDefaultNotNull != null) {
+            for (SchemaField field : fields) {
+                field.setNotNullDefaultValue(fieldsDefaultNotNull);
+            }
+        }
     }
 }

@@ -16,6 +16,9 @@ public class SchemaView extends SchemaEntity {
     @Attribute(required = false)
     private String className;
 
+    @Attribute(required = false)
+    private Boolean fieldsDefaultNotNull = null;
+
     @ElementList(entry = "field", inline = true)
     List<SchemaViewField> fields = new ArrayList<>();
 
@@ -49,10 +52,27 @@ public class SchemaView extends SchemaEntity {
     }
 
     public List<? extends SchemaField> getFields() {
+        setFieldDefaults();
         return fields;
     }
 
     public void setFields(List<SchemaViewField> fields) {
         this.fields = fields;
+    }
+
+    public Boolean isFieldsDefaultNotNull() {
+        return fieldsDefaultNotNull;
+    }
+
+    public void setFieldsDefaultNotNull(Boolean fieldsDefaultNotNull) {
+        this.fieldsDefaultNotNull = fieldsDefaultNotNull;
+    }
+
+    private void setFieldDefaults() {
+        if (fieldsDefaultNotNull != null) {
+            for (SchemaField field : fields) {
+                field.setNotNullDefaultValue(fieldsDefaultNotNull);
+            }
+        }
     }
 }

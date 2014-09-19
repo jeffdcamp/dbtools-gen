@@ -20,7 +20,7 @@ public abstract class SchemaField {
     @Attribute(required = false)
     private int decimals = 0;
     @Attribute(required = false)
-    private boolean notNull = false;
+    private Boolean notNull = null;
 
     @Attribute(required = false)
     private String defaultValue = "";
@@ -203,11 +203,11 @@ public abstract class SchemaField {
         return enumerationDefault;
     }
 
-    public boolean isNotNull() {
-        return notNull;
+    public Boolean isNotNull() {
+        return notNull != null ? notNull : false;
     }
 
-    public void setNotNull(boolean notNull) {
+    public void setNotNull(Boolean notNull) {
         this.notNull = notNull;
     }
 
@@ -217,5 +217,11 @@ public abstract class SchemaField {
 
     public void setSqliteCollate(String sqliteCollate) {
         this.sqliteCollate = sqliteCollate;
+    }
+
+    public void setNotNullDefaultValue(Boolean notNullDefaultValue) {
+        if (notNull == null) {
+            setNotNull(notNullDefaultValue);
+        }
     }
 }

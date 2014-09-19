@@ -66,9 +66,6 @@ public abstract class DBObjectsBuilder {
     }
 
     private boolean validate() {
-        if (tables.size() == 0) {
-            throw new IllegalStateException("No tables specified");
-        }
         if (outputBaseDir == null || outputBaseDir.equals("")) {
             throw new IllegalStateException("No baseDir specified");
         }

@@ -15,7 +15,10 @@ public class SchemaDatabase {
     @Attribute
     private String name;
 
-    @ElementList(entry = "table", inline = true)
+    @Attribute(required = false)
+    private Boolean fieldsDefaultNotNull = null;
+
+    @ElementList(entry = "table", inline = true, required = false)
     private List<SchemaTable> tables = new ArrayList<>();
 
     @ElementList(entry = "view", inline = true, required = false)
@@ -43,6 +46,12 @@ public class SchemaDatabase {
     }
 
     public List<SchemaTable> getTables() {
+        if (fieldsDefaultNotNull != null) {
+            for (SchemaTable entity : tables) {
+                entity.setFieldsDefaultNotNull(fieldsDefaultNotNull);
+            }
+        }
+
         return tables;
     }
 
@@ -51,6 +60,12 @@ public class SchemaDatabase {
     }
 
     public List<SchemaView> getViews() {
+        if (fieldsDefaultNotNull != null) {
+            for (SchemaView entity : views) {
+                entity.setFieldsDefaultNotNull(fieldsDefaultNotNull);
+            }
+        }
+
         return views;
     }
 
@@ -59,6 +74,12 @@ public class SchemaDatabase {
     }
 
     public List<SchemaQuery> getQueries() {
+        if (fieldsDefaultNotNull != null) {
+            for (SchemaQuery entity : queries) {
+                entity.setFieldsDefaultNotNull(fieldsDefaultNotNull);
+            }
+        }
+
         return queries;
     }
 
