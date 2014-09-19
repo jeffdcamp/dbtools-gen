@@ -313,7 +313,7 @@ public class JPABaseRecordClassRenderer {
         myClass.addImport("javax.persistence.Enumerated");
         myClass.addImport("javax.persistence.EnumType");
         if (field.getJdbcDataType().isNumberDataType()) {
-            if (field.getForeignKeyTable().length() > 0) {
+            if (!field.getForeignKeyTable().isEmpty()) {
                 // define name of enum
                 ClassInfo enumClassInfo = dbSchema.getTableClassInfo(field.getForeignKeyTable());
                 String enumName = enumClassInfo.getClassName();
@@ -343,8 +343,15 @@ public class JPABaseRecordClassRenderer {
 
                 // JPA Stuff for enumeration
                 newVariable.addAnnotation("Enumerated(EnumType.ORDINAL)");
+            } else if (!field.getEnumerationClass().isEmpty()) {
+                // use user defined class
+                String enumClassName = field.getEnumerationClass();
+
+                newVariable = new JavaVariable(enumClassName, fieldNameJavaStyle);
+                newVariable.setGenerateSetterGetter(true);
+                newVariable.setDefaultValue(enumClassName + "." + field.getEnumerationDefault(), false);
             } else {
-                // ENUM with out a foreign key table
+                // ENUM without a foreign key table
                 String javaStyleFieldName = field.getName(true);
                 String firstChar = javaStyleFieldName.substring(0, 1).toUpperCase();
                 String enumName = firstChar + javaStyleFieldName.substring(1);

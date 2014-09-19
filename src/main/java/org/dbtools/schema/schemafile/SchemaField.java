@@ -34,6 +34,8 @@ public abstract class SchemaField {
     @Attribute(required = false)
     private ForeignKeyFetchType foreignKeyFetchType = ForeignKeyFetchType.LAZY;
     @Attribute(required = false)
+    private String enumerationClass = "";
+    @Attribute(required = false)
     private String enumerationDefault = "";
     @Attribute(required = false)
     private String sqliteCollate = null;
@@ -44,7 +46,6 @@ public abstract class SchemaField {
     public abstract String getForeignKeyCascadeType();
     public abstract String getSequencerName();
     public abstract boolean isUnique();
-    public abstract boolean isEnumeration();
     public abstract List<String> getEnumValues();
 
     private String javaFieldNameStyleName = "";
@@ -195,12 +196,24 @@ public abstract class SchemaField {
         this.foreignKeyFetchType = foreignKeyFetchType;
     }
 
+    public String getEnumerationClass() {
+        return enumerationClass;
+    }
+
+    public void setEnumerationClass(String enumerationClass) {
+        this.enumerationClass = enumerationClass;
+    }
+
     public void setEnumerationDefault(String enumerationDefault) {
         this.enumerationDefault = enumerationDefault;
     }
 
     public String getEnumerationDefault() {
         return enumerationDefault;
+    }
+
+    public boolean isEnumeration() {
+        return isForeignKeyIsEnumeration() || !getEnumerationClass().isEmpty();
     }
 
     public Boolean isNotNull() {

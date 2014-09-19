@@ -70,7 +70,7 @@ public class SchemaTable extends SchemaEntity {
     }
 
     public boolean isEnumerationTable() {
-        return enumerations.length() > 0;
+        return !enumerations.isEmpty();
     }
 
     public List<String> getSequenceNames() {

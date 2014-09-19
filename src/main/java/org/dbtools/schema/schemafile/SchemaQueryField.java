@@ -33,11 +33,6 @@ public class SchemaQueryField extends SchemaField {
     }
 
     @Override
-    public boolean isEnumeration() {
-        return isForeignKeyIsEnumeration();
-    }
-
-    @Override
     public List<String> getEnumValues() {
         return null;
     }

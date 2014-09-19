@@ -59,9 +59,8 @@ public class SchemaTableField extends SchemaField {
     }
 
     public boolean isEnumeration() {
-        return (enumerations.length() > 0 || isForeignKeyIsEnumeration());
+        return !enumerations.isEmpty() || super.isEnumeration();
     }
-
 
     public List<String> getEnumValues() {
         if (enumerations == null || enumerations.isEmpty()) {

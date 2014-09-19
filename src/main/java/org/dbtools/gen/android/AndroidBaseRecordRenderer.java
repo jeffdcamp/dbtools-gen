@@ -449,7 +449,7 @@ public class AndroidBaseRecordRenderer {
     private JavaVariable generateEnumeration(SchemaField field, String fieldNameJavaStyle, String packageName, SchemaDatabase database) {
         JavaVariable newVariable;
         if (field.getJdbcDataType().isNumberDataType()) {
-            if (field.getForeignKeyTable().length() > 0) {
+            if (!field.getForeignKeyTable().isEmpty()) {
                 // define name of enum
                 ClassInfo enumClassInfo = database.getTableClassInfo(field.getForeignKeyTable());
                 String enumName = enumClassInfo.getClassName();
@@ -476,8 +476,15 @@ public class AndroidBaseRecordRenderer {
                 newVariable = new JavaVariable(enumName, fieldNameJavaStyle);
                 newVariable.setGenerateSetterGetter(true);
                 newVariable.setDefaultValue(enumName + "." + field.getEnumerationDefault(), false);
+            } else if (!field.getEnumerationClass().isEmpty()) {
+                // use user defined class
+                String enumClassName = field.getEnumerationClass();
+
+                newVariable = new JavaVariable(enumClassName, fieldNameJavaStyle);
+                newVariable.setGenerateSetterGetter(true);
+                newVariable.setDefaultValue(enumClassName + "." + field.getEnumerationDefault(), false);
             } else {
-                // ENUM with out a foreign key table
+                // ENUM without a foreign key table
                 String javaStyleFieldName = field.getName(true);
                 String firstChar = javaStyleFieldName.substring(0, 1).toUpperCase();
                 String enumName = firstChar + javaStyleFieldName.substring(1);

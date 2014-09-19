@@ -126,6 +126,11 @@
                                                         <xsd:documentation>Enumerations should be comma separated with no spaces (Example "HOME,OFFICE,OTHER").  In the Java code, the datatype for this field/variable is replaced with an internal enum that will be created using the name of this field/variable.</xsd:documentation>
                                                     </xsd:annotation>
                                                 </xsd:attribute>
+                                                <xsd:attribute name="enumerationClass" type="xsd:string">
+                                                    <xsd:annotation>
+                                                        <xsd:documentation>Classname of the a user defined enum (Example: com.mycompany.LocationType).  DO NOT use this field if using ForeignKeyType="ENUM".</xsd:documentation>
+                                                    </xsd:annotation>
+                                                </xsd:attribute>
                                                 <xsd:attribute name="enumerationDefault" type="xsd:string">
                                                     <xsd:annotation>
                                                         <xsd:documentation>Default value for Enumeration.  Only use the name of the enumeration value. (Example: "HOME"  (Do NOT put "LocationType.HOME")).  If this is NOT specified, then the first enumeration value is used.</xsd:documentation>
@@ -220,6 +225,11 @@
                                                         <xsd:documentation>Used by database generation. Size of VARCHAR or Size specifies the number of digits above the decimal in float types (FLOAT, DECIMAL, etc).  Use "decimals" to specify the number of digits below the decimal point.</xsd:documentation>
                                                     </xsd:annotation>
                                                 </xsd:attribute>
+                                                <xsd:attribute name="enumerationClass" type="xsd:string">
+                                                    <xsd:annotation>
+                                                        <xsd:documentation>Classname of the a user defined enum (Example: com.mycompany.LocationType).  DO NOT use this field if using ForeignKeyType="ENUM".</xsd:documentation>
+                                                    </xsd:annotation>
+                                                </xsd:attribute>
                                                 <xsd:attribute name="enumerationDefault" type="xsd:string">
                                                     <xsd:annotation>
                                                         <xsd:documentation>Default value for Enumeration.  Only use the name of the enumeration value. (Example: "HOME"  (Do NOT put "LocationType.HOME")).  If this is NOT specified, then the first enumeration value is used.</xsd:documentation>
@@ -280,6 +290,11 @@
                                                 <xsd:attribute name="size" type="xsd:NMTOKEN" use="optional" default="0" >
                                                     <xsd:annotation>
                                                         <xsd:documentation>Used by database generation. Size of VARCHAR or Size specifies the number of digits above the decimal in float types (FLOAT, DECIMAL, etc).  Use "decimals" to specify the number of digits below the decimal point.</xsd:documentation>
+                                                    </xsd:annotation>
+                                                </xsd:attribute>
+                                                <xsd:attribute name="enumerationClass" type="xsd:string">
+                                                    <xsd:annotation>
+                                                        <xsd:documentation>Classname of the a user defined enum (Example: com.mycompany.LocationType).  DO NOT use this field if using ForeignKeyType="ENUM".</xsd:documentation>
                                                     </xsd:annotation>
                                                 </xsd:attribute>
                                                 <xsd:attribute name="enumerationDefault" type="xsd:string">
