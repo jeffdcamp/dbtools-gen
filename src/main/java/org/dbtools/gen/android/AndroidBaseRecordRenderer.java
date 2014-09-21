@@ -194,6 +194,12 @@ public class AndroidBaseRecordRenderer {
             }
 
             setContentCursorContent += fieldNameJavaStyle + " = " + getContentValuesCursorGetterMethod(field, fieldKey, newVariable) + ";\n";
+
+            // static getter method that takes a Cursor parameter
+            myClass.addImport("android.database.Cursor");
+            JavaMethod cursorGetter = myClass.addMethod(Access.PUBLIC, newVariable.getDataType(), newVariable.getGetterMethodName(), "return " + getContentValuesCursorGetterMethod(field, fieldKey, newVariable) + ";");
+            cursorGetter.setStatic(true);
+            cursorGetter.setParameters(Arrays.asList(new JavaVariable("Cursor", "cursor")));
         }
 
         if (!primaryKeyAdded && (entityType == SchemaEntityType.VIEW || entityType == SchemaEntityType.QUERY)) {
