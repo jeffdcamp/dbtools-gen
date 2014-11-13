@@ -275,7 +275,7 @@ public class JPABaseRecordClassRenderer {
             toStringMethod.addAnnotation("Override");
 
             // new record check
-            myClass.addMethod(Access.PUBLIC, "boolean", "isNewRecord", "return getID() <= 0;");
+            myClass.addMethod(Access.PUBLIC, "boolean", "isNewRecord", "return getId() <= 0;");
         }
     }
 
@@ -296,8 +296,10 @@ public class JPABaseRecordClassRenderer {
             newVariable.addAnnotation("@SequenceGenerator(name=\"" + sequencerName + "\", sequenceName=\"" + sequencerName + "\", allocationSize=1)");
         }
 
-        // add vanilla getID() for the primary key
-        myClass.addMethod(Access.PUBLIC, field.getJavaTypeText(), "getID", "return " + fieldNameJavaStyle + ";");
+        // add vanilla getId() for the primary key (if one won't already exist)
+        if (!field.getName().equals("id")) {
+            myClass.addMethod(Access.PUBLIC, field.getJavaTypeText(), "getId", "return " + fieldNameJavaStyle + ";");
+        }
     }
 
     private void createToStringMethodContent(final SchemaField field, final String fieldNameJavaStyle) {
@@ -496,7 +498,7 @@ public class JPABaseRecordClassRenderer {
         myClass.addImport("javax.persistence.OneToOne");
         myClass.addImport("javax.persistence.FetchType");
 
-        // determine the casecade type
+        // determine the cascade type
         String cascadeType = field.getForeignKeyCascadeType();
         String cascadeTypeAnnotation = "";
         if (cascadeType != null && cascadeType.length() > 0) {
@@ -515,10 +517,10 @@ public class JPABaseRecordClassRenderer {
 
         myClass.addVariable(oneToOneVar, true);
 
-        if (field.isPrimaryKey() && !myClass.isEnum()) {
-            JavaMethod getIDMethod = new JavaMethod(Access.PUBLIC, field.getJavaTypeText(), "getID");
-            getIDMethod.setContent("return " + varName + ".getID();");
-            myClass.addMethod(getIDMethod);
+        if (field.isPrimaryKey() && !myClass.isEnum()) { // todo add?? && !field.getName().equals("id")) {
+            JavaMethod getIdMethod = new JavaMethod(Access.PUBLIC, field.getJavaTypeText(), "getId");
+            getIdMethod.setContent("return " + varName + ".getId();");
+            myClass.addMethod(getIdMethod);
         }
     }
 
@@ -631,7 +633,7 @@ public class JPABaseRecordClassRenderer {
                         removeMethodContent += TAB + TAB + "break;\n";
                         removeMethodContent += TAB + "}\n";
                         removeMethodContent += TAB + "if (!itr.hasNext()) {\n";
-                        removeMethodContent += TAB + TAB + "throw new IllegalStateException(\"deleteItem failed: Cannot find itemID \"+ " + listVarName + ".getID());\n";
+                        removeMethodContent += TAB + TAB + "throw new IllegalStateException(\"deleteItem failed: Cannot find itemID \"+ " + listVarName + ".getId());\n";
                         removeMethodContent += TAB + "}\n";
                         removeMethodContent += "}";
 

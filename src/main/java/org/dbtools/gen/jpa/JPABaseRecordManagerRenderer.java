@@ -131,22 +131,30 @@ public class JPABaseRecordManagerRenderer {
 
         addFindAllMethod(myClass, recordClassName);
         addFindCountMethod(myClass, recordClassName);
+        addDeleteAllMethod(myClass, recordClassName);
     }
 
     public void addFindCountMethod(JavaClass myClass, String recordClassName) {
         myClass.addImport("javax.persistence.Query");
-        String content = "Query q = getEntityManager().createNativeQuery(\"SELECT count(0) FROM \" + " + recordClassName + ".TABLE);\n"
+        String content = "Query q = entityManager.createNativeQuery(\"SELECT count(0) FROM \" + " + recordClassName + ".TABLE);\n"
                 + "return ((Number) q.getSingleResult()).longValue();\n";
         myClass.addMethod(Access.PUBLIC, "long", "findCount", content);
     }
 
     public void addFindAllMethod(JavaClass myClass, String recordClassName) {
         myClass.addImport("javax.persistence.Query");
-        String content = "Query q = getEntityManager().createQuery(\"SELECT o FROM \" + " + recordClassName + ".TABLE_CLASSNAME + \" o\");\n"
+        String content = "Query q = entityManager.createQuery(\"SELECT o FROM \" + " + recordClassName + ".TABLE_CLASSNAME + \" o\");\n"
                 + "return q.getResultList();\n";
 
         myClass.addImport("java.util.List");
         myClass.addMethod(Access.PUBLIC, "List<" + recordClassName + ">", "findAll", content);
+    }
+
+    public void addDeleteAllMethod(JavaClass myClass, String recordClassName) {
+        myClass.addImport("javax.persistence.Query");
+        String content = "Query q = entityManager.createNativeQuery(\"DELETE FROM \" + " + recordClassName + ".TABLE);\n"
+                + "q.executeUpdate();\n";
+        myClass.addMethod(Access.PUBLIC, "void", "deleteAll", content);
     }
 
     private void addJavaEESupport(JavaMethod method) {
