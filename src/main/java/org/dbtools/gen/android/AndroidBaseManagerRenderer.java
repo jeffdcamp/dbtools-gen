@@ -68,6 +68,15 @@ public class AndroidBaseManagerRenderer {
         } else {
             createNoInjectionManager(entity, recordClassName);
         }
+
+        if (genConfig.isOttoSupport()) {
+            JavaVariable busVariable = myClass.addVariable("com.squareup.otto.Bus", "bus", true);
+            busVariable.setAccess(Access.DEFAULT_NONE);
+
+            if (genConfig.isInjectionSupport()) {
+                busVariable.addAnnotation("javax.inject.Inject");
+            }
+        }
     }
 
     private void createInjectionManager(SchemaEntity entity, String packageName, String recordClassName) {
