@@ -1,5 +1,6 @@
 package org.dbtools.gen.android;
 
+import org.dbtools.gen.GenConfig;
 import org.junit.Test;
 
 public class AndroidDBObjectBuilderTest {
@@ -12,7 +13,11 @@ public class AndroidDBObjectBuilderTest {
         boolean dateTimeSupport = true; // support for jsr DateTime (Joda Time)
         String baseOutputDir = userDir + "/target/test-src/src/main/java/org/mycompany/domain";
         String basePackageName = "org.mycompany.domain";
-        AndroidObjectsBuilder.buildAll(schemaFilename, baseOutputDir, basePackageName, injectionSupport, dateTimeSupport);
+
+        GenConfig genConfig = new GenConfig();
+        genConfig.setInjectionSupport(injectionSupport);
+        genConfig.setDateTimeSupport(dateTimeSupport);
+        AndroidObjectsBuilder.buildAll(schemaFilename, baseOutputDir, basePackageName, genConfig);
     }
 
 }

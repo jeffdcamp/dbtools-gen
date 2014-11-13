@@ -2,6 +2,7 @@ package org.dbtools.gen.android;
 
 import org.dbtools.gen.DBObjectBuilder;
 import org.dbtools.gen.DBObjectsBuilder;
+import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.DatabaseSchema;
 
 /**
@@ -14,42 +15,29 @@ public class AndroidObjectsBuilder extends DBObjectsBuilder {
         return new AndroidDBObjectBuilder();
     }
 
-    public static void buildAll(String schemaFilename, String baseOutputDir, String basePackageName, boolean injectionSupport, boolean dateTimeSupport) {
-        buildAll(schemaFilename, baseOutputDir, basePackageName, injectionSupport, dateTimeSupport, false);
-    }
-
-    public static void buildAll(String schemaFilename, String baseOutputDir, String basePackageName, boolean injectionSupport, boolean dateTimeSupport, boolean encryptionSupport) {
+    public static void buildAll(String schemaFilename, String baseOutputDir, String basePackageName, GenConfig genConfig) {
         DBObjectsBuilder builder = new AndroidObjectsBuilder();
         builder.setXmlFilename(schemaFilename);
         builder.setOutputBaseDir(baseOutputDir);
         builder.setPackageBase(basePackageName);
-        builder.setInjectionSupport(injectionSupport);
-        builder.setDateTimeSupport(dateTimeSupport);
-        builder.setEncryptionSupport(encryptionSupport);
+        builder.setGenConfig(genConfig);
 
         builder.build();
         System.out.println("Generated [" + builder.getObjectBuilder().getNumberFilesGenerated() + "] files.");
     }
 
     @Override
-    public void onPostBuild(DatabaseSchema databaseSchema, String packageBase, String outputBaseDir,
-                            boolean injectionSupport,
-                            boolean encryptionSupport,
-                            boolean jsr305Support,
-                            boolean includeDatabaseNameInPackage) {
+    public void onPostBuild(DatabaseSchema databaseSchema, String packageBase, String outputBaseDir, GenConfig genConfig) {
         DatabaseBaseManagerRenderer databaseBaseManager = new DatabaseBaseManagerRenderer();
         databaseBaseManager.setPackageBase(packageBase);
         databaseBaseManager.setOutDir(outputBaseDir);
-        databaseBaseManager.setEncryptionSupport(encryptionSupport);
-        databaseBaseManager.setJsr305Support(jsr305Support);
-        databaseBaseManager.setIncludeDatabaseNameInPackage(includeDatabaseNameInPackage);
+        databaseBaseManager.setGenConfig(genConfig);
         databaseBaseManager.generate(databaseSchema);
 
         DatabaseManagerRenderer databaseManager = new DatabaseManagerRenderer();
         databaseManager.setPackageBase(packageBase);
         databaseManager.setOutDir(outputBaseDir);
-        databaseManager.setInjectionSupport(injectionSupport);
-        databaseManager.setJsr305Support(jsr305Support);
+        databaseManager.setGenConfig(genConfig);
         databaseManager.generate(databaseSchema); // this file will only be created if it does not already exist
     }
 }

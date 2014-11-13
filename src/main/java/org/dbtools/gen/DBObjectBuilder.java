@@ -28,14 +28,6 @@ public interface DBObjectBuilder {
 
     public List<String> getFilesGenerated();
 
-    public void setDateTimeSupport(boolean b);
-
-    public void setInjectionSupport(boolean b);
-
-    public void setJsr305Support(boolean b);
-
-    public void setJavaeeSupport(boolean b);
-
     public void setDatabase(SchemaDatabase schemaDatabase);
 
     public void setEntity(SchemaEntity table);
@@ -44,7 +36,5 @@ public interface DBObjectBuilder {
 
     public void setSourceOutputDir(String outDir);
 
-    public void setEncryptionSupport(boolean b);
-
-    public void setIncludeDatabaseNameInPackage(boolean b);
+    public void setGenConfig(GenConfig genConfig);
 }

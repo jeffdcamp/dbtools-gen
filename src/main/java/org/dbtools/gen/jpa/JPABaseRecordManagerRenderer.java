@@ -13,6 +13,7 @@ import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaMethod;
 import org.dbtools.codegen.JavaVariable;
+import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.SchemaEntity;
 
 import java.util.ArrayList;
@@ -24,8 +25,7 @@ import java.util.List;
 public class JPABaseRecordManagerRenderer {
 
     private JavaClass myClass;
-    private boolean injectionSupport = true;
-    private boolean javaeeSupport = false;
+    private GenConfig genConfig;
 
     /**
      * Creates a new instance of JPABaseRecordManagerRenderer.
@@ -54,7 +54,7 @@ public class JPABaseRecordManagerRenderer {
         // Since this is generated code.... suppress all warnings
         myClass.addAnnotation("@SuppressWarnings(\"all\")");
 
-        if (!injectionSupport) {
+        if (!genConfig.isInjectionSupport()) {
             // constructor
             myClass.setCreateDefaultConstructor(false);
             myClass.addConstructor(Access.PRIVATE, null, null);
@@ -158,7 +158,7 @@ public class JPABaseRecordManagerRenderer {
     }
 
     private void addJavaEESupport(JavaMethod method) {
-        if (javaeeSupport) {
+        if (genConfig.isJavaeeSupport()) {
             method.addAnnotation("@javax.transaction.Transactional");
         }
     }
@@ -172,11 +172,7 @@ public class JPABaseRecordManagerRenderer {
         myClass.writeToDisk(outDir);
     }
 
-    public void setJavaeeSupport(boolean b) {
-        this.javaeeSupport = b;
-    }
-
-    public void setInjectionSupport(boolean injectionSupport) {
-        this.injectionSupport = injectionSupport;
+    public void setGenConfig(GenConfig genConfig) {
+        this.genConfig = genConfig;
     }
 }

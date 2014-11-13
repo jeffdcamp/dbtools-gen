@@ -12,6 +12,7 @@ package org.dbtools.gen.android;
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaVariable;
+import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.SchemaEntity;
 import org.dbtools.schema.schemafile.SchemaEntityType;
 
@@ -27,7 +28,7 @@ public class AndroidManagerRenderer {
 
     private JavaClass myClass;
 
-    private boolean injectionSupport = false;
+    private GenConfig genConfig;
 
     /**
      * Creates a new instance of AndroidManagerRenderer.
@@ -50,7 +51,7 @@ public class AndroidManagerRenderer {
         myClass.setFileHeaderComment(fileHeaderComment);
 
         // Injection support
-        if (injectionSupport) {
+        if (genConfig.isInjectionSupport()) {
             myClass.addAnnotation("javax.inject.Singleton");
         }
 
@@ -76,7 +77,7 @@ public class AndroidManagerRenderer {
         myClass.writeToDisk(outDir);
     }
 
-    public void setInjectionSupport(boolean injectionSupport) {
-        this.injectionSupport = injectionSupport;
+    public void setGenConfig(GenConfig genConfig) {
+        this.genConfig = genConfig;
     }
 }

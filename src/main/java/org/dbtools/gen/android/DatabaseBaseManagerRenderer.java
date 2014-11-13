@@ -4,6 +4,7 @@ import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaVariable;
 import org.dbtools.gen.AnnotationConsts;
+import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.*;
 import org.dbtools.util.JavaUtil;
 
@@ -20,9 +21,7 @@ public class DatabaseBaseManagerRenderer {
 
     private String packageBase;
     private String outDir;
-    private boolean jsr305Support = false; // @Nonnull support
-    private boolean encryptionSupport = false; // use SQLCipher
-    private boolean includeDatabaseNameInPackage  = false;
+    private GenConfig genConfig;
 
     public void generate(DatabaseSchema databaseSchema) {
         System.out.println("Generating DatabaseBaseManager...");
@@ -59,7 +58,7 @@ public class DatabaseBaseManagerRenderer {
         myClass.addImport("android.util.Log");
         myClass.addImport("org.dbtools.android.domain.AndroidDatabase");
 
-        if (!encryptionSupport) {
+        if (!genConfig.isEncryptionSupport()) {
             myClass.addImport("org.dbtools.android.domain.AndroidDatabaseManager");
             myClass.addImport("android.database.sqlite.SQLiteDatabase");
             myClass.addImport("org.dbtools.android.domain.AndroidBaseManager");
@@ -85,7 +84,7 @@ public class DatabaseBaseManagerRenderer {
         }
 
         JavaVariable param = new JavaVariable("AndroidDatabase", "androidDatabase");
-        if (jsr305Support) {
+        if (genConfig.isJsr305Support()) {
             param.addAnnotation(AnnotationConsts.NONNULL);
         }
 
@@ -101,7 +100,7 @@ public class DatabaseBaseManagerRenderer {
         content.append("}\n");
 
         StringBuilder createDatabaseContent = new StringBuilder();
-        if (!encryptionSupport) {
+        if (!genConfig.isEncryptionSupport()) {
             createDatabaseContent.append("SQLiteDatabase database = androidDatabase.getSqLiteDatabase();\n");
         } else {
             createDatabaseContent.append("SQLiteDatabase database = androidDatabase.getSecureSqLiteDatabase();\n");
@@ -134,7 +133,7 @@ public class DatabaseBaseManagerRenderer {
         createDatabaseContent.append("database.endTransaction();\n");
 
         JavaVariable param = new JavaVariable("AndroidDatabase", "androidDatabase");
-        if (jsr305Support) {
+        if (genConfig.isJsr305Support()) {
             param.addAnnotation(AnnotationConsts.NONNULL);
         }
 
@@ -159,7 +158,7 @@ public class DatabaseBaseManagerRenderer {
         }
 
         JavaVariable param = new JavaVariable("AndroidDatabase", "androidDatabase");
-        if (jsr305Support) {
+        if (genConfig.isJsr305Support()) {
             param.addAnnotation(AnnotationConsts.NONNULL);
         }
 
@@ -181,7 +180,7 @@ public class DatabaseBaseManagerRenderer {
 
         StringBuilder createDatabaseViewsContent = new StringBuilder();
 
-        if (!encryptionSupport) {
+        if (!genConfig.isEncryptionSupport()) {
             createDatabaseViewsContent.append("SQLiteDatabase database = androidDatabase.getSqLiteDatabase();\n");
         } else {
             createDatabaseViewsContent.append("SQLiteDatabase database = androidDatabase.getSecureSqLiteDatabase();\n");
@@ -203,7 +202,7 @@ public class DatabaseBaseManagerRenderer {
         createDatabaseViewsContent.append("database.endTransaction();\n");
 
         JavaVariable param = new JavaVariable("AndroidDatabase", "androidDatabase");
-        if (jsr305Support) {
+        if (genConfig.isJsr305Support()) {
             param.addAnnotation(AnnotationConsts.NONNULL);
         }
 
@@ -223,7 +222,7 @@ public class DatabaseBaseManagerRenderer {
         content.append("}\n");
 
         StringBuilder createDatabaseViewsContent = new StringBuilder();
-        if (!encryptionSupport) {
+        if (!genConfig.isEncryptionSupport()) {
             createDatabaseViewsContent.append("SQLiteDatabase database = androidDatabase.getSqLiteDatabase();\n");
         } else {
             createDatabaseViewsContent.append("SQLiteDatabase database = androidDatabase.getSecureSqLiteDatabase();\n");
@@ -245,7 +244,7 @@ public class DatabaseBaseManagerRenderer {
         createDatabaseViewsContent.append("database.endTransaction();\n");
 
         JavaVariable param = new JavaVariable("AndroidDatabase", "androidDatabase");
-        if (jsr305Support) {
+        if (genConfig.isJsr305Support()) {
             param.addAnnotation(AnnotationConsts.NONNULL);
         }
 
@@ -258,7 +257,7 @@ public class DatabaseBaseManagerRenderer {
     }
 
     private String createDatabaseBasePackage(SchemaDatabase database) {
-        return packageBase + (includeDatabaseNameInPackage ? "." + database.getName().toLowerCase() : "");
+        return packageBase + (genConfig.isIncludeDatabaseNameInPackage() ? "." + database.getName().toLowerCase() : "");
     }
 
     public void setPackageBase(String packageBase) {
@@ -269,15 +268,7 @@ public class DatabaseBaseManagerRenderer {
         this.outDir = outDir;
     }
 
-    public void setEncryptionSupport(boolean encryptionSupport) {
-        this.encryptionSupport = encryptionSupport;
-    }
-
-    public void setJsr305Support(boolean jsr305Support) {
-        this.jsr305Support = jsr305Support;
-    }
-
-    public void setIncludeDatabaseNameInPackage(boolean includeDatabaseNameInPackage) {
-        this.includeDatabaseNameInPackage = includeDatabaseNameInPackage;
+    public void setGenConfig(GenConfig genConfig) {
+        this.genConfig = genConfig;
     }
 }

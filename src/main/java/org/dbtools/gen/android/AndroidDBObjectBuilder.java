@@ -11,6 +11,7 @@ package org.dbtools.gen.android;
 
 
 import org.dbtools.gen.DBObjectBuilder;
+import org.dbtools.gen.GenConfig;
 import org.dbtools.renderer.SchemaRenderer;
 import org.dbtools.schema.dbmappings.DatabaseMapping;
 import org.dbtools.schema.schemafile.SchemaDatabase;
@@ -121,32 +122,6 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
     }
 
     @Override
-    public void setDateTimeSupport(boolean b) {
-        baseRecordClass.setDateTimeSupport(b);
-    }
-
-    @Override
-    public void setInjectionSupport(boolean b) {
-        baseManagerClass.setInjectionSupport(b);
-        managerClass.setInjectionSupport(b);
-    }
-
-    @Override
-    public void setJsr305Support(boolean b) {
-        baseManagerClass.setJsr305Support(b);
-    }
-
-    @Override
-    public void setEncryptionSupport(boolean b) {
-        baseManagerClass.setEncryptionSupport(b);
-    }
-
-    @Override
-    public void setIncludeDatabaseNameInPackage(boolean b) {
-        baseManagerClass.setIncludeDatabaseNameInPackage(b);
-    }
-
-    @Override
     public void setEntity(SchemaEntity table) {
         this.entity = table;
     }
@@ -162,11 +137,15 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
     }
 
     @Override
-    public void setDatabase(SchemaDatabase dbSchema) {
-        this.database = dbSchema;
+    public void setGenConfig(GenConfig genConfig) {
+        recordClass.setGenConfig(genConfig);
+        baseRecordClass.setGenConfig(genConfig);
+        managerClass.setGenConfig(genConfig);
+        baseManagerClass.setGenConfig(genConfig);
     }
 
     @Override
-    public void setJavaeeSupport(boolean b) {
+    public void setDatabase(SchemaDatabase dbSchema) {
+        this.database = dbSchema;
     }
 }

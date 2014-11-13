@@ -2,6 +2,7 @@ package org.dbtools.gen.jpa;
 
 import org.dbtools.gen.DBObjectsBuilder;
 import org.dbtools.gen.DBObjectBuilder;
+import org.dbtools.gen.GenConfig;
 
 /**
  * User: jcampbell
@@ -13,13 +14,12 @@ public class JPAObjectsBuilder extends DBObjectsBuilder {
         return new JPADBObjectBuilder();
     }
 
-    public static void buildAll(String schemaFilename, String baseOutputDir, String basePackageName, boolean injectionSupport, boolean dateTimeSupport) {
+    public static void buildAll(String schemaFilename, String baseOutputDir, String basePackageName, GenConfig genConfig) {
         DBObjectsBuilder builder = new JPAObjectsBuilder();
         builder.setXmlFilename(schemaFilename);
         builder.setOutputBaseDir(baseOutputDir);
         builder.setPackageBase(basePackageName);
-        builder.setInjectionSupport(injectionSupport);
-        builder.setDateTimeSupport(dateTimeSupport);
+        builder.setGenConfig(genConfig);
 
         builder.build();
         System.out.println("Generated [" + builder.getObjectBuilder().getNumberFilesGenerated() + "] files.");

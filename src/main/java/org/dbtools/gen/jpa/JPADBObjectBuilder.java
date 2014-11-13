@@ -10,6 +10,7 @@
 package org.dbtools.gen.jpa;
 
 import org.dbtools.gen.DBObjectBuilder;
+import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.SchemaDatabase;
 import org.dbtools.schema.schemafile.SchemaEntity;
 
@@ -116,34 +117,10 @@ public class JPADBObjectBuilder implements DBObjectBuilder {
     }
 
     @Override
-    public void setDateTimeSupport(boolean b) {
-        baseRecordClass.setDateTimeSupport(b);
-    }
-
-    @Override
-    public void setInjectionSupport(boolean b) {
-        baseRecordClass.setInjectionSupport(b);
-        managerClass.setInjectionSupport(b);
-        baseManagerClass.setInjectionSupport(b);
-    }
-
-    @Override
-    public void setJsr305Support(boolean b) {
-    }
-
-    @Override
-    public void setEncryptionSupport(boolean b) {
-        // do nothing
-    }
-
-    @Override
-    public void setIncludeDatabaseNameInPackage(boolean b) {
-        // do nothing
-    }
-
-    public void setJavaeeSupport(boolean javaeeSupport) {
-        baseManagerClass.setJavaeeSupport(javaeeSupport);
-        managerClass.setJavaeeSupport(javaeeSupport);
+    public void setGenConfig(GenConfig genConfig) {
+        baseRecordClass.setGenConfig(genConfig);
+        managerClass.setGenConfig(genConfig);
+        baseManagerClass.setGenConfig(genConfig);
     }
 
     @Override

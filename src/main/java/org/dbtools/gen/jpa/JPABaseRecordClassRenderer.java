@@ -11,6 +11,7 @@
 package org.dbtools.gen.jpa;
 
 import org.dbtools.codegen.*;
+import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.ClassInfo;
 import org.dbtools.schema.schemafile.*;
 
@@ -31,12 +32,11 @@ public class JPABaseRecordClassRenderer {
     private StringBuilder toStringContent;
     private StringBuilder cleanupOrphansContent;
 
-    private boolean dateTimeSupport = false; // use joda datetime or jsr 310
-    private boolean injectionSupport = false;
     private boolean useInnerEnums = true;
 
     public static final String CLEANUP_ORPHANS_METHOD_NAME = "cleanupOrphans";
     boolean useBeanValidators = false;
+    private GenConfig genConfig;
 
     /**
      * Creates a new instance of JPABaseRecordClassRenderer
@@ -233,7 +233,7 @@ public class JPABaseRecordClassRenderer {
                     newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "TIMESTAMP"));
                 }
 
-                if (dateTimeSupport && newVariable.getDataType().endsWith("Date")) {
+                if (genConfig.isDateTimeSupport() && newVariable.getDataType().endsWith("Date")) {
                     newVariable.setGenerateSetterGetter(false);
 
                     String type = "org.joda.time.DateTime";
@@ -675,11 +675,7 @@ public class JPABaseRecordClassRenderer {
         }
     }
 
-    public void setDateTimeSupport(boolean dateTimeSupport) {
-        this.dateTimeSupport = dateTimeSupport;
-    }
-
-    public void setInjectionSupport(boolean injectionSupport) {
-        this.injectionSupport = injectionSupport;
+    public void setGenConfig(GenConfig genConfig) {
+        this.genConfig = genConfig;
     }
 }

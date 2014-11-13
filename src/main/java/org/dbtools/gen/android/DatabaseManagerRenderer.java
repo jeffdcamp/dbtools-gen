@@ -3,6 +3,7 @@ package org.dbtools.gen.android;
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaVariable;
+import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.DatabaseSchema;
 import org.dbtools.schema.schemafile.SchemaDatabase;
 import org.dbtools.util.JavaUtil;
@@ -21,9 +22,7 @@ public class DatabaseManagerRenderer {
 
     private String packageBase;
     private String outDir;
-    private boolean injectionSupport = false;
-    private boolean jsr305Support = false;
-    private boolean encryptionSupport = false; // use SQLCipher
+    private GenConfig genConfig;
 
     public void generate(DatabaseSchema databaseSchema) {
         System.out.println("Generating DatabaseManager...");
@@ -32,13 +31,13 @@ public class DatabaseManagerRenderer {
         myClass = new JavaClass(packageBase, className);
         myClass.setExtends("DatabaseBaseManager"); // extend the generated base class
         myClass.setCreateDefaultConstructor(false);
-        if (injectionSupport) {
+        if (genConfig.isInjectionSupport()) {
             myClass.addAnnotation("Singleton");
         }
         addImports();
 
         JavaVariable contextVariable = myClass.addVariable("Application", "application");
-        if (injectionSupport) {
+        if (genConfig.isInjectionSupport()) {
             contextVariable.setAccess(Access.DEFAULT_NONE);
             contextVariable.addAnnotation("Inject");
         } else {
@@ -104,7 +103,7 @@ public class DatabaseManagerRenderer {
         myClass.addImport("android.app.Application");
         myClass.addImport("org.dbtools.android.domain.AndroidDatabase");
 
-        if (injectionSupport) {
+        if (genConfig.isInjectionSupport()) {
             myClass.addImport("javax.inject.Inject");
             myClass.addImport("javax.inject.Singleton");
         }
@@ -118,15 +117,7 @@ public class DatabaseManagerRenderer {
         this.outDir = outDir;
     }
 
-    public void setInjectionSupport(boolean injectionSupport) {
-        this.injectionSupport = injectionSupport;
-    }
-
-    public void setJsr305Support(boolean jsr305Support) {
-        this.jsr305Support = jsr305Support;
-    }
-
-    public void setEncryptionSupport(boolean encryptionSupport) {
-        this.encryptionSupport = encryptionSupport;
+    public void setGenConfig(GenConfig genConfig) {
+        this.genConfig = genConfig;
     }
 }

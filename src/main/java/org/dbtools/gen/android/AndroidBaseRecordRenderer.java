@@ -10,6 +10,7 @@
 package org.dbtools.gen.android;
 
 import org.dbtools.codegen.*;
+import org.dbtools.gen.GenConfig;
 import org.dbtools.renderer.SchemaRenderer;
 import org.dbtools.renderer.SqliteRenderer;
 import org.dbtools.schema.ClassInfo;
@@ -35,9 +36,8 @@ public class AndroidBaseRecordRenderer {
     public static final String CLEANUP_ORPHANS_METHOD_NAME = "cleanupOrphans";
     private static final String ALL_KEYS_VAR_NAME = "ALL_KEYS";
 
-    private boolean dateTimeSupport = false; // use datetime or jsr 310
-
     public static final String PRIMARY_KEY_COLUMN = "PRIMARY_KEY_COLUMN";
+    private GenConfig genConfig;
 
     /**
      * Creates a new instance of AndroidBaseRecordRenderer.
@@ -178,11 +178,11 @@ public class AndroidBaseRecordRenderer {
                 if (field.isEnumeration()) {
                     value = newVariable.getName() + ".ordinal()";
                 } else if (fieldType == SchemaFieldType.DATE || fieldType == SchemaFieldType.TIMESTAMP || fieldType == SchemaFieldType.TIME) {
-                    if (!dateTimeSupport) {
-                        String methodName = dateTimeSupport ? "dateTimeToDBString" : "dateToDBString";
+                    if (!genConfig.isDateTimeSupport()) {
+                        String methodName = genConfig.isDateTimeSupport() ? "dateTimeToDBString" : "dateToDBString";
                         value = methodName + "(" + fieldNameJavaStyle + ")";
                     } else {
-                        String getTimeMethod = dateTimeSupport ? ".getMillis()" : ".getTime()";
+                        String getTimeMethod = genConfig.isDateTimeSupport() ? ".getMillis()" : ".getTime()";
 
                         value = fieldNameJavaStyle + " != null ? " + fieldNameJavaStyle + getTimeMethod + " : null";
                     }
@@ -371,13 +371,13 @@ public class AndroidBaseRecordRenderer {
         } else if (type == Date.class) {
             SchemaFieldType fieldType = field.getJdbcDataType();
             if (fieldType == SchemaFieldType.DATE) {
-                if (dateTimeSupport) {
+                if (genConfig.isDateTimeSupport()) {
                     return "dbStringToDateTime(values.getAsString(" + paramValue + "))";
                 } else {
                     return "dbStringToDate(values.getAsString(" + paramValue + "))";
                 }
             } else {
-                if (dateTimeSupport) {
+                if (genConfig.isDateTimeSupport()) {
                     return "new org.joda.time.DateTime(values.getAsLong(" + paramValue + "))";
                 } else {
                     return "new java.util.Date(values.getAsLong(" + paramValue + "))";
@@ -420,13 +420,13 @@ public class AndroidBaseRecordRenderer {
         } else if (type == Date.class) {
             SchemaFieldType fieldType = field.getJdbcDataType();
             if (fieldType == SchemaFieldType.DATE) {
-                if (dateTimeSupport) {
+                if (genConfig.isDateTimeSupport()) {
                     return "dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
                 } else {
                     return "dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
                 }
             } else {
-                if (dateTimeSupport) {
+                if (genConfig.isDateTimeSupport()) {
                     return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? new org.joda.time.DateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) : null";
                 } else {
                     return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? new java.util.Date(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) : null";
@@ -538,14 +538,14 @@ public class AndroidBaseRecordRenderer {
 //            getterMethod.setContent("return new " + typeText + "(" + newVariable.getName() + ");");
 //            myClass.addMethod(getterMethod);
 //        } else {
-        if (dateType && dateTimeSupport) {
+        if (dateType && genConfig.isDateTimeSupport()) {
             newVariable = new JavaVariable("org.joda.time.DateTime", fieldNameJavaStyle);
         } else {
             newVariable = new JavaVariable(typeText, fieldNameJavaStyle);
         }
 
         SchemaFieldType fieldType = field.getJdbcDataType();
-        boolean immutableDate = field.getJavaClassType() == Date.class && dateTimeSupport; // org.joda.time.DateTime IS immutable
+        boolean immutableDate = field.getJavaClassType() == Date.class && genConfig.isDateTimeSupport(); // org.joda.time.DateTime IS immutable
         if (!fieldType.isJavaTypePrimative() && !fieldType.isJavaTypeImmutable() && !immutableDate) {
             newVariable.setCloneSetterGetterVar(true);
         }
@@ -722,7 +722,7 @@ public class AndroidBaseRecordRenderer {
         }
     }
 
-    public void setDateTimeSupport(boolean dateTimeSupport) {
-        this.dateTimeSupport = dateTimeSupport;
+    public void setGenConfig(GenConfig genConfig) {
+        this.genConfig = genConfig;
     }
 }

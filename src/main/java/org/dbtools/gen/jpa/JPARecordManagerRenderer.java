@@ -12,6 +12,7 @@ package org.dbtools.gen.jpa;
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaVariable;
+import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.SchemaEntity;
 
 import java.text.SimpleDateFormat;
@@ -25,8 +26,7 @@ import java.util.List;
 public class JPARecordManagerRenderer {
 
     private JavaClass myClass;
-    private boolean injectionSupport = true;
-    private boolean javaeeSupport = false;
+    private GenConfig genConfig;
 
     /**
      * Creates a new instance of JPARecordManagerRenderer.
@@ -39,7 +39,7 @@ public class JPARecordManagerRenderer {
         myClass = new JavaClass(packageName, className);
         myClass.setExtends(JPABaseRecordManagerRenderer.getClassName(entity)); // extend the generated base class
 
-        if (javaeeSupport) {
+        if (genConfig.isJavaeeSupport()) {
             myClass.addImport("javax.inject.Named");
             myClass.addAnnotation("@Named");
         }
@@ -59,7 +59,7 @@ public class JPARecordManagerRenderer {
         // constructor
         myClass.setCreateDefaultConstructor(false);
 
-        if (!injectionSupport) {
+        if (!genConfig.isInjectionSupport()) {
             List<JavaVariable> constParams = new ArrayList<>();
             myClass.addImport("javax.persistence.EntityManager");
             constParams.add(new JavaVariable("EntityManager", "em"));
@@ -77,11 +77,7 @@ public class JPARecordManagerRenderer {
         myClass.writeToDisk(outDir);
     }
 
-    void setJavaeeSupport(boolean b) {
-        this.javaeeSupport = b;
-    }
-
-    public void setInjectionSupport(boolean injectionSupport) {
-        this.injectionSupport = injectionSupport;
+    public void setGenConfig(GenConfig genConfig) {
+        this.genConfig = genConfig;
     }
 }

@@ -12,6 +12,7 @@ package org.dbtools.gen.android;
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaVariable;
+import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.SchemaEntity;
 import org.dbtools.schema.schemafile.SchemaEntityType;
 import org.dbtools.schema.schemafile.SchemaField;
@@ -28,6 +29,7 @@ public class AndroidRecordRenderer {
     private static final String TAB = JavaClass.getTab();
 
     private JavaClass myClass;
+    private GenConfig genConfig;
 
     /**
      * Creates a new instance of AndroidRecordRenderer.
@@ -153,5 +155,9 @@ public class AndroidRecordRenderer {
 
     public void writeToFile(String directoryName) {
         myClass.writeToDisk(directoryName);
+    }
+
+    public void setGenConfig(GenConfig genConfig) {
+        this.genConfig = genConfig;
     }
 }
