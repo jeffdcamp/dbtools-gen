@@ -109,6 +109,8 @@ public class AndroidBaseManagerRenderer {
         addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getWritableDatabase", Arrays.asList(databaseNameParam), "return databaseManager.getWritableDatabase(databaseName);"));
         addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getWritableDatabase", null, "return databaseManager.getWritableDatabase(getDatabaseName());"));
 
+        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "org.dbtools.android.domain.AndroidDatabase", "getAndroidDatabase", Arrays.asList(databaseNameParam), "return databaseManager.getDatabase(databaseName);"));
+
         JavaVariable dbManagerVariable = myClass.addVariable("DatabaseManager", "databaseManager");
         dbManagerVariable.setAccess(Access.DEFAULT_NONE);
         dbManagerVariable.addAnnotation("javax.inject.Inject");
