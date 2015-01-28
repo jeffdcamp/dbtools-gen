@@ -57,16 +57,9 @@ public class DatabaseBaseManagerRenderer {
     private void addImports() {
         myClass.addImport("android.util.Log");
         myClass.addImport("org.dbtools.android.domain.AndroidDatabase");
-
-        if (!genConfig.isEncryptionSupport()) {
-            myClass.addImport("org.dbtools.android.domain.AndroidDatabaseManager");
-            myClass.addImport("android.database.sqlite.SQLiteDatabase");
-            myClass.addImport("org.dbtools.android.domain.AndroidBaseManager");
-        } else {
-            myClass.addImport("org.dbtools.android.domain.secure.AndroidDatabaseManager");
-            myClass.addImport("org.dbtools.android.domain.secure.AndroidBaseManager");
-            myClass.addImport("net.sqlcipher.database.SQLiteDatabase");
-        }
+        myClass.addImport("org.dbtools.android.domain.AndroidBaseManager");
+        myClass.addImport("org.dbtools.android.domain.AndroidDatabaseManager");
+        myClass.addImport("org.dbtools.android.domain.database.DatabaseWrapper");
     }
 
     private void createOnCreate(DatabaseSchema databaseSchema) {
@@ -100,11 +93,7 @@ public class DatabaseBaseManagerRenderer {
         content.append("}\n");
 
         StringBuilder createDatabaseContent = new StringBuilder();
-        if (!genConfig.isEncryptionSupport()) {
-            createDatabaseContent.append("SQLiteDatabase database = androidDatabase.getSqLiteDatabase();\n");
-        } else {
-            createDatabaseContent.append("SQLiteDatabase database = androidDatabase.getSecureSqLiteDatabase();\n");
-        }
+        createDatabaseContent.append("DatabaseWrapper database = androidDatabase.getDatabaseWrapper();\n");
         createDatabaseContent.append("database.beginTransaction();\n");
 
         // include database name in base package name
@@ -180,11 +169,7 @@ public class DatabaseBaseManagerRenderer {
 
         StringBuilder createDatabaseViewsContent = new StringBuilder();
 
-        if (!genConfig.isEncryptionSupport()) {
-            createDatabaseViewsContent.append("SQLiteDatabase database = androidDatabase.getSqLiteDatabase();\n");
-        } else {
-            createDatabaseViewsContent.append("SQLiteDatabase database = androidDatabase.getSecureSqLiteDatabase();\n");
-        }
+        createDatabaseViewsContent.append("DatabaseWrapper database = androidDatabase.getDatabaseWrapper();\n");
         createDatabaseViewsContent.append("database.beginTransaction();\n");
 
         // include database name in base package name
@@ -222,11 +207,7 @@ public class DatabaseBaseManagerRenderer {
         content.append("}\n");
 
         StringBuilder createDatabaseViewsContent = new StringBuilder();
-        if (!genConfig.isEncryptionSupport()) {
-            createDatabaseViewsContent.append("SQLiteDatabase database = androidDatabase.getSqLiteDatabase();\n");
-        } else {
-            createDatabaseViewsContent.append("SQLiteDatabase database = androidDatabase.getSecureSqLiteDatabase();\n");
-        }
+        createDatabaseViewsContent.append("DatabaseWrapper database = androidDatabase.getDatabaseWrapper();\n");
         createDatabaseViewsContent.append("database.beginTransaction();\n");
 
         // include database name in base package name

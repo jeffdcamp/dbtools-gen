@@ -3,7 +3,6 @@ package org.dbtools.gen;
 public class GenConfig {
     private boolean injectionSupport;
     private boolean jsr305Support; // @Nullable / @Nonnull
-    private boolean encryptionSupport;
     private boolean dateTimeSupport;
     private boolean javaeeSupport;
     private boolean includeDatabaseNameInPackage;
@@ -14,14 +13,12 @@ public class GenConfig {
 
     public GenConfig(boolean injectionSupport,
                      boolean jsr305Support,
-                     boolean encryptionSupport,
                      boolean dateTimeSupport,
                      boolean javaeeSupport,
                      boolean includeDatabaseNameInPackage,
                      boolean ottoSupport) {
         this.injectionSupport = injectionSupport;
         this.jsr305Support = jsr305Support;
-        this.encryptionSupport = encryptionSupport;
         this.dateTimeSupport = dateTimeSupport;
         this.javaeeSupport = javaeeSupport;
         this.includeDatabaseNameInPackage = includeDatabaseNameInPackage;
@@ -42,14 +39,6 @@ public class GenConfig {
 
     public void setJsr305Support(boolean jsr305Support) {
         this.jsr305Support = jsr305Support;
-    }
-
-    public boolean isEncryptionSupport() {
-        return encryptionSupport;
-    }
-
-    public void setEncryptionSupport(boolean encryptionSupport) {
-        this.encryptionSupport = encryptionSupport;
     }
 
     public boolean isDateTimeSupport() {

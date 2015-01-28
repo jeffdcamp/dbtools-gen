@@ -56,11 +56,7 @@ public class AndroidBaseManagerRenderer {
         // constructor
         myClass.setCreateDefaultConstructor(true);
 
-        if (!genConfig.isEncryptionSupport()) {
-            myClass.addImport("org.dbtools.android.domain.AndroidBaseManager");
-        } else {
-            myClass.addImport("org.dbtools.android.domain.secure.AndroidBaseManager");
-        }
+        myClass.addImport("org.dbtools.android.domain.AndroidBaseManager");
 
         // both inject and non-inject must use the passed in db for database updates
         if (genConfig.isInjectionSupport()) {
@@ -88,6 +84,8 @@ public class AndroidBaseManagerRenderer {
         }
 
         myClass.addImport(databaseManagerPackage + ".DatabaseManager");
+        myClass.addImport("org.dbtools.android.domain.database.DatabaseWrapper");
+
         myClass.setExtends("AndroidBaseManager<" + recordClassName + ">");
         addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getDatabaseName", "return " + recordClassName + ".DATABASE;"));
         addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, recordClassName, "newRecord", "return new " + recordClassName + "();"));
@@ -103,11 +101,11 @@ public class AndroidBaseManagerRenderer {
             databaseNameParam.addAnnotation(AnnotationConsts.NONNULL);
         }
 
-        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getReadableDatabase", Arrays.asList(databaseNameParam), "return databaseManager.getReadableDatabase(databaseName);"));
-        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getReadableDatabase", null, "return databaseManager.getReadableDatabase(getDatabaseName());"));
+        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "DatabaseWrapper", "getReadableDatabase", Arrays.asList(databaseNameParam), "return databaseManager.getReadableDatabase(databaseName);"));
+        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "DatabaseWrapper", "getReadableDatabase", null, "return databaseManager.getReadableDatabase(getDatabaseName());"));
 
-        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getWritableDatabase", Arrays.asList(databaseNameParam), "return databaseManager.getWritableDatabase(databaseName);"));
-        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "SQLiteDatabase", "getWritableDatabase", null, "return databaseManager.getWritableDatabase(getDatabaseName());"));
+        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "DatabaseWrapper", "getWritableDatabase", Arrays.asList(databaseNameParam), "return databaseManager.getWritableDatabase(databaseName);"));
+        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "DatabaseWrapper", "getWritableDatabase", null, "return databaseManager.getWritableDatabase(getDatabaseName());"));
 
         addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "org.dbtools.android.domain.AndroidDatabase", "getAndroidDatabase", Arrays.asList(databaseNameParam), "return databaseManager.getDatabase(databaseName);"));
 
@@ -138,12 +136,6 @@ public class AndroidBaseManagerRenderer {
                 break;
         }
 
-        if (!genConfig.isEncryptionSupport()) {
-            myClass.addImport("android.database.sqlite.SQLiteDatabase");
-        } else {
-            myClass.addImport("net.sqlcipher.database.SQLiteDatabase");
-        }
-
         // keep save from being called
         if (entity.getType() == SchemaEntityType.VIEW || entity.getType() == SchemaEntityType.QUERY) {
             List<JavaVariable> params = new ArrayList<>();
@@ -172,13 +164,13 @@ public class AndroidBaseManagerRenderer {
         myClass.addImport("android.database.Cursor");
 
         String dbParam = "db, ";
-        myClass.addImport("android.database.sqlite.SQLiteDatabase"); // removed to allow easier swapping out of SQLiteDatabase
+        myClass.addImport("org.dbtools.android.domain.database.DatabaseWrapper");
         List<JavaVariable> sqliteParams = new ArrayList<>();
-        sqliteParams.add(new JavaVariable("SQLiteDatabase", "db"));
+        sqliteParams.add(new JavaVariable("DatabaseWrapper", "db"));
 
         if (entity.getType() == SchemaEntityType.TABLE) {
             List<JavaVariable> crudParams = new ArrayList<>();
-            crudParams.add(new JavaVariable("SQLiteDatabase", "db"));
+            crudParams.add(new JavaVariable("DatabaseWrapper", "db"));
             crudParams.add(new JavaVariable(recordClassName, "record"));
             myClass.addMethod(Access.PUBLIC, "boolean", "save", crudParams, "return " + baseManagerCall + "save(db, record);").setStatic(!genConfig.isInjectionSupport());
             myClass.addMethod(Access.PUBLIC, "long", "insert", crudParams, "return " + baseManagerCall + "insert(db, record);").setStatic(!genConfig.isInjectionSupport());
@@ -187,14 +179,14 @@ public class AndroidBaseManagerRenderer {
 
             // UPDATE
             List<JavaVariable> updateParams3 = new ArrayList<>();
-            updateParams3.add(new JavaVariable("SQLiteDatabase", "db"));
+            updateParams3.add(new JavaVariable("DatabaseWrapper", "db"));
             updateParams3.add(new JavaVariable("ContentValues", "values"));
             updateParams3.add(new JavaVariable("long", "rowId"));
             myClass.addMethod(Access.PUBLIC, "int", "update", updateParams3,
                     "return " + baseManagerCall + "update(" + dbParam + recordClassName + ".TABLE, values, " + recordClassName + "." + AndroidBaseRecordRenderer.PRIMARY_KEY_COLUMN + ", rowId);").setStatic(!genConfig.isInjectionSupport());
 
             List<JavaVariable> updateParams4 = new ArrayList<>();
-            updateParams4.add(new JavaVariable("SQLiteDatabase", "db"));
+            updateParams4.add(new JavaVariable("DatabaseWrapper", "db"));
             updateParams4.add(new JavaVariable("ContentValues", "values"));
             updateParams4.add(new JavaVariable("String", "where"));
             updateParams4.add(new JavaVariable("String[]", "whereArgs"));
@@ -203,13 +195,13 @@ public class AndroidBaseManagerRenderer {
 
             // DELETE
             List<JavaVariable> deleteParams2 = new ArrayList<>();
-            deleteParams2.add(new JavaVariable("SQLiteDatabase", "db"));
+            deleteParams2.add(new JavaVariable("DatabaseWrapper", "db"));
             deleteParams2.add(new JavaVariable("long", "rowId"));
             myClass.addMethod(Access.PUBLIC, "long", "delete", deleteParams2,
                     "return " + baseManagerCall + "delete(" + dbParam + recordClassName + ".TABLE, " + recordClassName + "." + AndroidBaseRecordRenderer.PRIMARY_KEY_COLUMN + ", rowId);").setStatic(!genConfig.isInjectionSupport());
 
             List<JavaVariable> deleteParams3 = new ArrayList<>();
-            deleteParams3.add(new JavaVariable("SQLiteDatabase", "db"));
+            deleteParams3.add(new JavaVariable("DatabaseWrapper", "db"));
             deleteParams3.add(new JavaVariable("String", "where"));
             deleteParams3.add(new JavaVariable("String[]", "whereArgs"));
             myClass.addMethod(Access.PUBLIC, "long", "delete", deleteParams3,
@@ -221,7 +213,7 @@ public class AndroidBaseManagerRenderer {
             String findCursorByRowIdContent = "return findCursorBySelection(" + dbParam + selectionByRowId + ", null);";
 
             List<JavaVariable> findByRowIdParams = new ArrayList<>();
-            findByRowIdParams.add(new JavaVariable("SQLiteDatabase", "db"));
+            findByRowIdParams.add(new JavaVariable("DatabaseWrapper", "db"));
             findByRowIdParams.add(new JavaVariable("long", "rowId"));
             myClass.addMethod(Access.PUBLIC, "Cursor", "findCursorByRowId", findByRowIdParams, findCursorByRowIdContent).setStatic(!genConfig.isInjectionSupport());
 
@@ -229,7 +221,7 @@ public class AndroidBaseManagerRenderer {
             String findObjectByRowIdContent = "return findBySelection(" + dbParam + selectionByRowId + ", null);\n";
 
             List<JavaVariable> findParams3 = new ArrayList<>();
-            findParams3.add(new JavaVariable("SQLiteDatabase", "db"));
+            findParams3.add(new JavaVariable("DatabaseWrapper", "db"));
             findParams3.add(new JavaVariable("long", "rowId"));
             myClass.addMethod(Access.PUBLIC, recordClassName, "findByRowId", findParams3, findObjectByRowIdContent).setStatic(!genConfig.isInjectionSupport());
 
@@ -261,7 +253,7 @@ public class AndroidBaseManagerRenderer {
         findCursorBySelectionContent += "return null;\n";
 
         List<JavaVariable> findParams = new ArrayList<>();
-        findParams.add(new JavaVariable("SQLiteDatabase", "db"));
+        findParams.add(new JavaVariable("DatabaseWrapper", "db"));
         findParams.add(new JavaVariable("String", "selection"));
         findParams.add(new JavaVariable("String", "orderBy"));
         myClass.addMethod(Access.PUBLIC, "Cursor", "findCursorBySelection", findParams, findCursorBySelectionContent).setStatic(!genConfig.isInjectionSupport());
@@ -278,14 +270,14 @@ public class AndroidBaseManagerRenderer {
         findObjectBySelectionContent += "}\n";
 
         List<JavaVariable> findParams2 = new ArrayList<>();
-        findParams2.add(new JavaVariable("SQLiteDatabase", "db"));
+        findParams2.add(new JavaVariable("DatabaseWrapper", "db"));
         findParams2.add(new JavaVariable("String", "selection"));
         findParams2.add(new JavaVariable("String", "orderBy"));
         myClass.addMethod(Access.PUBLIC, recordClassName, "findBySelection", findParams2, findObjectBySelectionContent).setStatic(!genConfig.isInjectionSupport());
 
         // FIND Object by selection
         List<JavaVariable> findBySelectionParams = new ArrayList<>();
-        findBySelectionParams.add(new JavaVariable("SQLiteDatabase", "db"));
+        findBySelectionParams.add(new JavaVariable("DatabaseWrapper", "db"));
         findBySelectionParams.add(new JavaVariable("String", "selection"));
         myClass.addMethod(Access.PUBLIC, recordClassName, "findBySelection", findBySelectionParams, "return findBySelection(db, selection, null);").setStatic(!genConfig.isInjectionSupport());
 
@@ -305,14 +297,14 @@ public class AndroidBaseManagerRenderer {
         findAllObjectBySelectionContent += "return foundItems;\n";
 
         List<JavaVariable> findAllParams = new ArrayList<>();
-        findAllParams.add(new JavaVariable("SQLiteDatabase", "db"));
+        findAllParams.add(new JavaVariable("DatabaseWrapper", "db"));
         findAllParams.add(new JavaVariable("String", "selection"));
         findAllParams.add(new JavaVariable("String", "orderBy"));
         myClass.addMethod(Access.PUBLIC, "List<" + recordClassName + ">", "findAllBySelection", findAllParams, findAllObjectBySelectionContent).setStatic(!genConfig.isInjectionSupport());
 
         // FIND All Object by selection
         List<JavaVariable> findAllNoOrderByParams = new ArrayList<>();
-        findAllNoOrderByParams.add(new JavaVariable("SQLiteDatabase", "db"));
+        findAllNoOrderByParams.add(new JavaVariable("DatabaseWrapper", "db"));
         findAllNoOrderByParams.add(new JavaVariable("String", "selection"));
         myClass.addMethod(Access.PUBLIC, "List<" + recordClassName + ">", "findAllBySelection", findAllNoOrderByParams, "return findAllBySelection(" + dbParam + "selection, null);").setStatic(!genConfig.isInjectionSupport());
 
@@ -329,7 +321,7 @@ public class AndroidBaseManagerRenderer {
         findCountContent += "return count;";
 
         List<JavaVariable> findCountParams2 = new ArrayList<>();
-        findCountParams2.add(new JavaVariable("SQLiteDatabase", "db"));
+        findCountParams2.add(new JavaVariable("DatabaseWrapper", "db"));
         myClass.addMethod(Access.PUBLIC, "long", "findCount", findCountParams2, findCountContent);
     }
 

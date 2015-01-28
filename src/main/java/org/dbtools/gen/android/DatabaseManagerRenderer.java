@@ -45,6 +45,7 @@ public class DatabaseManagerRenderer {
         }
 
         createIdentifyDatabases(databaseSchema);
+        createCreateNewDatabaseWrapper();
         createOnUpgrade();
         createOnUpgradeViews();
 
@@ -66,6 +67,14 @@ public class DatabaseManagerRenderer {
         }
 
         myClass.addMethod(Access.PUBLIC, "void", "identifyDatabases", content.toString());
+    }
+
+    private void createCreateNewDatabaseWrapper() {
+        myClass.addImport("org.dbtools.android.domain.database.DatabaseWrapper");
+        myClass.addImport("org.dbtools.android.domain.database.AndroidDatabaseWrapper");
+
+        List<JavaVariable> params = Arrays.asList(new JavaVariable("AndroidDatabase", "androidDatabase"));
+        myClass.addMethod(Access.PUBLIC, "DatabaseWrapper", "createNewDatabaseWrapper", params, "return new AndroidDatabaseWrapper(androidDatabase.getPath());");
     }
 
     private void createOnUpgrade() {
