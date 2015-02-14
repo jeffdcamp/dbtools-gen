@@ -25,7 +25,7 @@ public class JPADBObjectBuilder implements DBObjectBuilder {
 
     private JPABaseRecordManagerRenderer baseManagerClass = new JPABaseRecordManagerRenderer();
     private JPARecordManagerRenderer managerClass = new JPARecordManagerRenderer();
-    private JPABaseRecordClassRenderer baseRecordClass = new JPABaseRecordClassRenderer();
+    private JPABaseRecordRenderer baseRecordClass = new JPABaseRecordRenderer();
     private JPARecordClassRenderer recordClass = new JPARecordClassRenderer();
     private int filesGeneratedCount = 0;
     private List<String> filesGenerated = new ArrayList<>();
@@ -80,7 +80,7 @@ public class JPADBObjectBuilder implements DBObjectBuilder {
         }
 
         // Entities
-        String baseRecordFileName = outDir + JPABaseRecordClassRenderer.createClassName(table) + ".java";
+        String baseRecordFileName = outDir + JPABaseRecordRenderer.createClassName(table) + ".java";
         String recordFileName = outDir + JPARecordClassRenderer.createClassName(table) + ".java";
         File baseRecordFile = new File(baseRecordFileName);
         File recordFile = new File(recordFileName);

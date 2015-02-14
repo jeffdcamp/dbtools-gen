@@ -23,7 +23,10 @@ import java.util.List;
 /**
  * @author Jeff
  */
-public class JPABaseRecordClassRenderer {
+public class JPABaseRecordRenderer {
+
+    public static final String CLEANUP_ORPHANS_METHOD_NAME = "cleanupOrphans";
+    public static final String PRIMARY_KEY_COLUMN = "PRIMARY_KEY_COLUMN";
 
     private JavaClass myClass;
 
@@ -34,14 +37,13 @@ public class JPABaseRecordClassRenderer {
 
     private boolean useInnerEnums = true;
 
-    public static final String CLEANUP_ORPHANS_METHOD_NAME = "cleanupOrphans";
-    boolean useBeanValidators = false;
+    private boolean useBeanValidators = false;
     private GenConfig genConfig;
 
     /**
      * Creates a new instance of JPABaseRecordClassRenderer
      */
-    public JPABaseRecordClassRenderer() {
+    public JPABaseRecordRenderer() {
     }
 
     public void generate(SchemaDatabase schemaDatabase, SchemaEntity entity, String packageName) {
@@ -87,6 +89,8 @@ public class JPABaseRecordClassRenderer {
             }
         } else {
             myClass = new JavaClass(packageName, className);
+            myClass.addImport("org.dbtools.jpa.domain.JPABaseRecord");
+            myClass.setExtends("JPABaseRecord");
         }
 
         // prep
@@ -128,6 +132,8 @@ public class JPABaseRecordClassRenderer {
         for (SchemaField field : fields) {
             boolean primaryKey = field.isPrimaryKey();
 
+            String fieldName = field.getName();
+
             String fieldNameJavaStyle = field.getName(true);
 
             // check for second primary key
@@ -139,8 +145,14 @@ public class JPABaseRecordClassRenderer {
 
             // constants
             String constName = JavaClass.formatConstant(fieldNameJavaStyle);
-            myClass.addConstant("String", "C_" + constName, field.getName());
-            myClass.addConstant("String", "FULL_C_" + constName, tableName + "." + field.getName());
+            String fieldKey = "C_" + constName;
+
+            if (primaryKey) {
+                myClass.addConstant("String", PRIMARY_KEY_COLUMN, fieldName); // add a reference to this column
+            }
+
+            myClass.addConstant("String", fieldKey, fieldName);
+            myClass.addConstant("String", "FULL_C_" + constName, tableName + "." + fieldName);
 
             String propertyName = "P_" + constName;
             // P_ is set in the following switch statement
@@ -172,6 +184,8 @@ public class JPABaseRecordClassRenderer {
 
             // add primary key JPA annotations and default functions
             if (primaryKey && !myClass.isEnum()) {
+                myClass.addMethod(Access.PUBLIC, "String", "getIdColumnName", "return " + fieldKey + ";").addAnnotation("Override");
+
                 // add vanilla getID() for the primary key
                 addFieldVariableAnnotations(field, fieldNameJavaStyle, newVariable);
             }
@@ -181,7 +195,7 @@ public class JPABaseRecordClassRenderer {
             SchemaFieldType fieldType = field.getJdbcDataType();
             if (!myClass.isEnum()) {
                 myClass.addImport("javax.persistence.Column");
-                String columnAnnotation = "@Column(name=\"" + field.getName() + "\"";
+                String columnAnnotation = "@Column(name=\"" + fieldName + "\"";
 
                 if (fieldType == SchemaFieldType.BLOB || fieldType == SchemaFieldType.CLOB) {
                     myClass.addImport("javax.persistence.Basic");
@@ -265,7 +279,7 @@ public class JPABaseRecordClassRenderer {
         if (!myClass.isEnum()) {
             List<JavaVariable> orphanParams = new ArrayList<>();
             orphanParams.add(new JavaVariable("javax.persistence.EntityManager", "em"));
-            myClass.addMethod(Access.PROTECTED, "void", CLEANUP_ORPHANS_METHOD_NAME, orphanParams, cleanupOrphansContent.toString());
+            myClass.addMethod(Access.PUBLIC, "void", CLEANUP_ORPHANS_METHOD_NAME, orphanParams, cleanupOrphansContent.toString());
         }
 
         if (!myClass.isEnum()) {

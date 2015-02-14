@@ -29,7 +29,7 @@ public class JPARecordClassRenderer {
     }
 
     public void generate(SchemaEntity entity, String packageName) {
-        String baseClassName = JPABaseRecordClassRenderer.createClassName(entity);
+        String baseClassName = JPABaseRecordRenderer.createClassName(entity);
         String className = createClassName(entity);
         myClass = new JavaClass(packageName, className);
         myClass.setExtends(baseClassName);

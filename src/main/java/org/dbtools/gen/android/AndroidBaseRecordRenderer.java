@@ -27,16 +27,15 @@ import java.util.List;
  */
 public class AndroidBaseRecordRenderer {
     private static final String TAB = JavaClass.getTab();
+    private static final String CLEANUP_ORPHANS_METHOD_NAME = "cleanupOrphans";
+    private static final String ALL_KEYS_VAR_NAME = "ALL_KEYS";
+    public static final String PRIMARY_KEY_COLUMN = "PRIMARY_KEY_COLUMN";
 
     private JavaClass myClass;
     private List<JavaEnum> enumerationClasses = new ArrayList<>();
     private StringBuilder toStringContent;
     private StringBuilder cleanupOrphansContent;
     private boolean useInnerEnums = true;
-    public static final String CLEANUP_ORPHANS_METHOD_NAME = "cleanupOrphans";
-    private static final String ALL_KEYS_VAR_NAME = "ALL_KEYS";
-
-    public static final String PRIMARY_KEY_COLUMN = "PRIMARY_KEY_COLUMN";
     private GenConfig genConfig;
 
     /**

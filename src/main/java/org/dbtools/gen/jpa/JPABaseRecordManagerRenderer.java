@@ -12,12 +12,8 @@ package org.dbtools.gen.jpa;
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaMethod;
-import org.dbtools.codegen.JavaVariable;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.SchemaEntity;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Jeff
@@ -39,6 +35,9 @@ public class JPABaseRecordManagerRenderer {
         String className = getClassName(entity);
         myClass = new JavaClass(packageName, className);
 
+        myClass.addImport("org.dbtools.jpa.domain.JPABaseManager");
+        myClass.setExtends("JPABaseManager<" + recordClassName + ">");
+
         // header comment
         // Do not place date in file because it will cause a new check-in to scm        
         String fileHeaderComment;
@@ -54,84 +53,10 @@ public class JPABaseRecordManagerRenderer {
         // Since this is generated code.... suppress all warnings
         myClass.addAnnotation("@SuppressWarnings(\"all\")");
 
-        if (!genConfig.isInjectionSupport()) {
-            // constructor
-            myClass.setCreateDefaultConstructor(false);
-            myClass.addConstructor(Access.PRIVATE, null, null);
-
-            List<JavaVariable> constParams = new ArrayList<>();
-            constParams.add(new JavaVariable("EntityManager", "em"));
-            String constContent = "";
-            constContent += "if (em == null) {\n";
-            constContent += TAB + "throw new IllegalArgumentException(\"EntityManager parameter cannot be null\");\n";
-            constContent += "}\n";
-            constContent += "this.entityManager = em;";
-            myClass.addConstructor(Access.PUBLIC, constParams, constContent);
-
-            // singleton factory
-            String managerClassName = JPARecordClassRenderer.createClassName(entity) + "Manager";
-            JavaVariable managerFactoryVar = myClass.addVariable(managerClassName, "manager");
-            managerFactoryVar.setStatic(true);
-            managerFactoryVar.setVolatile(true);
-            managerFactoryVar.setGenerateSetter(true);  // for Mock Unit testing
-
-            String factoryMethodContet = "";
-            factoryMethodContet += "if (manager == null) {\n";
-            factoryMethodContet += TAB + "manager = new " + managerClassName + "(em);\n";
-            factoryMethodContet += "}\n\n";
-            factoryMethodContet += "manager.setEntityManager(em);\n";
-            factoryMethodContet += "\n";
-            factoryMethodContet += "return manager;\n";
-
-
-            List<JavaVariable> factoryParams = new ArrayList<>();
-            factoryParams.add(new JavaVariable("EntityManager", "em"));
-            JavaMethod factoryMethod = myClass.addMethod(Access.PUBLIC, managerClassName, "get" + managerClassName, factoryParams, factoryMethodContet);
-            factoryMethod.setStatic(true);
-        }
-
-
-        // variables
-        myClass.addImport("javax.persistence.EntityManager");
-        JavaVariable emVar = myClass.addVariable("EntityManager", "entityManager", true);
-        emVar.addAnnotation("@javax.persistence.PersistenceContext");
-
-
-        String recordVarParamName = "record";
-        List<JavaVariable> recordClassOnlyParam = new ArrayList<>();
-        recordClassOnlyParam.add(new JavaVariable(recordClassName, recordVarParamName));
-
-        JavaMethod createMethod = myClass.addMethod(Access.PUBLIC, "void", "create", recordClassOnlyParam, "entityManager.persist(" + recordVarParamName + ");");
-        addJavaEESupport(createMethod);
-
-        String updateContent = recordClassName + " mergedRecord = entityManager.merge(" + recordVarParamName + ");\n"
-                + "mergedRecord." + JPABaseRecordClassRenderer.CLEANUP_ORPHANS_METHOD_NAME + "(entityManager);  // work-around till CascadeType.DELETE-ORPHAN is supported\n";
-        JavaMethod updateMethod = myClass.addMethod(Access.PUBLIC, "void", "update", recordClassOnlyParam, updateContent);
-        addJavaEESupport(updateMethod);
-
-        String deleteContent = recordClassName + " mergedRecord = entityManager.merge(" + recordVarParamName + ");\n"
-                + "mergedRecord." + JPABaseRecordClassRenderer.CLEANUP_ORPHANS_METHOD_NAME + "(entityManager);  // work-around till CascadeType.DELETE-ORPHAN is supported\n"
-                + "entityManager.remove(mergedRecord);\n";
-
-        JavaMethod deleteMethod = myClass.addMethod(Access.PUBLIC, "void", "delete", recordClassOnlyParam, deleteContent);
-        addJavaEESupport(deleteMethod);
-
-        String saveContent = "if (" + recordVarParamName + ".isNewRecord()) {\n"
-                + TAB + "create(" + recordVarParamName + ");\n"
-                + "} else {\n"
-                + TAB + "update(" + recordVarParamName + ");\n"
-                + "}\n";
-
-        JavaMethod saveMethod = myClass.addMethod(Access.PUBLIC, "void", "save", recordClassOnlyParam, saveContent);
-        addJavaEESupport(saveMethod);
-
-        List<JavaVariable> findParams = new ArrayList<>();
-        findParams.add(new JavaVariable("Object", "pk"));
-        myClass.addMethod(Access.PUBLIC, recordClassName, "find", findParams, "return (" + recordClassName + ") entityManager.find(" + recordClassName + ".class, pk);");
-
-        addFindAllMethod(myClass, recordClassName);
-        addFindCountMethod(myClass, recordClassName);
-        addDeleteAllMethod(myClass, recordClassName);
+        myClass.addMethod(Access.PUBLIC, "Class", "getRecordClass", "return " + recordClassName + ".class;");
+        myClass.addMethod(Access.PUBLIC, "String", "getTableName", "return " + recordClassName + ".TABLE;");
+        myClass.addMethod(Access.PUBLIC, "String", "getTableClassName", "return " + recordClassName + ".TABLE_CLASSNAME;");
+        myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return " + recordClassName + ".PRIMARY_KEY_COLUMN;");
     }
 
     public void addFindCountMethod(JavaClass myClass, String recordClassName) {
