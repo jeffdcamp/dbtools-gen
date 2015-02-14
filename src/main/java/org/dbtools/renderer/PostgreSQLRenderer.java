@@ -12,7 +12,6 @@ package org.dbtools.renderer;
 import org.dbtools.schema.ForeignKey;
 import org.dbtools.schema.schemafile.*;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,11 +26,6 @@ public class PostgreSQLRenderer extends SchemaRenderer {
 
     public PostgreSQLRenderer() {
         super();
-        this.setDbVendorName(RENDERER_NAME);
-    }
-
-    public PostgreSQLRenderer(PrintStream ps) {
-        super(ps);
         this.setDbVendorName(RENDERER_NAME);
     }
 

@@ -16,7 +16,6 @@ package org.dbtools.renderer;
 import org.dbtools.schema.ForeignKey;
 import org.dbtools.schema.schemafile.*;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -31,11 +30,6 @@ public class FireBirdRenderer extends SchemaRenderer {
 
     public FireBirdRenderer() {
         super();
-        this.setDbVendorName(RENDERER_NAME);
-    }
-
-    public FireBirdRenderer(PrintStream ps) {
-        super(ps);
         this.setDbVendorName(RENDERER_NAME);
     }
 

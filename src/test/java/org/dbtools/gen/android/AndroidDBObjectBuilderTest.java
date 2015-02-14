@@ -9,7 +9,7 @@ public class AndroidDBObjectBuilderTest {
         String userDir = System.getProperty("user.dir");
 
         String schemaFilename = userDir + "/src/main/resources/org/dbtools/xml/schema.xml";
-        boolean injectionSupport = true; // support for CDI (Guice)
+        boolean injectionSupport = true; // support for CDI (Dagger, Guice, etc)
         boolean dateTimeSupport = true; // support for jsr DateTime (Joda Time)
         String baseOutputDir = userDir + "/target/test-src/src/main/java/org/mycompany/domain";
         String basePackageName = "org.mycompany.domain";
@@ -17,7 +17,8 @@ public class AndroidDBObjectBuilderTest {
         GenConfig genConfig = new GenConfig();
         genConfig.setInjectionSupport(injectionSupport);
         genConfig.setDateTimeSupport(dateTimeSupport);
-        AndroidObjectsBuilder.buildAll(schemaFilename, baseOutputDir, basePackageName, genConfig);
-    }
 
+        AndroidObjectsBuilder objectsBuilder = new AndroidObjectsBuilder();
+        objectsBuilder.buildAll(schemaFilename, baseOutputDir, basePackageName, genConfig);
+    }
 }

@@ -67,18 +67,7 @@ public class SchemaRenderer implements Runnable {
         dbRenderers.put(Oracle9Renderer.RENDERER_NAME, Oracle9Renderer.class.getName());
     }
 
-    /**
-     * Creates a new instance of SchemaRenderer
-     */
     public SchemaRenderer() {
-        setDefaults();
-    }
-
-    /**
-     * Creates a new instance of SchemaRenderer
-     */
-    public SchemaRenderer(PrintStream ps) {
-        this.ps = ps;
         setDefaults();
     }
 

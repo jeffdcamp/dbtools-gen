@@ -15,15 +15,14 @@ public class AndroidObjectsBuilder extends DBObjectsBuilder {
         return new AndroidDBObjectBuilder();
     }
 
-    public static void buildAll(String schemaFilename, String baseOutputDir, String basePackageName, GenConfig genConfig) {
-        DBObjectsBuilder builder = new AndroidObjectsBuilder();
-        builder.setXmlFilename(schemaFilename);
-        builder.setOutputBaseDir(baseOutputDir);
-        builder.setPackageBase(basePackageName);
-        builder.setGenConfig(genConfig);
+    public void buildAll(String schemaFilename, String baseOutputDir, String basePackageName, GenConfig genConfig) {
+        setXmlFilename(schemaFilename);
+        setOutputBaseDir(baseOutputDir);
+        setPackageBase(basePackageName);
+        setGenConfig(genConfig);
 
-        builder.build();
-        System.out.println("Generated [" + builder.getObjectBuilder().getNumberFilesGenerated() + "] files.");
+        build();
+        System.out.println("Generated [" + getObjectBuilder().getNumberFilesGenerated() + "] files.");
     }
 
     @Override

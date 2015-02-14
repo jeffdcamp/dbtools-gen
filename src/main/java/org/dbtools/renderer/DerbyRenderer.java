@@ -16,7 +16,6 @@ package org.dbtools.renderer;
 import org.dbtools.schema.ForeignKey;
 import org.dbtools.schema.schemafile.*;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -31,11 +30,6 @@ public class DerbyRenderer extends SchemaRenderer {
 
     public DerbyRenderer() {
         super();
-        this.setDbVendorName(RENDERER_NAME);
-    }
-
-    public DerbyRenderer(PrintStream ps) {
-        super(ps);
         this.setDbVendorName(RENDERER_NAME);
     }
 

@@ -12,8 +12,10 @@ package org.dbtools.renderer;
 import org.dbtools.schema.ForeignKey;
 import org.dbtools.schema.schemafile.*;
 
-import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Jeff Campbell
@@ -25,11 +27,6 @@ public class Oracle9Renderer extends SchemaRenderer {
 
     public Oracle9Renderer() {
         super();
-        this.setDbVendorName(RENDERER_NAME);
-    }
-
-    public Oracle9Renderer(PrintStream ps) {
-        super(ps);
         this.setDbVendorName(RENDERER_NAME);
     }
 

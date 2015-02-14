@@ -16,7 +16,6 @@ package org.dbtools.renderer;
 import org.dbtools.schema.dbmappings.DatabaseMapping;
 import org.dbtools.schema.schemafile.*;
 
-import java.io.PrintStream;
 import java.util.*;
 
 /**
@@ -28,11 +27,6 @@ public class SqliteRenderer extends SchemaRenderer {
 
     public SqliteRenderer() {
         super();
-        this.setDbVendorName(RENDERER_NAME);
-    }
-
-    public SqliteRenderer(PrintStream ps) {
-        super(ps);
         this.setDbVendorName(RENDERER_NAME);
     }
 

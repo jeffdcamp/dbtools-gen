@@ -12,7 +12,6 @@ package org.dbtools.renderer;
 import org.dbtools.schema.ForeignKey;
 import org.dbtools.schema.schemafile.*;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,11 +25,6 @@ public class MySQLRenderer extends SchemaRenderer {
 
     public MySQLRenderer() {
         super();
-        this.setDbVendorName(RENDERER_NAME);
-    }
-
-    public MySQLRenderer(PrintStream ps) {
-        super(ps);
         this.setDbVendorName(RENDERER_NAME);
     }
 

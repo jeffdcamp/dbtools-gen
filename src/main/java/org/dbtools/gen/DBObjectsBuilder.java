@@ -16,8 +16,6 @@ import org.dbtools.util.JavaUtil;
 import org.dbtools.util.PackageUtil;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -38,7 +36,7 @@ public abstract class DBObjectsBuilder {
 
     public abstract DBObjectBuilder getObjectBuilder();
 
-    int numberFilesGenerated;
+    private int numberFilesGenerated;
 
     /**
      * Creates a new instance of DBObjectsBuilder
@@ -210,7 +208,7 @@ public abstract class DBObjectsBuilder {
     private void scanXMLFile() {
         File xmlFile = getXmlFile();
         if (xmlFile != null) {
-            saveXsdFileToSchemaDir();
+            DBToolsFiles.copyXsdFileToSchemaDir(getXmlFile().getParent());
             schemaRenderer.readXMLSchema(xmlFile.getPath());
         }
     }
@@ -224,23 +222,6 @@ public abstract class DBObjectsBuilder {
         return null;
     }
 
-    private void saveXsdFileToSchemaDir() {
-        String filename = "dbschema.xsd";
-        try {
-            InputStream in = this.getClass().getResourceAsStream("/org/dbtools/xml/" + filename);
-
-            File outFile = new File(getXmlFile().getParent(), filename);
-            FileOutputStream fos = new FileOutputStream(outFile);
-            int read;
-            byte[] bytes = new byte[1024];
-
-            while ((read = in.read(bytes)) != -1) {
-                fos.write(bytes, 0, read);
-            }
-        } catch (Exception e) {
-            System.out.println("Failed to write: " + filename + " Error: [" + e.getMessage() + "]");
-        }
-    }
 
     public String getGeneratedPackageName() {
         return PackageUtil.getPackageFromFilePath(outputBaseDir);
