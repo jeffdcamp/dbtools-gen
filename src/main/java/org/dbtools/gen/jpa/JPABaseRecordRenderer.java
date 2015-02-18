@@ -17,6 +17,7 @@ import org.dbtools.schema.schemafile.*;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -48,8 +49,9 @@ public class JPABaseRecordRenderer {
 
     public void generate(SchemaDatabase schemaDatabase, SchemaEntity entity, String packageName) {
         String className = createClassName(entity);
+        SchemaEntityType entityType = entity.getType();
 
-        if (entity.isEnumerationTable() && entity.getType() == SchemaEntityType.TABLE) {
+        if (entity.isEnumerationTable() && entityType == SchemaEntityType.TABLE) {
             SchemaTable table = (SchemaTable) entity;
 
             String enumClassName = createClassName(entity);
@@ -137,10 +139,12 @@ public class JPABaseRecordRenderer {
             String fieldNameJavaStyle = field.getName(true);
 
             // check for second primary key
-            if (primaryKey && primaryKeyAdded) {
-                throw new IllegalStateException("Cannot have more than 1 Primary Key [" + fieldNameJavaStyle + "]");
-            } else {
-                primaryKeyAdded = true;
+            if (primaryKey) {
+                if (primaryKeyAdded) {
+                    throw new IllegalStateException("Cannot have more than 1 Primary Key [" + fieldNameJavaStyle + "]");
+                } else {
+                    primaryKeyAdded = true;
+                }
             }
 
             // constants
@@ -182,12 +186,22 @@ public class JPABaseRecordRenderer {
                 newVariable = generateFieldVariable(fieldNameJavaStyle, field);
             }
 
+            // add @Id field for pk
+            if (primaryKey) {
+                addPkFieldVariableAnnotations(field, fieldNameJavaStyle, newVariable);
+//                newVariable.addAnnotation("javax.persistence.Id");
+            }
+
             // add primary key JPA annotations and default functions
             if (primaryKey && !myClass.isEnum()) {
                 myClass.addMethod(Access.PUBLIC, "String", "getIdColumnName", "return " + fieldKey + ";").addAnnotation("Override");
 
-                // add vanilla getID() for the primary key
-                addFieldVariableAnnotations(field, fieldNameJavaStyle, newVariable);
+                // add vanilla getPrimaryKeyId() / setPrimaryKeyId(...) for the primary key
+                myClass.addMethod(Access.PUBLIC, field.getJavaTypeText(), "getPrimaryKeyId", "return " + fieldNameJavaStyle + ";").addAnnotation("Override");
+
+                List<JavaVariable> setIdParams = new ArrayList<>();
+                setIdParams.add(new JavaVariable(newVariable.getDataType(), "id"));
+                myClass.addMethod(Access.PUBLIC, "void", "setPrimaryKeyId", setIdParams, "this." + fieldNameJavaStyle + " = id;").addAnnotation("Override");
             }
 
             // JPA stuff
@@ -270,6 +284,15 @@ public class JPABaseRecordRenderer {
             }
         }
 
+        System.out.println(myClass.getName() + " TYPE: " + entityType + " primaryKeyAdded: " + primaryKeyAdded);
+        if (!primaryKeyAdded && (entityType == SchemaEntityType.VIEW || entityType == SchemaEntityType.QUERY)) {
+            myClass.addMethod(Access.PUBLIC, "String", "getIdColumnName", "return null;").addAnnotation("Override");
+
+            // add vanilla getPrimaryKeyId() / setPrimaryKeyId() for the primary key
+            myClass.addMethod(Access.PUBLIC, "long", "getPrimaryKeyId", "return 0;").addAnnotation("Override");
+            myClass.addMethod(Access.PUBLIC, "void", "setPrimaryKeyId", Arrays.asList(new JavaVariable("long", "id")), "").addAnnotation("Override");
+        }
+
         // constructors
 
         // methods
@@ -289,11 +312,11 @@ public class JPABaseRecordRenderer {
             toStringMethod.addAnnotation("Override");
 
             // new record check
-            myClass.addMethod(Access.PUBLIC, "boolean", "isNewRecord", "return getId() <= 0;");
+            myClass.addMethod(Access.PUBLIC, "boolean", "isNewRecord", "return getPrimaryKeyId() <= 0;");
         }
     }
 
-    private void addFieldVariableAnnotations(SchemaField field, String fieldNameJavaStyle, JavaVariable newVariable) {
+    private void addPkFieldVariableAnnotations(SchemaField field, String fieldNameJavaStyle, JavaVariable newVariable) {
         myClass.addImport("javax.persistence.Id");
         newVariable.addAnnotation("@Id");
 
@@ -308,11 +331,6 @@ public class JPABaseRecordRenderer {
             myClass.addImport("javax.persistence.SequenceGenerator");
             newVariable.addAnnotation("@GeneratedValue(generator=\"" + sequencerName + "\")");
             newVariable.addAnnotation("@SequenceGenerator(name=\"" + sequencerName + "\", sequenceName=\"" + sequencerName + "\", allocationSize=1)");
-        }
-
-        // add vanilla getId() for the primary key (if one won't already exist)
-        if (!field.getName().equals("id")) {
-            myClass.addMethod(Access.PUBLIC, field.getJavaTypeText(), "getId", "return " + fieldNameJavaStyle + ";");
         }
     }
 
@@ -530,12 +548,6 @@ public class JPABaseRecordRenderer {
         }
 
         myClass.addVariable(oneToOneVar, true);
-
-        if (field.isPrimaryKey() && !myClass.isEnum()) { // todo add?? && !field.getName().equals("id")) {
-            JavaMethod getIdMethod = new JavaMethod(Access.PUBLIC, field.getJavaTypeText(), "getId");
-            getIdMethod.setContent("return " + varName + ".getId();");
-            myClass.addMethod(getIdMethod);
-        }
     }
 
     private void addForeignKeyData(SchemaDatabase dbSchema, SchemaEntity entity, String packageName) {

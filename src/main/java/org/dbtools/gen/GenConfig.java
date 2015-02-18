@@ -1,12 +1,12 @@
 package org.dbtools.gen;
 
 public class GenConfig {
-    private boolean injectionSupport;
-    private boolean jsr305Support; // @Nullable / @Nonnull
-    private boolean dateTimeSupport;
-    private boolean javaeeSupport;
-    private boolean includeDatabaseNameInPackage;
-    private boolean ottoSupport; // Google/Square EventBus Support
+    private boolean injectionSupport = false;
+    private boolean jsr305Support = false; // @Nullable / @Nonnull
+    private boolean dateTimeSupport = false;
+    private boolean javaeeSupport = false;
+    private boolean includeDatabaseNameInPackage = false;
+    private boolean ottoSupport = false; // Google/Square EventBus Support
 
     public GenConfig() {
     }

@@ -26,6 +26,9 @@ public abstract class SchemaField {
     private String defaultValue = "";
 
     @Attribute(required = false)
+    private boolean primaryKey = false;
+
+    @Attribute(required = false)
     private String foreignKeyTable = "";
     @Attribute(required = false)
     private String foreignKeyField = "";
@@ -41,7 +44,6 @@ public abstract class SchemaField {
     private String sqliteCollate = null;
 
 
-    public abstract boolean isPrimaryKey();
     public abstract boolean isIncrement();
     public abstract String getForeignKeyCascadeType();
     public abstract String getSequencerName();
@@ -237,4 +239,13 @@ public abstract class SchemaField {
             setNotNull(notNullDefaultValue);
         }
     }
+
+    public boolean isPrimaryKey() {
+        return primaryKey;
+    }
+
+    public void setPrimaryKey(boolean primaryKey) {
+        this.primaryKey = primaryKey;
+    }
+
 }

@@ -46,9 +46,4 @@ public class SchemaViewField extends SchemaField {
     public String getSequencerName() {
         return null;
     }
-
-    @Override
-    public boolean isPrimaryKey() {
-        return false;
-    }
 }

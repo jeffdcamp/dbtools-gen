@@ -12,8 +12,10 @@ package org.dbtools.gen.jpa;
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaMethod;
+import org.dbtools.codegen.JavaVariable;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.SchemaEntity;
+import org.dbtools.schema.schemafile.SchemaEntityType;
 
 /**
  * @author Jeff
@@ -31,6 +33,7 @@ public class JPABaseRecordManagerRenderer {
 
     public void generateObjectCode(SchemaEntity entity, String packageName) {
         String TAB = JavaClass.getTab();
+        SchemaEntityType type = entity.getType();
         String recordClassName = JPARecordClassRenderer.createClassName(entity);
         String className = getClassName(entity);
         myClass = new JavaClass(packageName, className);
@@ -53,10 +56,33 @@ public class JPABaseRecordManagerRenderer {
         // Since this is generated code.... suppress all warnings
         myClass.addAnnotation("@SuppressWarnings(\"all\")");
 
-        myClass.addMethod(Access.PUBLIC, "Class", "getRecordClass", "return " + recordClassName + ".class;");
+        myClass.addImport("javax.persistence.EntityManager");
+        if (genConfig.isJavaeeSupport()) {
+            JavaVariable entityManagerVariable = myClass.addVariable("EntityManager", "entityManager", true);
+            entityManagerVariable.addAnnotation("javax.persistence.PersistenceContext");
+        } else if (genConfig.isInjectionSupport()) {
+            JavaVariable entityManagerVariable = myClass.addVariable("EntityManager", "entityManager", true);
+            entityManagerVariable.setAccess(Access.DEFAULT_NONE);
+            entityManagerVariable.addAnnotation("javax.inject.Inject");
+        } else {
+            myClass.addVariable("EntityManager", "entityManager", true);
+        }
+
+
+        myClass.addMethod(Access.PUBLIC, "Class<" + recordClassName + ">", "getRecordClass", "return " + recordClassName + ".class;");
         myClass.addMethod(Access.PUBLIC, "String", "getTableName", "return " + recordClassName + ".TABLE;");
         myClass.addMethod(Access.PUBLIC, "String", "getTableClassName", "return " + recordClassName + ".TABLE_CLASSNAME;");
-        myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return " + recordClassName + ".PRIMARY_KEY_COLUMN;");
+
+        switch (type) {
+            default:
+            case TABLE:
+                myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return " + recordClassName + ".PRIMARY_KEY_COLUMN;");
+                break;
+            case VIEW:
+            case QUERY:
+                myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return null;");
+                break;
+        }
     }
 
     public void addFindCountMethod(JavaClass myClass, String recordClassName) {

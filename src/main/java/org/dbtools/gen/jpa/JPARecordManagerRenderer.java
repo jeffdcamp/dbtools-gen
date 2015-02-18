@@ -39,9 +39,9 @@ public class JPARecordManagerRenderer {
         myClass = new JavaClass(packageName, className);
         myClass.setExtends(JPABaseRecordManagerRenderer.getClassName(entity)); // extend the generated base class
 
-        if (genConfig.isJavaeeSupport()) {
-            myClass.addImport("javax.inject.Named");
-            myClass.addAnnotation("@Named");
+        // Injection support
+        if (genConfig.isInjectionSupport()) {
+            myClass.addAnnotation("javax.inject.Singleton");
         }
 
         // header comment
@@ -58,6 +58,7 @@ public class JPARecordManagerRenderer {
 
         // constructor
         myClass.setCreateDefaultConstructor(false);
+        myClass.addConstructor(Access.PUBLIC, null, null).addAnnotation("javax.inject.Inject");
 
         if (!genConfig.isInjectionSupport()) {
             List<JavaVariable> constParams = new ArrayList<>();

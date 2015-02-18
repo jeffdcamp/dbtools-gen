@@ -12,8 +12,6 @@ public class SchemaTableField extends SchemaField {
     public static final int DEFAULT_INITIAL_INCREMENT = 1;
 
     @Attribute(required = false)
-    private boolean primaryKey = false;
-    @Attribute(required = false)
     private boolean increment = false;
     @Attribute(required = false)
     private boolean unique = false;
@@ -21,7 +19,7 @@ public class SchemaTableField extends SchemaField {
     @Attribute(required = false)
     private boolean index = false;
     @Attribute(required = false)
-    private int incrementInitialValue = 0;
+    private int incrementInitialValue = 1;
     @Attribute(required = false)
     private String sequencerName = "";
     @Attribute(required = false)
@@ -82,14 +80,6 @@ public class SchemaTableField extends SchemaField {
         }
 
         return enumValues;
-    }
-
-    public boolean isPrimaryKey() {
-        return primaryKey;
-    }
-
-    public void setPrimaryKey(boolean primaryKey) {
-        this.primaryKey = primaryKey;
     }
 
     public boolean isIncrement() {
