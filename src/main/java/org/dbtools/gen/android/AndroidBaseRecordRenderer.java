@@ -81,18 +81,6 @@ public class AndroidBaseRecordRenderer {
             myClass.addConstant("String", "FULL_TABLE", databaseName + "." + tableName);
         }
 
-        if (!myClass.isEnum()) {
-            myClass.addMethod(Access.PUBLIC, "String", "getDatabaseName", "return DATABASE;").addAnnotation("Override");
-        }
-
-        if (!myClass.isEnum() && entityType != SchemaEntityType.QUERY) {
-            myClass.addMethod(Access.PUBLIC, "String", "getTableName", "return TABLE;").addAnnotation("Override");
-        }
-
-        if (entityType == SchemaEntityType.QUERY) {
-            myClass.addMethod(Access.PUBLIC, "String", "getTableName", "return \"\";").addAnnotation("Override");
-        }
-
         // post field method content
         StringBuilder contentValuesContent = new StringBuilder("ContentValues values = new ContentValues();\n");
         StringBuilder valuesContent = new StringBuilder("Object[] values = new Object[]{\n");
