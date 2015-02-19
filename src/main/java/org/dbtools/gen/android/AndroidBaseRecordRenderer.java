@@ -190,6 +190,9 @@ public class AndroidBaseRecordRenderer {
                 valuesContent.append(TAB).append(value).append(",\n");
 
                 setContentValuesContent += fieldNameJavaStyle + " = " + getContentValuesGetterMethod(field, fieldKey, newVariable) + ";\n";
+            } else {
+                // id column
+                valuesContent.append(TAB).append(fieldNameJavaStyle).append(",\n");
             }
 
             setContentCursorContent += fieldNameJavaStyle + " = " + getContentValuesCursorGetterMethod(field, fieldKey, newVariable) + ";\n";
