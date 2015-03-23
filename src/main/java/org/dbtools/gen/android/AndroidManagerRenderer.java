@@ -11,6 +11,7 @@ package org.dbtools.gen.android;
 
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
+import org.dbtools.codegen.JavaMethod;
 import org.dbtools.codegen.JavaVariable;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.SchemaEntity;
@@ -60,7 +61,10 @@ public class AndroidManagerRenderer {
 
         List<JavaVariable> constParams = new ArrayList<>();
         String constContent = "";
-        myClass.addConstructor(Access.PUBLIC, constParams, constContent);
+        JavaMethod defaultConstructor = myClass.addConstructor(Access.PUBLIC, constParams, constContent);
+        if (genConfig.isInjectionSupport()) {
+            defaultConstructor.addAnnotation("javax.inject.Inject");
+        }
 
         if (entity.getType() == SchemaEntityType.QUERY) {
             String recordClassName = AndroidRecordRenderer.createClassName(entity);
