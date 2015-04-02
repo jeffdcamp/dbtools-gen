@@ -2,6 +2,7 @@ package org.dbtools.gen.android;
 
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
+import org.dbtools.codegen.JavaMethod;
 import org.dbtools.codegen.JavaVariable;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.DatabaseSchema;
@@ -33,6 +34,9 @@ public class DatabaseManagerRenderer {
         myClass.setCreateDefaultConstructor(false);
         if (genConfig.isInjectionSupport()) {
             myClass.addAnnotation("Singleton");
+
+            JavaMethod defaultConstructor = myClass.addConstructor(Access.PUBLIC, null, null);
+            defaultConstructor.addAnnotation("javax.inject.Inject");
         }
         addImports();
 

@@ -942,6 +942,11 @@
             <sql-type>BLOB</sql-type>
         </mapping>
         <mapping>
+            <java-type>java.lang.Object</java-type>
+            <jdbc-type>BLOB</jdbc-type>
+            <sql-type>BLOB</sql-type>
+        </mapping>
+        <mapping>
             <java-type>java.lang.Short</java-type>
             <jdbc-type>SMALLINT</jdbc-type>
             <sql-type>INTEGER</sql-type>

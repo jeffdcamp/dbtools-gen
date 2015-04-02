@@ -16,6 +16,7 @@
             <field name="NUMBER" jdbcDataType="INTEGER"/>
             <field name="PHONE" jdbcDataType="VARCHAR" size="255"/>
             <field name="EMAIL" jdbcDataType="VARCHAR" size="255"/>
+            <field name="DATA" jdbcDataType="BLOB"/>
         </table>
         <view name="INDIVIDUAL_VIEW">
             <field name="id" jdbcDataType="BIGINT"/>

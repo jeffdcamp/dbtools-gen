@@ -377,6 +377,8 @@ public class AndroidBaseRecordRenderer {
             return "values.getAsFloat(" + paramValue + ")";
         } else if (type == double.class || type == Double.class) {
             return "values.getAsDouble(" + paramValue + ")";
+        } else if (type == byte[].class || type == Byte[].class) {
+            return "values.getAsByteArray(" + paramValue + ")";
         } else {
             return "[[UNHANDLED FIELD TYPE: " + type + "]]";
         }
@@ -430,6 +432,8 @@ public class AndroidBaseRecordRenderer {
             return "cursor.getDouble(cursor.getColumnIndexOrThrow(" + paramValue + "))";
         } else if (type == Double.class) {
             return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? cursor.getDouble(cursor.getColumnIndexOrThrow(" + paramValue + ")) : null";
+        } else if (type == byte[].class || type == Byte[].class) {
+            return "cursor.getBlob(cursor.getColumnIndexOrThrow(" + paramValue + "))";
         } else {
             return "[[UNHANDLED FIELD TYPE: " + type + "]]";
         }

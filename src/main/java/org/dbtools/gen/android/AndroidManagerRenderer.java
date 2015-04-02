@@ -12,15 +12,12 @@ package org.dbtools.gen.android;
 import org.dbtools.codegen.Access;
 import org.dbtools.codegen.JavaClass;
 import org.dbtools.codegen.JavaMethod;
-import org.dbtools.codegen.JavaVariable;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.SchemaEntity;
 import org.dbtools.schema.schemafile.SchemaEntityType;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author Jeff
@@ -59,9 +56,7 @@ public class AndroidManagerRenderer {
         // constructor
         myClass.setCreateDefaultConstructor(false);
 
-        List<JavaVariable> constParams = new ArrayList<>();
-        String constContent = "";
-        JavaMethod defaultConstructor = myClass.addConstructor(Access.PUBLIC, constParams, constContent);
+        JavaMethod defaultConstructor = myClass.addConstructor(Access.PUBLIC, null, null);
         if (genConfig.isInjectionSupport()) {
             defaultConstructor.addAnnotation("javax.inject.Inject");
         }
