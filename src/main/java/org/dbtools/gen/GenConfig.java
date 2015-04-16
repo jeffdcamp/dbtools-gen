@@ -7,6 +7,7 @@ public class GenConfig {
     private boolean javaeeSupport = false;
     private boolean includeDatabaseNameInPackage = false;
     private boolean ottoSupport = false; // Google/Square EventBus Support
+    private boolean sqlQueryBuilderSupport = false; // when creating queries, use SQLBuilder (from dbtools-query)
 
     public GenConfig() {
     }
@@ -71,5 +72,13 @@ public class GenConfig {
 
     public void setOttoSupport(boolean ottoSupport) {
         this.ottoSupport = ottoSupport;
+    }
+
+    public boolean isSqlQueryBuilderSupport() {
+        return sqlQueryBuilderSupport;
+    }
+
+    public void setSqlQueryBuilderSupport(boolean sqlQueryBuilderSupport) {
+        this.sqlQueryBuilderSupport = sqlQueryBuilderSupport;
     }
 }

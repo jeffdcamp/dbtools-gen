@@ -85,6 +85,17 @@ public class AndroidRecordRenderer {
         headerComment.append("// todo SUGGESTION: Keep the \" AS ").append(entityClassName).append(".<columnname>\" portion of the sql");
         myClass.setClassHeaderComment(headerComment.toString());
 
+
+        if (genConfig.isSqlQueryBuilderSupport()) {
+            createSqlBuilderView(entity);
+        } else {
+            createStandardView(entity);
+        }
+    }
+
+    private void createStandardView(SchemaEntity entity) {
+        String entityClassName = AndroidRecordRenderer.createClassName(entity);
+
         StringBuilder createContent = new StringBuilder();
         createContent.append("\"CREATE VIEW IF NOT EXISTS \" + ").append(entityClassName).append(".TABLE + \" AS SELECT \" +\n");
 
@@ -114,12 +125,21 @@ public class AndroidRecordRenderer {
 
     private void createQuery(SchemaEntity entity) {
         String entityClassName = AndroidRecordRenderer.createClassName(entity);
-
         StringBuilder headerComment = new StringBuilder();
         headerComment.append("// todo Replace the following the QUERY sql (The following is a template suggestion for your query)\n");
         headerComment.append("// todo BE SURE TO KEEP THE OPENING AND CLOSING PARENTHESES (so queries can be run as sub-select: select * from (select a, b from t) )\n");
         headerComment.append("// todo SUGGESTION: Keep the \" AS ").append(entityClassName).append(".<columnname>\" portion of the sql");
         myClass.setClassHeaderComment(headerComment.toString());
+
+        if (genConfig.isSqlQueryBuilderSupport()) {
+            createSQLBuilderQuery(entity);
+        } else {
+            createStandardQuery(entity);
+        }
+    }
+
+    private void createStandardQuery(SchemaEntity entity) {
+        String entityClassName = AndroidRecordRenderer.createClassName(entity);
 
         StringBuilder createContent = new StringBuilder();
         createContent.append("\"(\" +\n");
@@ -144,6 +164,87 @@ public class AndroidRecordRenderer {
         createContent.append("\" FROM SOME TABLE(S)\" +\n");
         createContent.append(TAB).append(TAB).append(TAB);
         createContent.append("\")\"");
+
+        myClass.addConstant("String", "QUERY", createContent.toString(), false);
+        myClass.addConstant("String", "QUERY_RAW", "\"SELECT * FROM \" + QUERY", false);
+    }
+
+    private void createSqlBuilderView(SchemaEntity entity) {
+        String entityClassName = AndroidRecordRenderer.createClassName(entity);
+
+        StringBuilder createContent = new StringBuilder();
+        createContent.append("\"CREATE VIEW IF NOT EXISTS \" + ").append(entityClassName).append(".TABLE + \" AS \" +\n");
+
+        createContent.append(TAB).append(TAB).append(TAB);
+        myClass.addImport("org.dbtools.query.sql.SQLQueryBuilder");
+        createContent.append("new SQLQueryBuilder()").append("\n");
+
+
+        for (int i = 0; i < entity.getFields().size(); i++) {
+            if (i > 0) {
+                createContent.append("\n");
+            }
+
+            createContent.append(TAB).append(TAB).append(TAB);
+            SchemaField schemaField = entity.getFields().get(i);
+
+            String fieldConstName = JavaClass.formatConstant(schemaField.getName(true));
+            createContent.append(".field(");
+
+            createContent.append(entityClassName).append(".").append("FULL_C_").append(fieldConstName);
+            createContent.append(", ");
+            createContent.append(entityClassName).append(".").append("C_").append(fieldConstName);
+            createContent.append(")");
+        }
+
+        createContent.append("\n");
+        createContent.append(TAB).append(TAB).append(TAB);
+        createContent.append(".table(").append(entityClassName).append(".TABLE)");
+        createContent.append("\n");
+        createContent.append(TAB).append(TAB).append(TAB);
+        createContent.append(".buildQuery()");
+
+        myClass.addConstant("String", "CREATE_VIEW", createContent.toString(), false);
+
+        myClass.addMethod(Access.PUBLIC, "String", "getDropSql", "return DROP_VIEW;");
+        myClass.addMethod(Access.PUBLIC, "String", "getCreateSql", "return CREATE_VIEW;");
+    }
+
+    private void createSQLBuilderQuery(SchemaEntity entity) {
+        String entityClassName = AndroidRecordRenderer.createClassName(entity);
+
+        StringBuilder createContent = new StringBuilder();
+        createContent.append("\"(\" +\n");
+        createContent.append(TAB).append(TAB).append(TAB);
+        myClass.addImport("org.dbtools.query.sql.SQLQueryBuilder");
+        createContent.append("new SQLQueryBuilder()").append("\n");
+
+
+        for (int i = 0; i < entity.getFields().size(); i++) {
+            if (i > 0) {
+                createContent.append("\n");
+            }
+
+            createContent.append(TAB).append(TAB).append(TAB);
+            SchemaField schemaField = entity.getFields().get(i);
+
+            String fieldConstName = JavaClass.formatConstant(schemaField.getName(true));
+            createContent.append(".field(");
+            createContent.append(entityClassName).append(".").append("FULL_C_").append(fieldConstName);
+            createContent.append(", ");
+            createContent.append(entityClassName).append(".").append("C_").append(fieldConstName);
+            createContent.append(")");
+        }
+
+        createContent.append("\n");
+        createContent.append(TAB).append(TAB).append(TAB);
+        createContent.append(".table(\"FROM SOME TABLE(S)\")\n");
+        createContent.append(TAB).append(TAB).append(TAB);
+        createContent.append(".buildQuery()");
+
+        createContent.append("\n");
+        createContent.append(TAB).append(TAB).append(TAB);
+        createContent.append("+ \")\"");
 
         myClass.addConstant("String", "QUERY", createContent.toString(), false);
         myClass.addConstant("String", "QUERY_RAW", "\"SELECT * FROM \" + QUERY", false);
