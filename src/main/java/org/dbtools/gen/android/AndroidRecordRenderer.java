@@ -78,7 +78,8 @@ public class AndroidRecordRenderer {
     private void createView(SchemaEntity entity) {
         String entityClassName = AndroidRecordRenderer.createClassName(entity);
 
-        myClass.addConstant("String", "DROP_VIEW", "DROP VIEW IF EXISTS \" + " + entityClassName + ".TABLE + \";");
+        myClass.addConstant("String", "DROP_VIEW", null, false);
+        myClass.appendStaticInitializer("DROP_VIEW = \"DROP VIEW IF EXISTS \" + " + entityClassName + ".TABLE + \";\";");
 
         StringBuilder headerComment = new StringBuilder();
         headerComment.append("// todo Replace the following the CREATE_VIEW sql (The following is a template suggestion for your view)\n");
@@ -124,13 +125,6 @@ public class AndroidRecordRenderer {
     }
 
     private void createQuery(SchemaEntity entity) {
-        String entityClassName = AndroidRecordRenderer.createClassName(entity);
-        StringBuilder headerComment = new StringBuilder();
-        headerComment.append("// todo Replace the following the QUERY sql (The following is a template suggestion for your query)\n");
-        headerComment.append("// todo BE SURE TO KEEP THE OPENING AND CLOSING PARENTHESES (so queries can be run as sub-select: select * from (select a, b from t) )\n");
-        headerComment.append("// todo SUGGESTION: Keep the \" AS ").append(entityClassName).append(".<columnname>\" portion of the sql");
-        myClass.setClassHeaderComment(headerComment.toString());
-
         if (genConfig.isSqlQueryBuilderSupport()) {
             createSQLBuilderQuery(entity);
         } else {
@@ -140,6 +134,11 @@ public class AndroidRecordRenderer {
 
     private void createStandardQuery(SchemaEntity entity) {
         String entityClassName = AndroidRecordRenderer.createClassName(entity);
+        StringBuilder headerComment = new StringBuilder();
+        headerComment.append("// todo Replace the following the QUERY sql (The following is a template suggestion for your query)\n");
+        headerComment.append("// todo BE SURE TO KEEP THE OPENING AND CLOSING PARENTHESES (so queries can be run as sub-select: select * from (select a, b from t) )\n");
+        headerComment.append("// todo SUGGESTION: Keep the \" AS ").append(entityClassName).append(".<columnname>\" portion of the sql");
+        myClass.setClassHeaderComment(headerComment.toString());
 
         StringBuilder createContent = new StringBuilder();
         createContent.append("\"(\" +\n");
@@ -204,18 +203,22 @@ public class AndroidRecordRenderer {
         createContent.append(TAB).append(TAB).append(TAB);
         createContent.append(".buildQuery()");
 
-        myClass.addConstant("String", "CREATE_VIEW", createContent.toString(), false);
+        myClass.addConstant("String", "CREATE_VIEW", null, false);
+        myClass.appendStaticInitializer("CREATE_VIEW = " + createContent.toString() + ";");
 
         myClass.addMethod(Access.PUBLIC, "String", "getDropSql", "return DROP_VIEW;");
         myClass.addMethod(Access.PUBLIC, "String", "getCreateSql", "return CREATE_VIEW;");
+
     }
 
     private void createSQLBuilderQuery(SchemaEntity entity) {
         String entityClassName = AndroidRecordRenderer.createClassName(entity);
+        StringBuilder headerComment = new StringBuilder();
+        headerComment.append("// todo Replace the following the QUERY sql (The following is a template suggestion for your query)\n");
+        headerComment.append("// todo SUGGESTION: Keep the second parameter of each filter(<replace>, <keep>)");
+        myClass.setClassHeaderComment(headerComment.toString());
 
         StringBuilder createContent = new StringBuilder();
-        createContent.append("\"(\" +\n");
-        createContent.append(TAB).append(TAB).append(TAB);
         myClass.addImport("org.dbtools.query.sql.SQLQueryBuilder");
         createContent.append("new SQLQueryBuilder()").append("\n");
 
@@ -238,16 +241,10 @@ public class AndroidRecordRenderer {
 
         createContent.append("\n");
         createContent.append(TAB).append(TAB).append(TAB);
-        createContent.append(".table(\"FROM SOME TABLE(S)\")\n");
-        createContent.append(TAB).append(TAB).append(TAB);
-        createContent.append(".buildQuery()");
+        createContent.append(".table(\"FROM SOME TABLE(S)\");\n");
 
-        createContent.append("\n");
-        createContent.append(TAB).append(TAB).append(TAB);
-        createContent.append("+ \")\"");
-
-        myClass.addConstant("String", "QUERY", createContent.toString(), false);
-        myClass.addConstant("String", "QUERY_RAW", "\"SELECT * FROM \" + QUERY", false);
+        myClass.addConstant("SQLQueryBuilder", "QUERY", null, false);
+        myClass.appendStaticInitializer("QUERY = " + createContent.toString());
     }
 
     public static String createClassName(SchemaEntity entity) {
