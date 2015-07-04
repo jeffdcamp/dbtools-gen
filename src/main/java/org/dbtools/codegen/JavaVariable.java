@@ -29,6 +29,8 @@ public class JavaVariable {
     // vars used by code generator
     private boolean generateSetter = false;
     private boolean generateGetter = false;
+    private boolean notNull = false; // JSR 305 @Notnull
+    private boolean nullable = false; // JSR 305 @Nullable
     private boolean getterReturnsClone = false;
     private boolean setterClonesParam = false;
     private Access generateSetterAccess = Access.PUBLIC;
@@ -173,6 +175,37 @@ public class JavaVariable {
         this.setGenerateGetter(generateSetterGetter);
     }
 
+    /**
+     * Analyze the variable type
+     */
+    public void setGenerateSetterGetter(boolean generateSetterGetter, boolean isNotNull, boolean supportJsr305, Class<?> varClass) {
+        boolean jsr305SupportedField = !varClass.isPrimitive() || varClass.isEnum();
+        if (supportJsr305 && jsr305SupportedField) {
+            if (isNotNull) {
+                setNonnull(true);
+            } else {
+                setNullable(true);
+            }
+        }
+
+        this.setGenerateSetterGetter(generateSetterGetter);
+    }
+
+    /**
+     * Don't analyze the variable type
+     */
+    public void setGenerateSetterGetter(boolean generateSetterGetter, boolean isNotNull, boolean supportJsr305) {
+        if (supportJsr305) {
+            if (isNotNull) {
+                setNonnull(true);
+            } else {
+                setNullable(true);
+            }
+        }
+
+        this.setGenerateSetterGetter(generateSetterGetter);
+    }
+
     public boolean isForceStringLength() {
         return forceStringLength;
     }
@@ -272,6 +305,22 @@ public class JavaVariable {
 
     public void setGenerateSetterAccess(Access generateSetterAccess) {
         this.generateSetterAccess = generateSetterAccess;
+    }
+
+    public boolean isNonnull() {
+        return notNull;
+    }
+
+    public void setNonnull(boolean nonnull) {
+        this.notNull = nonnull;
+    }
+
+    public boolean isNullable() {
+        return nullable;
+    }
+
+    public void setNullable(boolean nullable) {
+        this.nullable = nullable;
     }
 
     public Access getGenerateGetterAccess() {

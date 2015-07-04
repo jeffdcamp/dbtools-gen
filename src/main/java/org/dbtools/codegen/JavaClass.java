@@ -404,12 +404,28 @@ public class JavaClass {
 
             JavaMethod getterMethod = addMethod(variable.getGenerateGetterAccess(), type, variable.getGetterMethodName(), getterContent);
             getterMethod.setStatic(variable.isStatic());
+
+            // JSR305 support
+            if (variable.isNullable()) {
+                getterMethod.addAnnotation("@javax.annotation.Nullable");
+            } else if (variable.isNonnull()) {
+                getterMethod.addAnnotation("@javax.annotation.Nonnull");
+            }
         }
 
         // setter
         if (variable.isGenerateSetter()) {
             JavaMethod setterMethod = new JavaMethod(variable.getGenerateSetterAccess(), "void", variable.getSetterMethodName());
-            setterMethod.addParameter(new JavaVariable(type, varName));
+            JavaVariable parameter = new JavaVariable(type, varName);
+
+            // JSR305 support
+            if (variable.isNullable()) {
+                parameter.addAnnotation("@javax.annotation.Nullable");
+            } else if (variable.isNonnull()) {
+                parameter.addAnnotation("@javax.annotation.Nonnull");
+            }
+
+            setterMethod.addParameter(parameter);
 
             setterMethod.setStatic(variable.isStatic());
             String thisText = "this";

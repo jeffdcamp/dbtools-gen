@@ -474,14 +474,14 @@ public class AndroidBaseRecordRenderer {
                 }
 
                 newVariable = new JavaVariable(enumName, fieldNameJavaStyle);
-                newVariable.setGenerateSetterGetter(true);
+                newVariable.setGenerateSetterGetter(true, field.isNotNull(), genConfig.isJsr305Support());
                 newVariable.setDefaultValue(enumName + "." + field.getEnumerationDefault(), false);
             } else if (!field.getEnumerationClass().isEmpty()) {
                 // use user defined class
                 String enumClassName = field.getEnumerationClass();
 
                 newVariable = new JavaVariable(enumClassName, fieldNameJavaStyle);
-                newVariable.setGenerateSetterGetter(true);
+                newVariable.setGenerateSetterGetter(true, field.isNotNull(), genConfig.isJsr305Support());
                 newVariable.setDefaultValue(enumClassName + "." + field.getEnumerationDefault(), false);
             } else {
                 // ENUM without a foreign key table
@@ -496,7 +496,7 @@ public class AndroidBaseRecordRenderer {
                 }
 
                 newVariable = new JavaVariable(enumName, fieldNameJavaStyle);
-                newVariable.setGenerateSetterGetter(true);
+                newVariable.setGenerateSetterGetter(true, field.isNotNull(), genConfig.isJsr305Support(), field.getJavaClassType());
                 newVariable.setDefaultValue(enumName + "." + field.getEnumerationDefault(), false);
             }
         } else {
@@ -544,7 +544,7 @@ public class AndroidBaseRecordRenderer {
             newVariable.setCloneSetterGetterVar(true);
         }
 
-        newVariable.setGenerateSetterGetter(true);
+        newVariable.setGenerateSetterGetter(true, field.isNotNull(), genConfig.isJsr305Support(), field.getJavaClassType());
         newVariable.setDefaultValue(defaultValue);
 
         return newVariable;
