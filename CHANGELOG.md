@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+  Version 3.3.0 *(2015-07)*
+----------------------------
+
+ * Added ability to annotate generated domain setters/getters with jsr305 annotations (@Nullable, @Nonnull)
+
   Version 3.1.1 *(2015-02)*
 ----------------------------
 
