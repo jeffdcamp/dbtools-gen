@@ -173,6 +173,12 @@ public class AndroidBaseRecordRenderer {
 
                         value = fieldNameJavaStyle + " != null ? " + fieldNameJavaStyle + getTimeMethod + " : null";
                     }
+                } else if (fieldType == SchemaFieldType.BOOLEAN) {
+                    if (field.isNotNull()) {
+                        value = fieldNameJavaStyle + " ? 1 : 0";
+                    } else {
+                        value = fieldNameJavaStyle + " != null ? (" + fieldNameJavaStyle + " ? 1 : 0) : 0";
+                    }
                 }
                 contentValuesContent.append("values.put(").append(fieldKey).append(", ").append(value).append(");\n");
                 valuesContent.append(TAB).append(value).append(",\n");
