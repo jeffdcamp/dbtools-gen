@@ -235,7 +235,7 @@ public class AndroidBaseRecordRenderer {
             allKeysDefaultValue += "}";
 
             JavaVariable allKeysVar = myClass.addConstant("String[]", ALL_KEYS_VAR_NAME, allKeysDefaultValue);
-            allKeysVar.setAccess(Access.DEFAULT_NONE);
+            allKeysVar.setAccess(Access.PUBLIC);
             myClass.addMethod(Access.PUBLIC, "String[]", "getAllKeys", "return " + ALL_KEYS_VAR_NAME + ".clone();").addAnnotation("Override");
 
             contentValuesContent.append("return values;");
