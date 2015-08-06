@@ -65,8 +65,8 @@ public class AndroidBaseManagerRenderer {
             createNoInjectionManager(entity, recordClassName);
         }
 
-        if (genConfig.isOttoSupport()) {
-            JavaVariable busVariable = myClass.addVariable("com.squareup.otto.Bus", "bus", true);
+        if (genConfig.isEventBusSupport()) {
+            JavaVariable busVariable = myClass.addVariable("org.dbtools.android.domain.DBToolsEventBus", "bus", true);
             busVariable.setAccess(Access.DEFAULT_NONE);
 
             if (genConfig.isInjectionSupport()) {
