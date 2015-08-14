@@ -33,7 +33,6 @@ public class AndroidBaseRecordRenderer {
 
     private JavaClass myClass;
     private List<JavaEnum> enumerationClasses = new ArrayList<>();
-    private StringBuilder toStringContent;
     private StringBuilder cleanupOrphansContent;
     private boolean useInnerEnums = true;
     private GenConfig genConfig;
@@ -62,8 +61,6 @@ public class AndroidBaseRecordRenderer {
         }
 
         // prep
-        toStringContent = new StringBuilder();
-        toStringContent.append("String text = \"\\n\";\n");
         cleanupOrphansContent = new StringBuilder();
 
         // header comment
@@ -131,8 +128,6 @@ public class AndroidBaseRecordRenderer {
                 default:
             }
 
-            createToStringMethodContent(field, fieldNameJavaStyle);
-
             // creates the variable OR changes the var to an enum
 
             JavaVariable newVariable;
@@ -165,14 +160,8 @@ public class AndroidBaseRecordRenderer {
                 if (field.isEnumeration()) {
                     value = newVariable.getName() + ".ordinal()";
                 } else if (fieldType == SchemaFieldType.DATE || fieldType == SchemaFieldType.TIMESTAMP || fieldType == SchemaFieldType.TIME) {
-                    if (!genConfig.isDateTimeSupport()) {
-                        String methodName = genConfig.isDateTimeSupport() ? "dateTimeToDBString" : "dateToDBString";
-                        value = methodName + "(" + fieldNameJavaStyle + ")";
-                    } else {
-                        String getTimeMethod = genConfig.isDateTimeSupport() ? ".getMillis()" : ".getTime()";
-
-                        value = fieldNameJavaStyle + " != null ? " + fieldNameJavaStyle + getTimeMethod + " : null";
-                    }
+                    String getTimeMethod = genConfig.isDateTimeSupport() ? ".getMillis()" : ".getTime()";
+                    value = fieldNameJavaStyle + " != null ? " + fieldNameJavaStyle + getTimeMethod + " : null";
                 } else if (fieldType == SchemaFieldType.BOOLEAN) {
                     if (field.isNotNull()) {
                         value = fieldNameJavaStyle + " ? 1 : 0";
@@ -265,28 +254,9 @@ public class AndroidBaseRecordRenderer {
                 myClass.addMethod(Access.PROTECTED, "void", CLEANUP_ORPHANS_METHOD_NAME, orphanParams, cleanupOrphansContent.toString());
             }
 
-            // to String method
-            toStringContent.append("return text;\n");
-            JavaMethod toStringMethod = myClass.addMethod(Access.PUBLIC, "String", "toString", toStringContent.toString());
-            toStringMethod.addAnnotation("Override");
-
             // new record check
             myClass.addMethod(Access.PUBLIC, "boolean", "isNewRecord", "return getPrimaryKeyId() <= 0;");
         }
-
-        // Enum classes need a cleanTable and createTable
-        if (myClass.isEnum()) {
-            // Remove to allow the change of the database
-//            myClass.addImport("android.database.sqlite.SQLiteDatabase");
-//            myClass.addImport(packageName.substring(0, packageName.lastIndexOf('.')) + ".BaseManager");
-//
-//            List<JavaVariable> tableParams = new ArrayList<JavaVariable>();
-//            tableParams.add(new JavaVariable("SQLiteDatabase", "db"));
-
-//            myClass.addMethod(Access.PUBLIC, "void", "cleanTable", tableParams, "BaseManager.executeSQL(db, DROP_TABLE);").setStatic(true);
-//            myClass.addMethod(Access.PUBLIC, "void", "createTable", tableParams, "BaseManager.executeSQL(db, CREATE_TABLE);").setStatic(true);
-        }
-
     }
 
     private void addHeader(String className) {
@@ -442,13 +412,6 @@ public class AndroidBaseRecordRenderer {
             return "cursor.getBlob(cursor.getColumnIndexOrThrow(" + paramValue + "))";
         } else {
             return "[[UNHANDLED FIELD TYPE: " + type + "]]";
-        }
-    }
-
-    private void createToStringMethodContent(final SchemaField field, final String fieldNameJavaStyle) {
-        if (field.getJdbcDataType() != SchemaFieldType.BLOB && field.getJdbcDataType() != SchemaFieldType.CLOB) {
-            // toString
-            toStringContent.append("text += \"").append(fieldNameJavaStyle).append(" = \"+ ").append(fieldNameJavaStyle).append(" +\"\\n\";\n");
         }
     }
 
