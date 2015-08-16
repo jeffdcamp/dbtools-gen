@@ -22,6 +22,9 @@ public class SchemaTable extends SchemaEntity {
     @Attribute(required = false)
     private Boolean fieldsDefaultNotNull = null;
 
+    @Attribute(required = false)
+    private Boolean readOnly = false;
+
     @ElementList(entry = "unique", inline = true, required = false)
     private List<SchemaTableUnique> uniqueDeclarations = new ArrayList<>();
 
@@ -286,5 +289,13 @@ public class SchemaTable extends SchemaEntity {
                 field.setNotNullDefaultValue(fieldsDefaultNotNull);
             }
         }
+    }
+
+    public Boolean isReadonly() {
+        return readOnly != null ? readOnly : false;
+    }
+
+    public void setReadOnly(Boolean readOnly) {
+        this.readOnly = readOnly;
     }
 }

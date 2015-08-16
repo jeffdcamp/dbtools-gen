@@ -18,6 +18,9 @@ public class SchemaDatabase {
     @Attribute(required = false)
     private Boolean fieldsDefaultNotNull = null;
 
+    @Attribute(required = false)
+    private Boolean readOnly = false;
+
     @ElementList(entry = "table", inline = true, required = false)
     private List<SchemaTable> tables = new ArrayList<>();
 
@@ -50,6 +53,11 @@ public class SchemaDatabase {
             for (SchemaTable entity : tables) {
                 entity.setFieldsDefaultNotNull(fieldsDefaultNotNull);
             }
+        }
+
+        // readOnly
+        for (SchemaTable entity : tables) {
+            entity.setReadOnly(readOnly);
         }
 
         return tables;

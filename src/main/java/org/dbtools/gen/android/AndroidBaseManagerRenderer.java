@@ -18,6 +18,7 @@ import org.dbtools.gen.AnnotationConsts;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.SchemaEntity;
 import org.dbtools.schema.schemafile.SchemaEntityType;
+import org.dbtools.schema.schemafile.SchemaTable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,8 +57,6 @@ public class AndroidBaseManagerRenderer {
         // constructor
         myClass.setCreateDefaultConstructor(true);
 
-        myClass.addImport("org.dbtools.android.domain.AndroidBaseManager");
-
         // both inject and non-inject must use the passed in db for database updates
         if (genConfig.isInjectionSupport()) {
             createInjectionManager(entity, packageName, recordClassName);
@@ -86,7 +85,24 @@ public class AndroidBaseManagerRenderer {
         myClass.addImport(databaseManagerPackage + ".DatabaseManager");
         myClass.addImport("org.dbtools.android.domain.database.DatabaseWrapper");
 
-        myClass.setExtends("AndroidBaseManager<" + recordClassName + ">");
+        switch (type) {
+            case TABLE:
+                SchemaTable tableEntity = (SchemaTable) entity;
+                if (tableEntity.isReadonly()) {
+                    myClass.addImport("org.dbtools.android.domain.AndroidBaseManagerReadOnly");
+                    myClass.setExtends("AndroidBaseManagerReadOnly<" + recordClassName + ">");
+                } else {
+                    myClass.addImport("org.dbtools.android.domain.AndroidBaseManagerWritable");
+                    myClass.setExtends("AndroidBaseManagerWritable<" + recordClassName + ">");
+                }
+                break;
+            case VIEW:
+            case QUERY:
+                myClass.addImport("org.dbtools.android.domain.AndroidBaseManagerReadOnly");
+                myClass.setExtends("AndroidBaseManagerReadOnly<" + recordClassName + ">");
+                break;
+        }
+
         addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getDatabaseName", "return " + recordClassName + ".DATABASE;"));
         addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, recordClassName, "newRecord", "return new " + recordClassName + "();"));
 
@@ -134,21 +150,6 @@ public class AndroidBaseManagerRenderer {
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getDropSql", "return \"\";"));
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getCreateSql", "return \"\";"));
                 break;
-        }
-
-        // keep save from being called
-        if (entity.getType() == SchemaEntityType.VIEW || entity.getType() == SchemaEntityType.QUERY) {
-            List<JavaVariable> params = new ArrayList<>();
-            params.add(databaseNameParam);
-
-            JavaVariable recordParam = new JavaVariable(recordClassName, "e");
-            if (genConfig.isJsr305Support()) {
-                recordParam.addAnnotation(AnnotationConsts.NONNULL);
-            }
-
-            params.add(recordParam);
-            JavaMethod method = myClass.addMethod(Access.PUBLIC, "boolean", "save", params, "throw new IllegalStateException(\"Cannot call SAVE on a " + recordClassName + " View or Query\");");
-            method.addAnnotation("Override");
         }
     }
 
