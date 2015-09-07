@@ -28,6 +28,7 @@ public class JPABaseRecordRenderer {
 
     public static final String CLEANUP_ORPHANS_METHOD_NAME = "cleanupOrphans";
     public static final String PRIMARY_KEY_COLUMN = "PRIMARY_KEY_COLUMN";
+    public static final String PRIMARY_KEY_PROPERTY_COLUMN = "PRIMARY_KEY_PROPERTY_COLUMN";
 
     private JavaClass myClass;
 
@@ -153,6 +154,7 @@ public class JPABaseRecordRenderer {
 
             if (primaryKey) {
                 myClass.addConstant("String", PRIMARY_KEY_COLUMN, fieldName); // add a reference to this column
+                myClass.addConstant("String", PRIMARY_KEY_PROPERTY_COLUMN, fieldNameJavaStyle); // add a reference to this column
             }
 
             myClass.addConstant("String", fieldKey, fieldName);
@@ -270,10 +272,10 @@ public class JPABaseRecordRenderer {
                     String getterContent = "return new org.joda.time.DateTime(" + newVariable.getName() + ");";
                     myClass.addMethod(newVariable.getGenerateGetterAccess(), type, newVariable.getGetterMethodName(), getterContent);
 
-                    String varName = newVariable.getName();
-                    String setterContent = "this." + varName + " = " + varName + ".toDate();";
+                    String newVarName = newVariable.getName();
+                    String setterContent = "this." + newVarName + " = " + newVarName + ".toDate();";
                     JavaMethod setterMethod = new JavaMethod(newVariable.getGenerateSetterAccess(), "void", newVariable.getSetterMethodName());
-                    setterMethod.addParameter(new JavaVariable(type, varName));
+                    setterMethod.addParameter(new JavaVariable(type, newVarName));
                     setterMethod.setContent(setterContent);
                     myClass.addMethod(setterMethod);
                 }

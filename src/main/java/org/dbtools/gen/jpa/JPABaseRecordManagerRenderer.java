@@ -76,11 +76,13 @@ public class JPABaseRecordManagerRenderer {
         switch (type) {
             default:
             case TABLE:
-                myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return " + recordClassName + ".PRIMARY_KEY_COLUMN;");
+                myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return " + recordClassName + "." + JPABaseRecordRenderer.PRIMARY_KEY_COLUMN + ";");
+                myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKeyProperty", "return " + recordClassName + "." + JPABaseRecordRenderer.PRIMARY_KEY_PROPERTY_COLUMN + ";");
                 break;
             case VIEW:
             case QUERY:
                 myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return null;");
+                myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKeyProperty", "return null;");
                 break;
         }
     }
