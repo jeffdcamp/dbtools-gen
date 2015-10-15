@@ -89,11 +89,11 @@ public class AndroidBaseManagerRenderer {
             case TABLE:
                 SchemaTable tableEntity = (SchemaTable) entity;
                 if (tableEntity.isReadonly()) {
-                    myClass.addImport("org.dbtools.android.domain.AndroidBaseManagerReadOnly");
-                    myClass.setExtends("AndroidBaseManagerReadOnly<" + recordClassName + ">");
+                    myClass.addImport(genConfig.isRxJavaSupport() ? "org.dbtools.android.domain.RxAndroidBaseManagerReadOnly" : "org.dbtools.android.domain.AndroidBaseManagerReadOnly");
+                    myClass.setExtends(genConfig.isRxJavaSupport() ? "RxAndroidBaseManagerReadOnly<" + recordClassName + ">" : "AndroidBaseManagerReadOnly<" + recordClassName + ">");
                 } else {
-                    myClass.addImport("org.dbtools.android.domain.AndroidBaseManagerWritable");
-                    myClass.setExtends("AndroidBaseManagerWritable<" + recordClassName + ">");
+                    myClass.addImport(genConfig.isRxJavaSupport() ? "org.dbtools.android.domain.RxAndroidBaseManagerWritable" : "org.dbtools.android.domain.AndroidBaseManagerWritable");
+                    myClass.setExtends(genConfig.isRxJavaSupport() ? "RxAndroidBaseManagerWritable<" + recordClassName + ">" : "AndroidBaseManagerWritable<" + recordClassName + ">");
                 }
                 break;
             case VIEW:

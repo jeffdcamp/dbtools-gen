@@ -291,7 +291,7 @@ public class SchemaTable extends SchemaEntity {
         }
     }
 
-    public Boolean isReadonly() {
+    public boolean isReadonly() {
         return readOnly != null ? readOnly : false;
     }
 

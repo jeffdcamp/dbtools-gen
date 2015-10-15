@@ -16,6 +16,9 @@ public class SchemaQuery extends SchemaEntity {
     @Attribute(required = false)
     private String className;
 
+    @Attribute(required = false)
+    private Boolean readOnly = true;
+
     @ElementList(entry = "field", inline = true)
     List<SchemaQueryField> fields = new ArrayList<>();
 
@@ -74,5 +77,13 @@ public class SchemaQuery extends SchemaEntity {
                 field.setNotNullDefaultValue(fieldsDefaultNotNull);
             }
         }
+    }
+
+    public boolean isReadonly() {
+        return readOnly != null ? readOnly : false;
+    }
+
+    public void setReadOnly(Boolean readOnly) {
+        this.readOnly = readOnly;
     }
 }

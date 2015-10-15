@@ -132,9 +132,9 @@ public class AndroidBaseRecordRenderer {
 
             JavaVariable newVariable;
             if (field.isEnumeration()) {
-                newVariable = generateEnumeration(field, fieldNameJavaStyle, packageName, database);
+                newVariable = generateEnumeration(entity.isReadonly(), field, fieldNameJavaStyle, packageName, database);
             } else {
-                newVariable = generateFieldVariable(fieldNameJavaStyle, field);
+                newVariable = generateFieldVariable(entity.isReadonly(), fieldNameJavaStyle, field);
             }
 
             // Primary key / not enum methods
@@ -415,7 +415,7 @@ public class AndroidBaseRecordRenderer {
         }
     }
 
-    private JavaVariable generateEnumeration(SchemaField field, String fieldNameJavaStyle, String packageName, SchemaDatabase database) {
+    private JavaVariable generateEnumeration(boolean readOnlyEntity, SchemaField field, String fieldNameJavaStyle, String packageName, SchemaDatabase database) {
         JavaVariable newVariable;
         if (field.getJdbcDataType().isNumberDataType()) {
             if (!field.getForeignKeyTable().isEmpty()) {
@@ -443,14 +443,24 @@ public class AndroidBaseRecordRenderer {
                 }
 
                 newVariable = new JavaVariable(enumName, fieldNameJavaStyle);
-                newVariable.setGenerateSetterGetter(true, field.isNotNull(), genConfig.isJsr305Support());
+
+                newVariable.setGenerateGetter(true, field.isNotNull(), genConfig.isJsr305Support());
+                if (!readOnlyEntity) {
+                    newVariable.setGenerateSetter(true, field.isNotNull(), genConfig.isJsr305Support());
+                }
+
                 newVariable.setDefaultValue(enumName + "." + field.getEnumerationDefault(), false);
             } else if (!field.getEnumerationClass().isEmpty()) {
                 // use user defined class
                 String enumClassName = field.getEnumerationClass();
 
                 newVariable = new JavaVariable(enumClassName, fieldNameJavaStyle);
-                newVariable.setGenerateSetterGetter(true, field.isNotNull(), genConfig.isJsr305Support());
+
+                newVariable.setGenerateGetter(true, field.isNotNull(), genConfig.isJsr305Support());
+                if (!readOnlyEntity) {
+                    newVariable.setGenerateSetter(true, field.isNotNull(), genConfig.isJsr305Support());
+                }
+
                 newVariable.setDefaultValue(enumClassName + "." + field.getEnumerationDefault(), false);
             } else {
                 // ENUM without a foreign key table
@@ -465,7 +475,14 @@ public class AndroidBaseRecordRenderer {
                 }
 
                 newVariable = new JavaVariable(enumName, fieldNameJavaStyle);
-                newVariable.setGenerateSetterGetter(true, field.isNotNull(), genConfig.isJsr305Support(), field.getJavaClassType());
+
+                Class varClass = field.getJavaClassType();
+                boolean jsr305SupportedField = !varClass.isPrimitive() || varClass.isEnum();
+
+                newVariable.setGenerateGetter(true, field.isNotNull(), jsr305SupportedField && genConfig.isJsr305Support());
+                if (!readOnlyEntity) {
+                    newVariable.setGenerateSetter(true, field.isNotNull(), jsr305SupportedField && genConfig.isJsr305Support());
+                }
                 newVariable.setDefaultValue(enumName + "." + field.getEnumerationDefault(), false);
             }
         } else {
@@ -475,7 +492,7 @@ public class AndroidBaseRecordRenderer {
         return newVariable;
     }
 
-    private JavaVariable generateFieldVariable(String fieldNameJavaStyle, SchemaField field) {
+    private JavaVariable generateFieldVariable(boolean readOnlyEntity, String fieldNameJavaStyle, SchemaField field) {
         JavaVariable newVariable;
 
         String typeText = field.getJavaTypeText();
@@ -510,10 +527,20 @@ public class AndroidBaseRecordRenderer {
         SchemaFieldType fieldType = field.getJdbcDataType();
         boolean immutableDate = field.getJavaClassType() == Date.class && genConfig.isDateTimeSupport(); // org.joda.time.DateTime IS immutable
         if (!fieldType.isJavaTypePrimative() && !fieldType.isJavaTypeImmutable() && !immutableDate) {
-            newVariable.setCloneSetterGetterVar(true);
+            newVariable.setGetterReturnsClone(true);
+            if (!readOnlyEntity) {
+                newVariable.setSetterClonesParam(true);
+            }
         }
 
-        newVariable.setGenerateSetterGetter(true, field.isNotNull(), genConfig.isJsr305Support(), field.getJavaClassType());
+        Class varClass = field.getJavaClassType();
+        boolean jsr305SupportedField = !varClass.isPrimitive() || varClass.isEnum();
+
+        newVariable.setGenerateGetter(true, field.isNotNull(), jsr305SupportedField && genConfig.isJsr305Support());
+        if (!readOnlyEntity) {
+            newVariable.setGenerateSetter(true, field.isNotNull(), jsr305SupportedField && genConfig.isJsr305Support());
+        }
+
         newVariable.setDefaultValue(defaultValue);
 
         return newVariable;

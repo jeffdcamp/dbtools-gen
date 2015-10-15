@@ -8,6 +8,7 @@ public class GenConfig {
     private boolean includeDatabaseNameInPackage = false;
     private boolean eventBusSupport = false; // EventBus Support
     private boolean sqlQueryBuilderSupport = false; // when creating queries, use SQLBuilder (from dbtools-query)
+    private boolean rxJavaSupport = false; // when creating queries, use SQLBuilder (from dbtools-query)
 
     public GenConfig() {
     }
@@ -17,13 +18,16 @@ public class GenConfig {
                      boolean dateTimeSupport,
                      boolean javaeeSupport,
                      boolean includeDatabaseNameInPackage,
-                     boolean eventBusSupport) {
+                     boolean eventBusSupport,
+                     boolean rxJavaSupport
+    ) {
         this.injectionSupport = injectionSupport;
         this.jsr305Support = jsr305Support;
         this.dateTimeSupport = dateTimeSupport;
         this.javaeeSupport = javaeeSupport;
         this.includeDatabaseNameInPackage = includeDatabaseNameInPackage;
         this.eventBusSupport = eventBusSupport;
+        this.rxJavaSupport = rxJavaSupport;
     }
 
     public boolean isInjectionSupport() {
@@ -72,6 +76,14 @@ public class GenConfig {
 
     public void setEventBusSupport(boolean eventBusSupport) {
         this.eventBusSupport = eventBusSupport;
+    }
+
+    public boolean isRxJavaSupport() {
+        return rxJavaSupport;
+    }
+
+    public void setRxJavaSupport(boolean rxJavaSupport) {
+        this.rxJavaSupport = rxJavaSupport;
     }
 
     public boolean isSqlQueryBuilderSupport() {

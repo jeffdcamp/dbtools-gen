@@ -7,5 +7,6 @@ public abstract class SchemaEntity {
     public abstract String getName();
     public abstract String getClassName();
     public abstract boolean isEnumerationTable();
+    public abstract boolean isReadonly();
     public abstract List<? extends SchemaField> getFields();
 }

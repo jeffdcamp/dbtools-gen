@@ -176,34 +176,11 @@ public class JavaVariable {
     }
 
     /**
-     * Analyze the variable type
-     */
-    public void setGenerateSetterGetter(boolean generateSetterGetter, boolean isNotNull, boolean supportJsr305, Class<?> varClass) {
-        boolean jsr305SupportedField = !varClass.isPrimitive() || varClass.isEnum();
-        if (supportJsr305 && jsr305SupportedField) {
-            if (isNotNull) {
-                setNonnull(true);
-            } else {
-                setNullable(true);
-            }
-        }
-
-        this.setGenerateSetterGetter(generateSetterGetter);
-    }
-
-    /**
      * Don't analyze the variable type
      */
     public void setGenerateSetterGetter(boolean generateSetterGetter, boolean isNotNull, boolean supportJsr305) {
-        if (supportJsr305) {
-            if (isNotNull) {
-                setNonnull(true);
-            } else {
-                setNullable(true);
-            }
-        }
-
-        this.setGenerateSetterGetter(generateSetterGetter);
+        this.setGenerateSetter(generateSetterGetter, isNotNull, supportJsr305);
+        this.setGenerateGetter(generateSetterGetter, isNotNull, supportJsr305);
     }
 
     public boolean isForceStringLength() {
@@ -291,12 +268,34 @@ public class JavaVariable {
         this.generateSetter = generateSetter;
     }
 
+    public void setGenerateSetter(boolean generateSetter, boolean isNotNull, boolean supportJsr305) {
+        if (supportJsr305) {
+            if (isNotNull) {
+                setNonnull(true);
+            } else {
+                setNullable(true);
+            }
+        }
+        setGenerateSetter(generateSetter);
+    }
+
     public boolean isGenerateGetter() {
         return generateGetter;
     }
 
     public void setGenerateGetter(boolean generateGetter) {
         this.generateGetter = generateGetter;
+    }
+
+    public void setGenerateGetter(boolean generateGetter, boolean isNotNull, boolean supportJsr305) {
+        if (supportJsr305) {
+            if (isNotNull) {
+                setNonnull(true);
+            } else {
+                setNullable(true);
+            }
+        }
+        setGenerateGetter(generateGetter);
     }
 
     public Access getGenerateSetterAccess() {

@@ -19,6 +19,9 @@ public class SchemaView extends SchemaEntity {
     @Attribute(required = false)
     private Boolean fieldsDefaultNotNull = null;
 
+    @Attribute(required = false)
+    private Boolean readOnly = true;
+
     @ElementList(entry = "field", inline = true)
     List<SchemaViewField> fields = new ArrayList<>();
 
@@ -74,5 +77,13 @@ public class SchemaView extends SchemaEntity {
                 field.setNotNullDefaultValue(fieldsDefaultNotNull);
             }
         }
+    }
+
+    public boolean isReadonly() {
+        return readOnly != null ? readOnly : false;
+    }
+
+    public void setReadOnly(Boolean readOnly) {
+        this.readOnly = readOnly;
     }
 }
