@@ -241,9 +241,10 @@ public class AndroidRecordRenderer {
 
         createContent.append("\n");
         createContent.append(TAB).append(TAB).append(TAB);
-        createContent.append(".table(\"FROM SOME TABLE(S)\");\n");
+        createContent.append(".table(\"FROM SOME TABLE(S)\")\n");
+        createContent.append(".buildQuery();\n");
 
-        myClass.addConstant("SQLQueryBuilder", "QUERY", null, false);
+        myClass.addConstant("String", "QUERY", null, false);
         myClass.appendStaticInitializer("QUERY = " + createContent.toString());
     }
 
