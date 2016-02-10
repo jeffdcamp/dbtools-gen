@@ -9,7 +9,7 @@
  */
 package org.dbtools.gen.jpa;
 
-import org.dbtools.codegen.JavaClass;
+import org.dbtools.codegen.java.JavaClass;
 import org.dbtools.schema.schemafile.SchemaEntity;
 
 import java.text.SimpleDateFormat;

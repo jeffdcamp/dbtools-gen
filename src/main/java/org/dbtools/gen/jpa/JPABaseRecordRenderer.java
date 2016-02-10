@@ -10,7 +10,7 @@
 
 package org.dbtools.gen.jpa;
 
-import org.dbtools.codegen.*;
+import org.dbtools.codegen.java.*;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.ClassInfo;
 import org.dbtools.schema.schemafile.*;
@@ -286,7 +286,7 @@ public class JPABaseRecordRenderer {
             }
         }
 
-        System.out.println(myClass.getName() + " TYPE: " + entityType + " primaryKeyAdded: " + primaryKeyAdded);
+//        System.out.println(myClass.getName() + " TYPE: " + entityType + " primaryKeyAdded: " + primaryKeyAdded);
         if (!primaryKeyAdded && (entityType == SchemaEntityType.VIEW || entityType == SchemaEntityType.QUERY)) {
             myClass.addMethod(Access.PUBLIC, "String", "getIdColumnName", "return null;").addAnnotation("Override");
 
@@ -423,7 +423,7 @@ public class JPABaseRecordRenderer {
         boolean dateType = typeText.endsWith("Date");
 
         // Special handling for Fraction and Money
-//        if (!field.isJavaTypePrimative()) { // && (fractionType || moneyType)) {
+//        if (!field.isJavaTypePrimitive()) { // && (fractionType || moneyType)) {
 //            // both Money and Fraction are both float at the core of JPA
 //            String dataType = "float";
 //            newVariable = new JavaVariable(dataType, fieldNameJavaStyle);
@@ -446,7 +446,7 @@ public class JPABaseRecordRenderer {
 
         SchemaFieldType fieldType = field.getJdbcDataType();
         boolean immutableDate = field.getJavaClassType() == Date.class; // && dateTimeSupport; // org.joda.time.DateTime IS immutable
-        if (!fieldType.isJavaTypePrimative() && !fieldType.isJavaTypeImmutable() && !immutableDate) {
+        if (!fieldType.isJavaTypePrimitive() && !fieldType.isJavaTypeImmutable() && !immutableDate) {
             newVariable.setCloneSetterGetterVar(true);
         }
 

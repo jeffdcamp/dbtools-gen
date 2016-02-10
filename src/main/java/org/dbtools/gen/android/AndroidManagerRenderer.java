@@ -9,14 +9,16 @@
  */
 package org.dbtools.gen.android;
 
-import org.dbtools.codegen.Access;
-import org.dbtools.codegen.JavaClass;
-import org.dbtools.codegen.JavaMethod;
+import org.dbtools.codegen.java.Access;
+import org.dbtools.codegen.java.JavaClass;
+import org.dbtools.codegen.java.JavaMethod;
+import org.dbtools.codegen.java.JavaVariable;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.SchemaEntity;
 import org.dbtools.schema.schemafile.SchemaEntityType;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -54,12 +56,19 @@ public class AndroidManagerRenderer {
         }
 
         // constructor
+        String databaseManagerPackage = packageName.substring(0, packageName.lastIndexOf('.'));
+        if (genConfig.isIncludeDatabaseNameInPackage()) {
+            databaseManagerPackage = databaseManagerPackage.substring(0, databaseManagerPackage.lastIndexOf('.'));
+        }
+        myClass.addImport(databaseManagerPackage + ".DatabaseManager");
         myClass.setCreateDefaultConstructor(false);
 
-        JavaMethod defaultConstructor = myClass.addConstructor(Access.PUBLIC, null, null);
+        JavaVariable constructorParam = new JavaVariable("DatabaseManager", "databaseManager");
+        JavaMethod defaultConstructor = myClass.addConstructor(Access.PUBLIC, Arrays.asList(constructorParam), "super(databaseManager);");
         if (genConfig.isInjectionSupport()) {
             defaultConstructor.addAnnotation("javax.inject.Inject");
         }
+
 
         if (entity.getType() == SchemaEntityType.QUERY) {
             String recordClassName = AndroidRecordRenderer.createClassName(entity);

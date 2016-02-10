@@ -1,4 +1,4 @@
-package org.dbtools.codegen;
+package org.dbtools.codegen.java;
 
 public enum VariableType {
 

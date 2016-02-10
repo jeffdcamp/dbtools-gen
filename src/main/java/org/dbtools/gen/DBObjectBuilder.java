@@ -16,25 +16,14 @@ import org.dbtools.schema.schemafile.SchemaEntity;
 
 import java.util.List;
 
-/**
- * @author Jeff
- */
 public interface DBObjectBuilder {
-    public String getName();
+    String getName();
+    boolean build(SchemaDatabase database, SchemaEntity entity, String packageName, String outDir, GenConfig genConfig);
+    int getNumberFilesGenerated();
+    List<String> getFilesGenerated();
+//    void setDatabase(SchemaDatabase schemaDatabase);
+//    void setEntity(SchemaEntity table);
+//    void setPackageName(String packageName);
+//    void setSourceOutputDir(String outDir);
 
-    public boolean build();
-
-    public int getNumberFilesGenerated();
-
-    public List<String> getFilesGenerated();
-
-    public void setDatabase(SchemaDatabase schemaDatabase);
-
-    public void setEntity(SchemaEntity table);
-
-    public void setPackageName(String packageName);
-
-    public void setSourceOutputDir(String outDir);
-
-    public void setGenConfig(GenConfig genConfig);
 }

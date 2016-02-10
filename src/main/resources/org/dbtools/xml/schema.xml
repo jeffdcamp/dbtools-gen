@@ -14,7 +14,7 @@
             <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
             <field name="BIRTH_DATE" jdbcDataType="DATE"/>
             <field name="NUMBER" jdbcDataType="INTEGER"/>
-            <field name="PHONE" jdbcDataType="VARCHAR" size="255"/>
+            <field name="PHONE" jdbcDataType="VARCHAR" size="255" notNull="false"/>
             <field name="EMAIL" jdbcDataType="VARCHAR" size="255"/>
             <field name="DATA" jdbcDataType="BLOB"/>
         </table>

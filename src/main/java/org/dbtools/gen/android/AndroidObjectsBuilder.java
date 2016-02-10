@@ -10,9 +10,15 @@ import org.dbtools.schema.schemafile.DatabaseSchema;
  * Date: 2/12/14
  */
 public class AndroidObjectsBuilder extends DBObjectsBuilder {
+    private AndroidDBObjectBuilder objectBuilder;
+
+    public AndroidObjectsBuilder(GenConfig genConfig) {
+        objectBuilder = new AndroidDBObjectBuilder(genConfig);
+    }
+
     @Override
     public DBObjectBuilder getObjectBuilder() {
-        return new AndroidDBObjectBuilder();
+        return objectBuilder;
     }
 
     public void buildAll(String schemaFilename, String baseOutputDir, String basePackageName, GenConfig genConfig) {
@@ -22,7 +28,7 @@ public class AndroidObjectsBuilder extends DBObjectsBuilder {
         setGenConfig(genConfig);
 
         build();
-        System.out.println("Generated [" + getObjectBuilder().getNumberFilesGenerated() + "] files.");
+        System.out.println("Generated [" + objectBuilder.getNumberFilesGenerated() + "] files.");
     }
 
     @Override

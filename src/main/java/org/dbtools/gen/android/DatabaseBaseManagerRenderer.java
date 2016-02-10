@@ -1,8 +1,8 @@
 package org.dbtools.gen.android;
 
-import org.dbtools.codegen.Access;
-import org.dbtools.codegen.JavaClass;
-import org.dbtools.codegen.JavaVariable;
+import org.dbtools.codegen.java.Access;
+import org.dbtools.codegen.java.JavaClass;
+import org.dbtools.codegen.java.JavaVariable;
 import org.dbtools.gen.AnnotationConsts;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.*;
@@ -17,6 +17,8 @@ import java.util.Arrays;
 public class DatabaseBaseManagerRenderer {
 
     private JavaClass myClass;
+    private JavaClass myConstClass;
+    private String constClassName = "DatabaseManagerConst";
     private static final String TAB = JavaClass.getTab();
 
     private String packageBase;
@@ -30,20 +32,13 @@ public class DatabaseBaseManagerRenderer {
         myClass = new JavaClass(packageBase, className);
         myClass.setExtends("AndroidDatabaseManager"); // extend the generated base class
         myClass.setAbstract(true);
+
+        myConstClass = new JavaClass(packageBase, constClassName);
+
+        addHeaders(myClass);
+        addHeaders(myConstClass);
+
         addImports();
-
-        // header comment
-        String fileHeaderComment;
-        fileHeaderComment = "/*\n";
-        fileHeaderComment += " * " + className + ".java\n";
-        fileHeaderComment += " *\n";
-        fileHeaderComment += " * GENERATED FILE - DO NOT EDIT\n";
-        fileHeaderComment += " *\n";
-        fileHeaderComment += " */\n";
-        myClass.setFileHeaderComment(fileHeaderComment);
-
-        // Since this is generated code.... suppress all warnings
-        myClass.addAnnotation("@SuppressWarnings(\"all\")");
 
         // constructor
         myClass.setCreateDefaultConstructor(false);
@@ -52,6 +47,22 @@ public class DatabaseBaseManagerRenderer {
         createOnCreateViews(databaseSchema);
 
         myClass.writeToDisk(outDir, true);
+        myConstClass.writeToDisk(outDir, true);
+    }
+
+    private void addHeaders(JavaClass someClass) {
+        // header comment
+        String fileHeaderComment;
+        fileHeaderComment = "/*\n";
+        fileHeaderComment += " * " + someClass.getName() + ".java\n";
+        fileHeaderComment += " *\n";
+        fileHeaderComment += " * GENERATED FILE - DO NOT EDIT\n";
+        fileHeaderComment += " *\n";
+        fileHeaderComment += " */\n";
+        someClass.setFileHeaderComment(fileHeaderComment);
+
+        // Since this is generated code.... suppress all warnings
+        someClass.addAnnotation("@SuppressWarnings(\"all\")");
     }
 
     private void addImports() {
@@ -72,7 +83,7 @@ public class DatabaseBaseManagerRenderer {
 
             String databaseConstName = JavaUtil.nameToJavaConst(databaseName) + "_DATABASE_NAME";
             String databaseMethodName = JavaUtil.nameToJavaConst(databaseName) + "_TABLES";
-            myClass.addConstant("String", databaseConstName, database.getName());
+            myConstClass.addConstant("String", databaseConstName, database.getName());
             createCreateDatabase(content, databaseConstName, databaseMethodName, database);
         }
 
@@ -88,7 +99,7 @@ public class DatabaseBaseManagerRenderer {
         String varName = JavaUtil.sqlNameToJavaVariableName(databaseMethodName);
         String createDatabaseMethodName = "create" + Character.toUpperCase(varName.charAt(0)) + varName.substring(1);
 
-        content.append("if (androidDatabase.getName().equals(" + databaseConstName + ")) {\n");
+        content.append("if (androidDatabase.getName().equals(" + constClassName + "." + databaseConstName + ")) {\n");
         content.append(TAB).append(createDatabaseMethodName).append("(androidDatabase);\n");
         content.append("}\n");
 
@@ -103,7 +114,7 @@ public class DatabaseBaseManagerRenderer {
         for (SchemaTable table : database.getTables()) {
             if (table.isEnumerationTable()) {
                 createDatabaseContent.append("AndroidBaseManager.createTable(database, ")
-                        .append(JavaUtil.createTableImport(databaseBasePackage, table.getClassName()))
+                        .append(JavaUtil.createTableImport(databaseBasePackage, table.getClassName()) + "Const")
                         .append(".CREATE_TABLE);\n");
             }
         }
@@ -112,7 +123,7 @@ public class DatabaseBaseManagerRenderer {
         for (SchemaTable table : database.getTables()) {
             if (!table.isEnumerationTable()) {
                 createDatabaseContent.append("AndroidBaseManager.createTable(database, ")
-                        .append(JavaUtil.createTableImport(databaseBasePackage, table.getClassName()))
+                        .append(JavaUtil.createTableImport(databaseBasePackage, table.getClassName()) + "Const")
                         .append(".CREATE_TABLE);\n");
             }
         }
@@ -163,7 +174,7 @@ public class DatabaseBaseManagerRenderer {
         String varName = JavaUtil.sqlNameToJavaVariableName(databaseMethodName);
         String createDatabaseViewsMethodName = "create" + Character.toUpperCase(varName.charAt(0)) + varName.substring(1);
 
-        content.append("if (androidDatabase.getName().equals(" + databaseConstName + ")) {\n");
+        content.append("if (androidDatabase.getName().equals(" + constClassName + "." + databaseConstName + ")) {\n");
         content.append(TAB).append(createDatabaseViewsMethodName).append("(androidDatabase);\n");
         content.append("}\n");
 
@@ -200,36 +211,36 @@ public class DatabaseBaseManagerRenderer {
         }
 
         String varName = JavaUtil.sqlNameToJavaVariableName(databaseMethodName);
-        String createDatabaseViewsMethodName = "drop" + Character.toUpperCase(varName.charAt(0)) + varName.substring(1);
+        String dropDatabaseViewsMethodName = "drop" + Character.toUpperCase(varName.charAt(0)) + varName.substring(1);
 
-        content.append("if (androidDatabase.getName().equals(" + databaseConstName + ")) {\n");
-        content.append(TAB).append(createDatabaseViewsMethodName).append("(androidDatabase);\n");
+        content.append("if (androidDatabase.getName().equals(" + constClassName + "." + databaseConstName + ")) {\n");
+        content.append(TAB).append(dropDatabaseViewsMethodName).append("(androidDatabase);\n");
         content.append("}\n");
 
-        StringBuilder createDatabaseViewsContent = new StringBuilder();
-        createDatabaseViewsContent.append("DatabaseWrapper database = androidDatabase.getDatabaseWrapper();\n");
-        createDatabaseViewsContent.append("database.beginTransaction();\n");
+        StringBuilder dropDatabaseViewsContent = new StringBuilder();
+        dropDatabaseViewsContent.append("DatabaseWrapper database = androidDatabase.getDatabaseWrapper();\n");
+        dropDatabaseViewsContent.append("database.beginTransaction();\n");
 
         // include database name in base package name
         String databaseBasePackage = createDatabaseBasePackage(database);
 
-        createDatabaseViewsContent.append("\n// Views\n");
+        dropDatabaseViewsContent.append("\n// Views\n");
         for (SchemaView view : database.getViews()) {
-            createDatabaseViewsContent.append("AndroidBaseManager.dropTable(database, ")
+            dropDatabaseViewsContent.append("AndroidBaseManager.dropTable(database, ")
                     .append(JavaUtil.createTableImport(databaseBasePackage, view.getClassName()))
                     .append(".DROP_VIEW);\n");
         }
 
-        createDatabaseViewsContent.append("\n");
-        createDatabaseViewsContent.append("database.setTransactionSuccessful();\n");
-        createDatabaseViewsContent.append("database.endTransaction();\n");
+        dropDatabaseViewsContent.append("\n");
+        dropDatabaseViewsContent.append("database.setTransactionSuccessful();\n");
+        dropDatabaseViewsContent.append("database.endTransaction();\n");
 
         JavaVariable param = new JavaVariable("AndroidDatabase", "androidDatabase");
         if (genConfig.isJsr305Support()) {
             param.addAnnotation(AnnotationConsts.NONNULL);
         }
 
-        myClass.addMethod(Access.PUBLIC, "void", createDatabaseViewsMethodName, Arrays.asList(param), createDatabaseViewsContent.toString());
+        myClass.addMethod(Access.PUBLIC, "void", dropDatabaseViewsMethodName, Arrays.asList(param), dropDatabaseViewsContent.toString());
     }
 
     public static String getClassName(SchemaEntity table) {

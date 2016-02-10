@@ -30,15 +30,10 @@ public class JPADBObjectBuilder implements DBObjectBuilder {
     private int filesGeneratedCount = 0;
     private List<String> filesGenerated = new ArrayList<>();
 
-    private SchemaDatabase database;
-    private SchemaEntity table;
-    private String packageName;
-    private String outDir;
-
-    /**
-     * Creates a new instance of JPADBObjectBuilder
-     */
-    public JPADBObjectBuilder() {
+    public JPADBObjectBuilder(GenConfig genConfig) {
+        baseRecordClass.setGenConfig(genConfig);
+        managerClass.setGenConfig(genConfig);
+        baseManagerClass.setGenConfig(genConfig);
     }
 
     @Override
@@ -47,7 +42,7 @@ public class JPADBObjectBuilder implements DBObjectBuilder {
     }
 
     @Override
-    public boolean build() {
+    public boolean build(SchemaDatabase database, SchemaEntity entity, String packageName, String outDir, GenConfig genConfig) {
         char lastDirChar = outDir.charAt(outDir.length() - 1);
         if (lastDirChar != '\\' || lastDirChar != '/') {
             if (outDir.charAt(0) == '/') {
@@ -58,21 +53,21 @@ public class JPADBObjectBuilder implements DBObjectBuilder {
         }
 
         // Managers
-        if (!table.isEnumerationTable()) {
-            String managerFileName = outDir + JPARecordManagerRenderer.getClassName(table) + ".java";
+        if (!entity.isEnumerationTable()) {
+            String managerFileName = outDir + JPARecordManagerRenderer.getClassName(entity) + ".java";
 
             //File baseManagerFile = new File(baseSEManagerFileName);
             File managerFile = new File(managerFileName);
 
             // Base Manager
-            baseManagerClass.generateObjectCode(table, packageName);
+            baseManagerClass.generateObjectCode(entity, packageName);
             baseManagerClass.writeToFile(outDir);
 
             filesGeneratedCount++;
 
             // Manager
             if (!managerFile.exists()) {
-                managerClass.generateObjectCode(table, packageName);
+                managerClass.generateObjectCode(entity, packageName);
                 managerClass.writeToFile(outDir);
 
                 filesGeneratedCount++;
@@ -80,23 +75,23 @@ public class JPADBObjectBuilder implements DBObjectBuilder {
         }
 
         // Entities
-        String baseRecordFileName = outDir + JPABaseRecordRenderer.createClassName(table) + ".java";
-        String recordFileName = outDir + JPARecordClassRenderer.createClassName(table) + ".java";
+        String baseRecordFileName = outDir + JPABaseRecordRenderer.createClassName(entity) + ".java";
+        String recordFileName = outDir + JPARecordClassRenderer.createClassName(entity) + ".java";
         File baseRecordFile = new File(baseRecordFileName);
         File recordFile = new File(recordFileName);
 
 
         // BaseRecord
-        baseRecordClass.generate(database, table, packageName);
+        baseRecordClass.generate(database, entity, packageName);
         baseRecordClass.writeToFile(outDir);
 
         filesGenerated.add(baseRecordFile.getPath());
         filesGeneratedCount++;
 
         // Record
-        if (!table.isEnumerationTable()) {
+        if (!entity.isEnumerationTable()) {
             if (!recordFile.exists()) {
-                recordClass.generate(table, packageName);
+                recordClass.generate(entity, packageName);
                 recordClass.writeToFile(outDir);
 
                 filesGenerated.add(recordFile.getPath());
@@ -114,32 +109,5 @@ public class JPADBObjectBuilder implements DBObjectBuilder {
     @Override
     public List<String> getFilesGenerated() {
         return filesGenerated;
-    }
-
-    @Override
-    public void setGenConfig(GenConfig genConfig) {
-        baseRecordClass.setGenConfig(genConfig);
-        managerClass.setGenConfig(genConfig);
-        baseManagerClass.setGenConfig(genConfig);
-    }
-
-    @Override
-    public void setEntity(SchemaEntity table) {
-        this.table = table;
-    }
-
-    @Override
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
-    }
-
-    @Override
-    public void setSourceOutputDir(String outDir) {
-        this.outDir = outDir;
-    }
-
-    @Override
-    public void setDatabase(SchemaDatabase dbSchema) {
-        this.database = dbSchema;
     }
 }

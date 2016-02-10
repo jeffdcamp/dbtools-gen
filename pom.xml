@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
         <version>7</version>
     </parent>
-    
+
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.dbtools</groupId>
     <artifactId>dbtools-gen</artifactId>
-    <version>4.0.3-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>DBTools Generator</name>
     <description>DBTools ORM Class Generator</description>
@@ -48,17 +49,36 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <target.jdk>1.7</target.jdk>
+        <kotlin.version>1.0.0-rc-1036</kotlin.version>
     </properties>
 
     <prerequisites>
         <maven>3.2.1</maven>
     </prerequisites>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>kotlin</id>
+            <url>https://dl.bintray.com/kotlin/kotlin-eap/</url>
+        </pluginRepository>
+    </pluginRepositories>
+    <repositories>
+        <repository>
+            <id>kotlin</id>
+            <url>https://dl.bintray.com/kotlin/kotlin-eap/</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>org.simpleframework</groupId>
             <artifactId>simple-xml</artifactId>
             <version>2.7.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>${kotlin.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -96,6 +116,29 @@
                         <jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
                     </systemPropertyVariables>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <version>${kotlin.version}</version>
+
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>

@@ -1,9 +1,9 @@
 package org.dbtools.gen.android;
 
-import org.dbtools.codegen.Access;
-import org.dbtools.codegen.JavaClass;
-import org.dbtools.codegen.JavaMethod;
-import org.dbtools.codegen.JavaVariable;
+import org.dbtools.codegen.java.Access;
+import org.dbtools.codegen.java.JavaClass;
+import org.dbtools.codegen.java.JavaMethod;
+import org.dbtools.codegen.java.JavaVariable;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.DatabaseSchema;
 import org.dbtools.schema.schemafile.SchemaDatabase;
@@ -19,7 +19,7 @@ import java.util.List;
 public class DatabaseManagerRenderer {
 
     private JavaClass myClass;
-    private static final String TAB = JavaClass.getTab();
+    public final String dbConstClassName = "DatabaseManagerConst";
 
     private String packageBase;
     private String outDir;
@@ -30,12 +30,15 @@ public class DatabaseManagerRenderer {
 
         String className = "DatabaseManager";
         myClass = new JavaClass(packageBase, className);
+
+
         myClass.setExtends("DatabaseBaseManager"); // extend the generated base class
         myClass.setCreateDefaultConstructor(false);
         if (genConfig.isInjectionSupport()) {
             myClass.addAnnotation("Singleton");
 
-            JavaMethod defaultConstructor = myClass.addConstructor(Access.PUBLIC, null, null);
+            List<JavaVariable> params = Arrays.asList(new JavaVariable("Application", "application"));
+            JavaMethod defaultConstructor = myClass.addConstructor(Access.PUBLIC, params, "this.application = application;");
             defaultConstructor.addAnnotation("javax.inject.Inject");
         }
         addImports();
@@ -61,13 +64,13 @@ public class DatabaseManagerRenderer {
 
         for (SchemaDatabase database : databaseSchema.getDatabases()) {
             String databaseConstName = JavaUtil.nameToJavaConst(database.getName()) + "_DATABASE_NAME";
-            String databaseConstVersion = JavaUtil.nameToJavaConst(database.getName()) + "_VERSION";
-            String databaseViewsConstVersion = JavaUtil.nameToJavaConst(database.getName()) + "_VIEWS_VERSION";
+            String databaseConstVersion = database.getName() + "TablesVersion";
+            String databaseViewsConstVersion = database.getName() + "ViewsVersion";
 
-            content.append("addDatabase(application, " + databaseConstName + ", " + databaseConstVersion + ", " + databaseViewsConstVersion + ");\n");
+            content.append("addDatabase(application, " + dbConstClassName + "." + databaseConstName + ", " + databaseConstVersion + ", " + databaseViewsConstVersion + ");\n");
 
-            myClass.addConstant("int", databaseConstVersion, "1");
-            myClass.addConstant("int", databaseViewsConstVersion, "1");
+            myClass.addVariable("int", databaseConstVersion, "1").setFinal(true);
+            myClass.addVariable("int", databaseViewsConstVersion, "1").setFinal(true);
         }
 
         myClass.addMethod(Access.PUBLIC, "void", "identifyDatabases", content.toString());

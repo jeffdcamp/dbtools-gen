@@ -9,7 +9,7 @@
  */
 package org.dbtools.gen.android;
 
-import org.dbtools.codegen.*;
+import org.dbtools.codegen.java.*;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.renderer.SchemaRenderer;
 import org.dbtools.renderer.SqliteRenderer;
@@ -28,10 +28,12 @@ import java.util.List;
 public class AndroidBaseRecordRenderer {
     private static final String TAB = JavaClass.getTab();
     private static final String CLEANUP_ORPHANS_METHOD_NAME = "cleanupOrphans";
-    private static final String ALL_KEYS_VAR_NAME = "ALL_KEYS";
+    private static final String ALL_COLUMNS_VAR_NAME = "ALL_COLUMNS";
+    private static final String ALL_COLUMNS_FULL_VAR_NAME = "ALL_COLUMNS_FULL";
     public static final String PRIMARY_KEY_COLUMN = "PRIMARY_KEY_COLUMN";
 
-    private JavaClass myClass;
+    private JavaClass constClass;
+    private JavaClass recordClass;
     private List<JavaEnum> enumerationClasses = new ArrayList<>();
     private StringBuilder cleanupOrphansContent;
     private boolean useInnerEnums = true;
@@ -50,32 +52,36 @@ public class AndroidBaseRecordRenderer {
 
         String className = createClassName(enumTable, entityClassName);
 
+        String constClassName = entityClassName + "Const";
+        constClass = new JavaClass(packageName, constClassName);
+
         if (enumTable) {
             initClassAsEnum(packageName, className, entity);
         } else {
-            myClass = new JavaClass(packageName, className);
-            myClass.setAbstract(true);
+            recordClass = new JavaClass(packageName, className);
+            recordClass.setAbstract(true);
 
-            myClass.addImport("org.dbtools.android.domain.AndroidBaseRecord");
-            myClass.setExtends("AndroidBaseRecord");
+            recordClass.addImport("org.dbtools.android.domain.AndroidBaseRecord");
+            recordClass.setExtends("AndroidBaseRecord");
         }
 
         // prep
         cleanupOrphansContent = new StringBuilder();
 
         // header comment
-        addHeader(className);
+        addHeader(constClass, className);
+        addHeader(recordClass, className);
 
         boolean primaryKeyAdded = false;
 
         // constants and variables
         String databaseName = database.getName();
-        myClass.addConstant("String", "DATABASE", databaseName);
+        constClass.addConstant("String", "DATABASE", databaseName);
 
         String tableName = entity.getName();
         if (entityType != SchemaEntityType.QUERY) {
-            myClass.addConstant("String", "TABLE", tableName);
-            myClass.addConstant("String", "FULL_TABLE", databaseName + "." + tableName);
+            constClass.addConstant("String", "TABLE", tableName);
+            constClass.addConstant("String", "FULL_TABLE", databaseName + "." + tableName);
         }
 
         // post field method content
@@ -84,7 +90,7 @@ public class AndroidBaseRecordRenderer {
         String setContentValuesContent = "";
         String setContentCursorContent = "";
 
-        List<String> keys = new ArrayList<>();
+        List<String> columns = new ArrayList<>();
         for (SchemaField field : entity.getFields()) {
             boolean primaryKey = field.isPrimaryKey();
 
@@ -104,15 +110,16 @@ public class AndroidBaseRecordRenderer {
 
             // constants
             String constName = JavaClass.formatConstant(fieldNameJavaStyle);
-            String fieldKey = "C_" + constName;
-            keys.add(fieldKey);
+            String fieldColumn = "C_" + constName;
+            String fullFieldColumn = constClassName + ".C_" + constName;
+            columns.add(fieldColumn);
 
             if (primaryKey) {
-                myClass.addConstant("String", PRIMARY_KEY_COLUMN, fieldName); // add a reference to this column
+                constClass.addConstant("String", PRIMARY_KEY_COLUMN, fieldName); // add a reference to this column
             }
 
-            myClass.addConstant("String", fieldKey, fieldName);
-            myClass.addConstant("String", "FULL_C_" + constName, tableName + "." + fieldName);
+            constClass.addConstant("String", fieldColumn, fieldName);
+            constClass.addConstant("String", "FULL_C_" + constName, tableName + "." + fieldName);
 
             // skip some types of variables at this point (so that we still get the column name and the property name)
             switch (field.getForeignKeyType()) {
@@ -138,19 +145,19 @@ public class AndroidBaseRecordRenderer {
             }
 
             // Primary key / not enum methods
-            if (primaryKey && !myClass.isEnum()) {
-                myClass.addMethod(Access.PUBLIC, "String", "getIdColumnName", "return " + fieldKey + ";").addAnnotation("Override");
+            if (primaryKey && !recordClass.isEnum()) {
+                recordClass.addMethod(Access.PUBLIC, "String", "getIdColumnName", "return " + fullFieldColumn + ";").addAnnotation("Override");
 
                 // add vanilla getPrimaryKeyId() / setPrimaryKeyId(...) for the primary key
-                myClass.addMethod(Access.PUBLIC, field.getJavaTypeText(), "getPrimaryKeyId", "return " + fieldNameJavaStyle + ";").addAnnotation("Override");
+                recordClass.addMethod(Access.PUBLIC, field.getJavaTypeText(), "getPrimaryKeyId", "return " + fieldNameJavaStyle + ";").addAnnotation("Override");
 
                 List<JavaVariable> setIdParams = new ArrayList<>();
                 setIdParams.add(new JavaVariable(newVariable.getDataType(), "id"));
-                myClass.addMethod(Access.PUBLIC, "void", "setPrimaryKeyId", setIdParams, "this." + fieldNameJavaStyle + " = id;").addAnnotation("Override");
+                recordClass.addMethod(Access.PUBLIC, "void", "setPrimaryKeyId", setIdParams, "this." + fieldNameJavaStyle + " = id;").addAnnotation("Override");
             }
 
-            if (!myClass.isEnum()) {
-                myClass.addVariable(newVariable);
+            if (!recordClass.isEnum()) {
+                recordClass.addVariable(newVariable);
             }
 
             // method values
@@ -169,30 +176,30 @@ public class AndroidBaseRecordRenderer {
                         value = fieldNameJavaStyle + " != null ? (" + fieldNameJavaStyle + " ? 1 : 0) : 0";
                     }
                 }
-                contentValuesContent.append("values.put(").append(fieldKey).append(", ").append(value).append(");\n");
+                contentValuesContent.append("values.put(").append(fullFieldColumn).append(", ").append(value).append(");\n");
                 valuesContent.append(TAB).append(value).append(",\n");
 
-                setContentValuesContent += fieldNameJavaStyle + " = " + getContentValuesGetterMethod(field, fieldKey, newVariable) + ";\n";
+                setContentValuesContent += fieldNameJavaStyle + " = " + getContentValuesGetterMethod(field, fullFieldColumn, newVariable) + ";\n";
             } else {
                 // id column
                 valuesContent.append(TAB).append(fieldNameJavaStyle).append(",\n");
             }
 
-            setContentCursorContent += fieldNameJavaStyle + " = " + getContentValuesCursorGetterMethod(field, fieldKey, newVariable) + ";\n";
+            setContentCursorContent += fieldNameJavaStyle + " = " + getContentValuesCursorGetterMethod(field, fullFieldColumn, newVariable) + ";\n";
 
             // static getter method that takes a Cursor parameter
-            myClass.addImport("android.database.Cursor");
-            JavaMethod cursorGetter = myClass.addMethod(Access.PUBLIC, newVariable.getDataType(), newVariable.getGetterMethodName(), "return " + getContentValuesCursorGetterMethod(field, fieldKey, newVariable) + ";");
+            constClass.addImport("android.database.Cursor");
+            JavaMethod cursorGetter = constClass.addMethod(Access.PUBLIC, newVariable.getDataType(), newVariable.getGetterMethodName(), "return " + getContentValuesCursorGetterMethod(field, fieldColumn, newVariable) + ";");
             cursorGetter.setStatic(true);
             cursorGetter.setParameters(Arrays.asList(new JavaVariable("Cursor", "cursor")));
         }
 
         if (!primaryKeyAdded && (entityType == SchemaEntityType.VIEW || entityType == SchemaEntityType.QUERY)) {
-            myClass.addMethod(Access.PUBLIC, "String", "getIdColumnName", "return null;").addAnnotation("Override");
+            recordClass.addMethod(Access.PUBLIC, "String", "getIdColumnName", "return null;").addAnnotation("Override");
 
             // add vanilla getPrimaryKeyId() / setPrimaryKeyId() for the primary key
-            myClass.addMethod(Access.PUBLIC, "long", "getPrimaryKeyId", "return 0;").addAnnotation("Override");
-            myClass.addMethod(Access.PUBLIC, "void", "setPrimaryKeyId", Arrays.asList(new JavaVariable("long", "id")), "").addAnnotation("Override");
+            recordClass.addMethod(Access.PUBLIC, "long", "getPrimaryKeyId", "return 0;").addAnnotation("Override");
+            recordClass.addMethod(Access.PUBLIC, "void", "setPrimaryKeyId", Arrays.asList(new JavaVariable("long", "id")), "").addAnnotation("Override");
         }
 
         // SchemaDatabase variables
@@ -201,65 +208,77 @@ public class AndroidBaseRecordRenderer {
             String createTable = SqliteRenderer.generateTableSchema(table, databaseMapping);
             createTable = createTable.replace("\n", "\" + \n" + TAB + TAB + "\"");
             createTable = createTable.replace("\t", ""); // remove tabs
-            myClass.addConstant("String", "CREATE_TABLE", createTable);
-            myClass.addConstant("String", "DROP_TABLE", SchemaRenderer.generateDropSchema(true, table));
+            constClass.addConstant("String", "CREATE_TABLE", createTable);
+            constClass.addConstant("String", "DROP_TABLE", SchemaRenderer.generateDropSchema(true, table));
         }
 
         // Content values
 
         // All keys constant
-        if (!myClass.isEnum()) {
-            myClass.addImport("android.content.ContentValues");
-            myClass.addImport("android.database.Cursor");
+        if (!recordClass.isEnum()) {
+            recordClass.addImport("android.content.ContentValues");
+            recordClass.addImport("android.database.Cursor");
 
-            String allKeysDefaultValue = "new String[] {\n";
-            boolean hasKey = false;
-            for (String key : keys) {
-                if (hasKey) {
-                    allKeysDefaultValue += ",\n";
+
+            // columns
+            String allColumnsDefaultValue = "new String[] {\n";
+            String allColumnsFullDefaultValue = "new String[] {\n";
+            boolean hasColumn = false;
+            for (String column : columns) {
+                if (hasColumn) {
+                    allColumnsDefaultValue += ",\n";
+                    allColumnsFullDefaultValue += ",\n";
                 }
-                allKeysDefaultValue += TAB + TAB + key;
-                hasKey = true;
+                allColumnsDefaultValue += TAB + TAB + column;
+                allColumnsFullDefaultValue += TAB + TAB + "FULL_" + column;
+                hasColumn = true;
             }
-            allKeysDefaultValue += "}";
+            allColumnsDefaultValue += "}";
+            allColumnsFullDefaultValue += "}";
 
-            JavaVariable allKeysVar = myClass.addConstant("String[]", ALL_KEYS_VAR_NAME, allKeysDefaultValue);
-            allKeysVar.setAccess(Access.PUBLIC);
-            myClass.addMethod(Access.PUBLIC, "String[]", "getAllKeys", "return " + ALL_KEYS_VAR_NAME + ".clone();").addAnnotation("Override");
+            // columns
+            JavaVariable allColumnsVar = constClass.addConstant("String[]", ALL_COLUMNS_VAR_NAME, allColumnsDefaultValue);
+            allColumnsVar.setAccess(Access.PUBLIC);
+            recordClass.addMethod(Access.PUBLIC, "String[]", "getAllColumns", "return " + constClassName + "." + ALL_COLUMNS_VAR_NAME + ".clone();").addAnnotation("Override");
+
+            // columns full
+            JavaVariable allColumnsFullVar = constClass.addConstant("String[]", ALL_COLUMNS_FULL_VAR_NAME, allColumnsFullDefaultValue);
+            allColumnsFullVar.setAccess(Access.PUBLIC);
+            recordClass.addMethod(Access.PUBLIC, "String[]", "getAllColumnsFull", "return " + constClassName + "." + ALL_COLUMNS_FULL_VAR_NAME + ".clone();");
 
             contentValuesContent.append("return values;");
-            myClass.addMethod(Access.PUBLIC, "ContentValues", "getContentValues", contentValuesContent.toString()).addAnnotation("Override");
+            recordClass.addMethod(Access.PUBLIC, "ContentValues", "getContentValues", contentValuesContent.toString()).addAnnotation("Override");
 
             valuesContent.append("};\n");
             valuesContent.append("return values;");
-            myClass.addMethod(Access.PUBLIC, "Object[]", "getValues", valuesContent.toString()).addAnnotation("Override");
+            recordClass.addMethod(Access.PUBLIC, "Object[]", "getValues", valuesContent.toString()).addAnnotation("Override");
 
             List<JavaVariable> setCValuesParams = new ArrayList<>();
             setCValuesParams.add(new JavaVariable("ContentValues", "values"));
-            myClass.addMethod(Access.PUBLIC, "void", "setContent", setCValuesParams, setContentValuesContent);
+            recordClass.addMethod(Access.PUBLIC, "void", "setContent", setCValuesParams, setContentValuesContent);
 
             List<JavaVariable> setCCursorParams = new ArrayList<>();
             setCCursorParams.add(new JavaVariable("Cursor", "cursor"));
-            myClass.addMethod(Access.PUBLIC, "void", "setContent", setCCursorParams, setContentCursorContent).addAnnotation("Override");
+            recordClass.addMethod(Access.PUBLIC, "void", "setContent", setCCursorParams, setContentCursorContent).addAnnotation("Override");
         }
 
         // methods
         addForeignKeyData(database, entity.getName(), packageName);
 
         // add method to cleanup many-to-one left-overs
-        if (!myClass.isEnum()) {
+        if (!recordClass.isEnum()) {
             List<JavaVariable> orphanParams = new ArrayList<>();
 
             if (cleanupOrphansContent.length() > 0) {
-                myClass.addMethod(Access.PROTECTED, "void", CLEANUP_ORPHANS_METHOD_NAME, orphanParams, cleanupOrphansContent.toString());
+                recordClass.addMethod(Access.PROTECTED, "void", CLEANUP_ORPHANS_METHOD_NAME, orphanParams, cleanupOrphansContent.toString());
             }
 
             // new record check
-            myClass.addMethod(Access.PUBLIC, "boolean", "isNewRecord", "return getPrimaryKeyId() <= 0;");
+            recordClass.addMethod(Access.PUBLIC, "boolean", "isNewRecord", "return getPrimaryKeyId() <= 0;");
         }
     }
 
-    private void addHeader(String className) {
+    private void addHeader(JavaClass someClass, String className) {
         // Do not place date in file because it will cause a new check-in to scm
         String fileHeaderComment;
         fileHeaderComment = "/*\n";
@@ -269,10 +288,10 @@ public class AndroidBaseRecordRenderer {
         fileHeaderComment += " * CHECKSTYLE:OFF\n";
         fileHeaderComment += " * \n";
         fileHeaderComment += " */\n";
-        myClass.setFileHeaderComment(fileHeaderComment);
+        someClass.setFileHeaderComment(fileHeaderComment);
 
         // Since this is generated code.... suppress all warnings
-        myClass.addAnnotation("@SuppressWarnings(\"all\")");
+        someClass.addAnnotation("@SuppressWarnings(\"all\")");
     }
 
     private void initClassAsEnum(String packageName, String enumClassName, SchemaEntity entity) {
@@ -283,34 +302,34 @@ public class AndroidBaseRecordRenderer {
         SchemaTable table = (SchemaTable) entity;
         List<TableEnum> enums = table.getTableEnums();
 
-        myClass = new JavaEnum(packageName, enumClassName, table.getTableEnumsText());
-        myClass.setCreateDefaultConstructor(false);
+        recordClass = new JavaEnum(packageName, enumClassName, table.getTableEnumsText());
+        recordClass.setCreateDefaultConstructor(false);
 
         if (enums.size() > 0) {
-            myClass.addImport("java.util.Map");
-            myClass.addImport("java.util.EnumMap");
-            JavaVariable enumStringMapVar = myClass.addVariable("Map<" + enumClassName + ", String>", "enumStringMap",
+            recordClass.addImport("java.util.Map");
+            recordClass.addImport("java.util.EnumMap");
+            JavaVariable enumStringMapVar = recordClass.addVariable("Map<" + enumClassName + ", String>", "enumStringMap",
                     "new EnumMap<" + enumClassName + ", String>(" + enumClassName + ".class)");
             enumStringMapVar.setStatic(true);
 
-            myClass.addImport("java.util.List");
-            myClass.addImport("java.util.ArrayList");
-            JavaVariable stringListVar = myClass.addVariable("List<String>", "stringList", "new ArrayList<String>()");
+            recordClass.addImport("java.util.List");
+            recordClass.addImport("java.util.ArrayList");
+            JavaVariable stringListVar = recordClass.addVariable("List<String>", "stringList", "new ArrayList<String>()");
             stringListVar.setStatic(true);
 
             for (TableEnum enumItem : enums) {
-                myClass.appendStaticInitializer("enumStringMap.put(" + enumItem.getName() + ", \"" + enumItem.getValue() + "\");");
-                myClass.appendStaticInitializer("stringList.add(\"" + enumItem.getValue() + "\");");
-                myClass.appendStaticInitializer("");
+                recordClass.appendStaticInitializer("enumStringMap.put(" + enumItem.getName() + ", \"" + enumItem.getValue() + "\");");
+                recordClass.appendStaticInitializer("stringList.add(\"" + enumItem.getValue() + "\");");
+                recordClass.appendStaticInitializer("");
             }
 
             List<JavaVariable> getStringMParam = new ArrayList<>();
             getStringMParam.add(new JavaVariable(enumClassName, "key"));
-            JavaMethod getStringM = myClass.addMethod(Access.PUBLIC, "String", "getString", getStringMParam, "return enumStringMap.get(key);");
+            JavaMethod getStringM = recordClass.addMethod(Access.PUBLIC, "String", "getString", getStringMParam, "return enumStringMap.get(key);");
             getStringM.setStatic(true);
 
-            myClass.addImport("java.util.Collections");
-            JavaMethod getListM = myClass.addMethod(Access.PUBLIC, "List<String>", "getList", "return Collections.unmodifiableList(stringList);");
+            recordClass.addImport("java.util.Collections");
+            JavaMethod getListM = recordClass.addMethod(Access.PUBLIC, "List<String>", "getList", "return Collections.unmodifiableList(stringList);");
             getListM.setStatic(true);
         }
 
@@ -426,7 +445,7 @@ public class AndroidBaseRecordRenderer {
                 // local definition of enumeration?
                 List<String> localEnumerations = field.getEnumValues();
                 if (localEnumerations != null && localEnumerations.size() > 0) {
-                    myClass.addEnum(enumName, field.getEnumValues());
+                    recordClass.addEnum(enumName, field.getEnumValues());
                 } else {
                     // we must import the enum
                     String enumPackage = enumClassInfo.getPackageName(packageName) + "." + enumName;
@@ -439,7 +458,8 @@ public class AndroidBaseRecordRenderer {
 //                    enumPackage += enumName.toLowerCase() + "." + enumName;
 
 
-                    myClass.addImport(enumPackage);
+                    recordClass.addImport(enumPackage);
+                    constClass.addImport(enumPackage);
                 }
 
                 newVariable = new JavaVariable(enumName, fieldNameJavaStyle);
@@ -469,7 +489,7 @@ public class AndroidBaseRecordRenderer {
                 String enumName = firstChar + javaStyleFieldName.substring(1);
 
                 if (useInnerEnums) {
-                    myClass.addEnum(enumName, field.getEnumValues());
+                    recordClass.addEnum(enumName, field.getEnumValues());
                 } else {
                     enumerationClasses.add(new JavaEnum(enumName, field.getEnumValues()));
                 }
@@ -503,7 +523,7 @@ public class AndroidBaseRecordRenderer {
         boolean dateType = typeText.endsWith("Date");
 
         // Special handling for Fraction and Money
-//        if (!field.isJavaTypePrimative() && (fractionType || moneyType)) {
+//        if (!field.isJavaTypePrimitive() && (fractionType || moneyType)) {
 //            // both Money and Fraction are both float at the core
 //            String dataType = "float";
 //            newVariable = new JavaVariable(dataType, fieldNameJavaStyle);
@@ -526,7 +546,7 @@ public class AndroidBaseRecordRenderer {
 
         SchemaFieldType fieldType = field.getJdbcDataType();
         boolean immutableDate = field.getJavaClassType() == Date.class && genConfig.isDateTimeSupport(); // org.joda.time.DateTime IS immutable
-        if (!fieldType.isJavaTypePrimative() && !fieldType.isJavaTypeImmutable() && !immutableDate) {
+        if (!fieldType.isJavaTypePrimitive() && !fieldType.isJavaTypeImmutable() && !immutableDate) {
             newVariable.setGetterReturnsClone(true);
             if (!readOnlyEntity) {
                 newVariable.setSetterClonesParam(true);
@@ -556,10 +576,10 @@ public class AndroidBaseRecordRenderer {
         }
 
         String newImport = fkTableClassInfo.getPackageName(packageName) + ".*";
-        myClass.addImport(newImport);
+        recordClass.addImport(newImport);
         JavaVariable manyToOneVar = new JavaVariable(fkTableClassName, varName);
 
-        myClass.addVariable(manyToOneVar, true);
+        recordClass.addVariable(manyToOneVar, true);
     }
 
     private void generateOneToMany(SchemaDatabase database, String packageName, SchemaField field) {
@@ -572,10 +592,10 @@ public class AndroidBaseRecordRenderer {
         }
 
         String newImport = fkTableClassInfo.getPackageName(packageName) + ".*";
-        myClass.addImport(newImport);
+        recordClass.addImport(newImport);
         JavaVariable manyToOneVar = new JavaVariable(fkTableClassName, varName);
 
-        myClass.addVariable(manyToOneVar, true);
+        recordClass.addVariable(manyToOneVar, true);
     }
 
     private void generateOneToOne(SchemaDatabase database, String packageName, SchemaField field) {
@@ -588,10 +608,10 @@ public class AndroidBaseRecordRenderer {
         }
 
         String newImport = fkTableClassInfo.getPackageName(packageName) + ".*";
-        myClass.addImport(newImport);
+        recordClass.addImport(newImport);
         JavaVariable oneToOneVar = new JavaVariable(fkTableClassName, varName);
 
-        myClass.addVariable(oneToOneVar, true);
+        recordClass.addVariable(oneToOneVar, true);
     }
 
     private void addForeignKeyData(SchemaDatabase database, String entityName, String packageName) {
@@ -617,16 +637,16 @@ public class AndroidBaseRecordRenderer {
                         String items = listVarName + "Items";
                         String itemsToDelete = listVarName + "ItemsToDelete";
 
-                        myClass.addImport(newImport);
+                        recordClass.addImport(newImport);
 
-                        myClass.addImport("java.util.Set");
-                        myClass.addImport("java.util.HashSet");
+                        recordClass.addImport("java.util.Set");
+                        recordClass.addImport("java.util.HashSet");
                         String listType = "Set<" + fkTableClassName + ">";
                         String defaultListTypeValue = "new HashSet<" + fkTableClassName + ">()";
-                        JavaVariable itemsList = myClass.addVariable(listType, items);
+                        JavaVariable itemsList = recordClass.addVariable(listType, items);
                         itemsList.setDefaultValue(defaultListTypeValue);
 
-                        myClass.addMethod(Access.PUBLIC, listType, JavaVariable.getGetterMethodName(listType, items), "return java.util.Collections.unmodifiableSet(" + items + ");");
+                        recordClass.addMethod(Access.PUBLIC, listType, JavaVariable.getGetterMethodName(listType, items), "return java.util.Collections.unmodifiableSet(" + items + ");");
 
                         ClassInfo mappedByClassInfo = database.getTableClassInfo(fkField.getForeignKeyTable());
                         JavaClass.formatToJavaVariable(mappedByClassInfo.getClassName());
@@ -651,10 +671,10 @@ public class AndroidBaseRecordRenderer {
                         addMethodContent += listVarName + "." + setterMethodName + "((" + tableClassName + ")this);\n";
                         addMethodContent += items + ".add(" + listVarName + ");\n";
                         addMethod.setContent(addMethodContent);
-                        myClass.addMethod(addMethod);
+                        recordClass.addMethod(addMethod);
 
                         // deleteItem method
-                        JavaVariable itemsToDeleteList = myClass.addVariable(listType, itemsToDelete);
+                        JavaVariable itemsToDeleteList = recordClass.addVariable(listType, itemsToDelete);
                         itemsToDeleteList.setDefaultValue(defaultListTypeValue);
 
                         JavaMethod removeMethod = new JavaMethod("delete" + fkTableClassName);
@@ -679,7 +699,7 @@ public class AndroidBaseRecordRenderer {
                         removeMethodContent += "}";
 
                         removeMethod.setContent(removeMethodContent);
-                        myClass.addMethod(removeMethod);
+                        recordClass.addMethod(removeMethod);
 
                         // add to cleanup orphans
                         cleanupOrphansContent.append("for (").append(fkTableClassName).append(" itemToDelete : ").append(itemsToDelete).append(") {\n");
@@ -705,7 +725,8 @@ public class AndroidBaseRecordRenderer {
     }
 
     public void writeToFile(String directoryName) {
-        myClass.writeToDisk(directoryName);
+        constClass.writeToDisk(directoryName);
+        recordClass.writeToDisk(directoryName);
 
         for (JavaEnum enumClass : enumerationClasses) {
             enumClass.writeToDisk(directoryName);

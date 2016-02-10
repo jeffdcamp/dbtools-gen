@@ -13,32 +13,32 @@ import java.util.Date;
  */
 public enum SchemaFieldType {
     UNKNOWN(null),
-    BOOLEAN(new JavaType("boolean", true, true, boolean.class, Boolean.class, "Boolean")),
-    BIT(new JavaType("boolean", true, true, boolean.class, Boolean.class, "Boolean")),
-    TINYINT(new JavaType("boolean", true, true, boolean.class, Boolean.class, "Boolean")),
-    SMALLINT(new JavaType("int", true, true, int.class, Integer.class, "Integer")),
-    INTEGER(new JavaType("int", true, true, int.class, Integer.class, "Integer")),
-    BIGINT(new JavaType("long", true, true, long.class, Long.class, "Long")),
-    REAL(new JavaType("float", true, true, float.class, Float.class, "Float")),
-    FLOAT(new JavaType("float", true, true, float.class, Float.class, "Float")),
-    DOUBLE(new JavaType("double", true, true, double.class, Double.class, "Double")),
-    CHAR(new JavaType("char", true, true, char.class, Character.class, "Character")),
-    VARCHAR(new JavaType("String", false, true, String.class, String.class, "String")),
-    LONGVARCHAR(new JavaType("String", false, true, String.class, String.class, "String")),
-    DATE(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date")),
-    TIME(new JavaType("Time", false, false, Time.class, Time.class, "Time")),
-    TIMESTAMP(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date")),
-    JAVA_OBJECT(new JavaType("Object", false, false, Object.class, Object.class, "Object")),
-    DECIMAL(new JavaType("float", true, true, float.class, Float.class, "Float")),
-    NUMERIC(new JavaType("float", true, true, float.class, Float.class, "Float")),
-    BIGDECIMAL(new JavaType("java.math.BigDecimal", false, true, BigDecimal.class, BigDecimal.class, "java.math.BigDecimal")),
-    BIGINTEGER(new JavaType("java.math.BigInteger", false, true, BigInteger.class, BigInteger.class, "java.math.BigInteger")),
-    BLOB(new JavaType("byte[]", true, true, byte[].class, Byte[].class, "Byte[]")),
-    CLOB(new JavaType("String", false, true, String.class, String.class, "String")),
+    BOOLEAN(new JavaType("boolean", true, true, boolean.class, Boolean.class, "Boolean", "Boolean", "false")),
+    BIT(new JavaType("boolean", true, true, boolean.class, Boolean.class, "Boolean", "Boolean", "false")),
+    TINYINT(new JavaType("boolean", true, true, boolean.class, Boolean.class, "Boolean", "Boolean", "false")),
+    SMALLINT(new JavaType("int", true, true, int.class, Integer.class, "Integer", "Int", "0")),
+    INTEGER(new JavaType("int", true, true, int.class, Integer.class, "Integer", "Int", "0")),
+    BIGINT(new JavaType("long", true, true, long.class, Long.class, "Long", "Long", "0")),
+    REAL(new JavaType("float", true, true, float.class, Float.class, "Float", "Float", "0.0f")),
+    FLOAT(new JavaType("float", true, true, float.class, Float.class, "Float", "Float", "0.0f")),
+    DOUBLE(new JavaType("double", true, true, double.class, Double.class, "Double", "Double", "0.0d")),
+    CHAR(new JavaType("char", true, true, char.class, Character.class, "Character", "Char", "''")),
+    VARCHAR(new JavaType("String", false, true, String.class, String.class, "String", "String", "\"\"")),
+    LONGVARCHAR(new JavaType("String", false, true, String.class, String.class, "String", "String", "")),
+    DATE(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date", "java.util.Date", "null")),
+    TIME(new JavaType("Time", false, false, Time.class, Time.class, "Time", "Time", "null")),
+    TIMESTAMP(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date", "java.util.Date", "null")),
+    JAVA_OBJECT(new JavaType("Object", false, false, Object.class, Object.class, "Object", "Object", "null")),
+    DECIMAL(new JavaType("float", true, true, float.class, Float.class, "Float", "Float", "0.0f")),
+    NUMERIC(new JavaType("float", true, true, float.class, Float.class, "Float", "Float", "0.0f")),
+    BIGDECIMAL(new JavaType("java.math.BigDecimal", false, true, BigDecimal.class, BigDecimal.class, "java.math.BigDecimal", "java.math.BigDecimal", "0.0")),
+    BIGINTEGER(new JavaType("java.math.BigInteger", false, true, BigInteger.class, BigInteger.class, "java.math.BigInteger", "java.math.BigInteger", "0")),
+    BLOB(new JavaType("byte[]", true, true, byte[].class, Byte[].class, "Byte[]", "Byte[]", "null")),
+    CLOB(new JavaType("String", false, true, String.class, String.class, "String", "String", "null")),
 
     // not currently supported
-    MONEY(new JavaType("com.jdc.datatypes.Money", false, true, Void.class, Void.class, "com.jdc.datatypes.Money")), // Money.class
-    FRACTION(new JavaType("com.jdc.datatypes.Fraction", false, true, Void.class, Void.class, "com.jdc.datatypes.Fraction")); // Fraction.class
+    MONEY(new JavaType("com.jdc.datatypes.Money", false, true, Void.class, Void.class, "com.jdc.datatypes.Money", "com.jdc.datatypes.Money", "null")), // Money.class
+    FRACTION(new JavaType("com.jdc.datatypes.Fraction", false, true, Void.class, Void.class, "com.jdc.datatypes.Fraction", "com.jdc.datatypes.Fraction", "null")); // Fraction.class
 
 
     private JavaType javaType;
@@ -76,7 +76,7 @@ public enum SchemaFieldType {
 
     // NOTE!!! BE SURE TO CHANGE getJavaClassType() to match changes to this method
     public String getJavaTypeText(boolean isNullable) {
-        String fieldClass = null;
+        String fieldClass;
 
         // check to see if we need to change from a primitive to an Object
         if (!isNullable) {
@@ -89,11 +89,30 @@ public enum SchemaFieldType {
         return fieldClass;
     }
 
-    public boolean isJavaTypePrimative() {
-        return isJavaTypePrimative(javaType.isImmutable());
+    // NOTE!!! BE SURE TO CHANGE getJavaClassType() to match changes to this method
+    public String getKotlinTypeText(boolean isNullable) {
+        String fieldClass;
+
+        // check to see if we need to change from a primitive to an Object
+        if (!isNullable) {
+            fieldClass = javaType.getKotlinClassText();
+        } else {
+            // field is nullable.... so we CANNOT use a primitive
+            fieldClass = javaType.getKotlinClassText() + "?";
+        }
+
+        return fieldClass;
     }
 
-    public boolean isJavaTypePrimative(boolean isNullable) {
+    public String getKotlinDefaultValue() {
+        return javaType.getKotlinClassDefaultValueText();
+    }
+
+    public boolean isJavaTypePrimitive() {
+        return isJavaTypePrimitive(javaType.isImmutable());
+    }
+
+    public boolean isJavaTypePrimitive(boolean isNullable) {
         if (!isNullable) {
             return javaType.isPrimitive();
         } else {

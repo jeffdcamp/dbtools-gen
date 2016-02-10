@@ -14,17 +14,21 @@ public class JavaType {
     private Class<?> mainClass;
     private Class<?> matchingNonPrimitiveClass;
     private String matchingNonPrimitiveClassText;
+    private String kotlinClassText;
+    private String kotlinClassDefaultValueText;
     private boolean primitive = false;
     private boolean immutable = false;
 
     public JavaType(String javaTypeText, boolean primitive, boolean immutable, Class<?> mainClass, Class<?> matchingNonPrimitiveClass,
-                    String matchingNonPrimitiveClassText) {
+                    String matchingNonPrimitiveClassText, String kotlinClassText, String kotlinClassDefaultValueText) {
         this.javaTypeText = javaTypeText;
         this.primitive = primitive;
         this.immutable = immutable;
         this.mainClass = mainClass;
         this.matchingNonPrimitiveClass = matchingNonPrimitiveClass;
         this.matchingNonPrimitiveClassText = matchingNonPrimitiveClassText;
+        this.kotlinClassText = kotlinClassText;
+        this.kotlinClassDefaultValueText = kotlinClassDefaultValueText;
     }
 
     public String getJavaTypeText() {
@@ -61,6 +65,14 @@ public class JavaType {
 
     public Class<?> getMatchingNonPrimitiveClass() {
         return matchingNonPrimitiveClass;
+    }
+
+    public String getKotlinClassText() {
+        return kotlinClassText;
+    }
+
+    public String getKotlinClassDefaultValueText() {
+        return kotlinClassDefaultValueText;
     }
 
     public void setMatchingNonPrimitiveClass(Class<?> matchingNonPrimitiveClass) {

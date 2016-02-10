@@ -9,9 +9,9 @@
  */
 package org.dbtools.gen.android;
 
-import org.dbtools.codegen.Access;
-import org.dbtools.codegen.JavaClass;
-import org.dbtools.codegen.JavaVariable;
+import org.dbtools.codegen.java.Access;
+import org.dbtools.codegen.java.JavaClass;
+import org.dbtools.codegen.java.JavaVariable;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.SchemaEntity;
 import org.dbtools.schema.schemafile.SchemaEntityType;
@@ -76,7 +76,7 @@ public class AndroidRecordRenderer {
     }
 
     private void createView(SchemaEntity entity) {
-        String entityClassName = AndroidRecordRenderer.createClassName(entity);
+        String entityClassName = AndroidRecordRenderer.createClassName(entity) + "Const";
 
         myClass.addConstant("String", "DROP_VIEW", null, false);
         myClass.appendStaticInitializer("DROP_VIEW = \"DROP VIEW IF EXISTS \" + " + entityClassName + ".TABLE + \";\";");
@@ -95,7 +95,7 @@ public class AndroidRecordRenderer {
     }
 
     private void createStandardView(SchemaEntity entity) {
-        String entityClassName = AndroidRecordRenderer.createClassName(entity);
+        String entityClassName = AndroidRecordRenderer.createClassName(entity) + "Const";
 
         StringBuilder createContent = new StringBuilder();
         createContent.append("\"CREATE VIEW IF NOT EXISTS \" + ").append(entityClassName).append(".TABLE + \" AS SELECT \" +\n");
@@ -133,7 +133,7 @@ public class AndroidRecordRenderer {
     }
 
     private void createStandardQuery(SchemaEntity entity) {
-        String entityClassName = AndroidRecordRenderer.createClassName(entity);
+        String entityClassName = AndroidRecordRenderer.createClassName(entity) + "Const";
         StringBuilder headerComment = new StringBuilder();
         headerComment.append("// todo Replace the following the QUERY sql (The following is a template suggestion for your query)\n");
         headerComment.append("// todo BE SURE TO KEEP THE OPENING AND CLOSING PARENTHESES (so queries can be run as sub-select: select * from (select a, b from t) )\n");
@@ -169,10 +169,10 @@ public class AndroidRecordRenderer {
     }
 
     private void createSqlBuilderView(SchemaEntity entity) {
-        String entityClassName = AndroidRecordRenderer.createClassName(entity);
+        String entityConstClassName = AndroidRecordRenderer.createClassName(entity) + "Const";
 
         StringBuilder createContent = new StringBuilder();
-        createContent.append("\"CREATE VIEW IF NOT EXISTS \" + ").append(entityClassName).append(".TABLE + \" AS \" +\n");
+        createContent.append("\"CREATE VIEW IF NOT EXISTS \" + ").append(entityConstClassName).append(".TABLE + \" AS \" +\n");
 
         createContent.append(TAB).append(TAB).append(TAB);
         myClass.addImport("org.dbtools.query.sql.SQLQueryBuilder");
@@ -190,15 +190,15 @@ public class AndroidRecordRenderer {
             String fieldConstName = JavaClass.formatConstant(schemaField.getName(true));
             createContent.append(".field(");
 
-            createContent.append(entityClassName).append(".").append("FULL_C_").append(fieldConstName);
+            createContent.append(entityConstClassName).append(".").append("FULL_C_").append(fieldConstName);
             createContent.append(", ");
-            createContent.append(entityClassName).append(".").append("C_").append(fieldConstName);
+            createContent.append(entityConstClassName).append(".").append("C_").append(fieldConstName);
             createContent.append(")");
         }
 
         createContent.append("\n");
         createContent.append(TAB).append(TAB).append(TAB);
-        createContent.append(".table(").append(entityClassName).append(".TABLE)");
+        createContent.append(".table(").append(entityConstClassName).append(".TABLE)");
         createContent.append("\n");
         createContent.append(TAB).append(TAB).append(TAB);
         createContent.append(".buildQuery()");
@@ -212,7 +212,7 @@ public class AndroidRecordRenderer {
     }
 
     private void createSQLBuilderQuery(SchemaEntity entity) {
-        String entityClassName = AndroidRecordRenderer.createClassName(entity);
+        String entityClassName = AndroidRecordRenderer.createClassName(entity) + "Const";
         StringBuilder headerComment = new StringBuilder();
         headerComment.append("// todo Replace the following the QUERY sql (The following is a template suggestion for your query)\n");
         headerComment.append("// todo SUGGESTION: Keep the second parameter of each filter(<replace>, <keep>)");

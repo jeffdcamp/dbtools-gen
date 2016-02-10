@@ -36,11 +36,14 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
     private int filesGeneratedCount = 0;
     private List<String> filesGenerated = new ArrayList<>();
 
-    private SchemaDatabase database;
-    private SchemaEntity entity;
-    private String packageName;
-    private String outDir;
     private PrintStream psLog;
+
+    public AndroidDBObjectBuilder(GenConfig genConfig) {
+        recordClass.setGenConfig(genConfig);
+        baseRecordClass.setGenConfig(genConfig);
+        managerClass.setGenConfig(genConfig);
+        baseManagerClass.setGenConfig(genConfig);
+    }
 
     @Override
     public String getName() {
@@ -48,13 +51,13 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
     }
 
     @Override
-    public boolean build() {
+    public boolean build(SchemaDatabase database, SchemaEntity entity, String packageName, String outDir, GenConfig genConfig) {
         if (psLog == null) {
             psLog = System.out;
         }
 
         if (entity != null) {
-            psLog.println(entity.getType() +": " + entity.getName());
+            psLog.println(entity.getType() + ": " + entity.getName());
         } else {
             psLog.println("ERROR: SchemaTable is null");
             return false;
@@ -119,33 +122,5 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
     @Override
     public List<String> getFilesGenerated() {
         return Collections.unmodifiableList(filesGenerated);
-    }
-
-    @Override
-    public void setEntity(SchemaEntity table) {
-        this.entity = table;
-    }
-
-    @Override
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
-    }
-
-    @Override
-    public void setSourceOutputDir(String outDir) {
-        this.outDir = outDir;
-    }
-
-    @Override
-    public void setGenConfig(GenConfig genConfig) {
-        recordClass.setGenConfig(genConfig);
-        baseRecordClass.setGenConfig(genConfig);
-        managerClass.setGenConfig(genConfig);
-        baseManagerClass.setGenConfig(genConfig);
-    }
-
-    @Override
-    public void setDatabase(SchemaDatabase dbSchema) {
-        this.database = dbSchema;
     }
 }

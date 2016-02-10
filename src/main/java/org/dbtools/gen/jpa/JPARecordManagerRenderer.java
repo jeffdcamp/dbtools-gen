@@ -9,9 +9,9 @@
  */
 package org.dbtools.gen.jpa;
 
-import org.dbtools.codegen.Access;
-import org.dbtools.codegen.JavaClass;
-import org.dbtools.codegen.JavaVariable;
+import org.dbtools.codegen.java.Access;
+import org.dbtools.codegen.java.JavaClass;
+import org.dbtools.codegen.java.JavaVariable;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.SchemaEntity;
 

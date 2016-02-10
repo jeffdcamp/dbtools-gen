@@ -77,6 +77,10 @@ public abstract class SchemaField {
         return getJdbcDataType().getJavaTypeText(!isNotNull());
     }
 
+    public String getKotlinTypeText() {
+        return getJdbcDataType().getKotlinTypeText(!isNotNull());
+    }
+
     public String getFormattedClassDefaultValue() {
         return formatValueForField(defaultValue);
     }

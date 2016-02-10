@@ -130,13 +130,7 @@ public abstract class DBObjectsBuilder {
                 String packageName = packageBase + (genConfig.isIncludeDatabaseNameInPackage() ? '.' + database.getName().toLowerCase() : "");
                 packageName = JavaUtil.createTablePackageName(packageName, table.getClassName());
 
-                objectBuilder.setDatabase(database);
-                objectBuilder.setEntity(table);
-                objectBuilder.setPackageName(packageName);
-                objectBuilder.setSourceOutputDir(outDir);
-                objectBuilder.setGenConfig(genConfig);
-
-                success = objectBuilder.build();
+                success = objectBuilder.build(database, table, packageName, outDir, genConfig);
                 numberFilesGenerated += objectBuilder.getNumberFilesGenerated();
             }
 
@@ -154,13 +148,7 @@ public abstract class DBObjectsBuilder {
                 String packageName = packageBase + (genConfig.isIncludeDatabaseNameInPackage() ? '.' + database.getName().toLowerCase() : "");
                 packageName = packageName + "." + view.getClassName().toLowerCase();
 
-                objectBuilder.setDatabase(database);
-                objectBuilder.setEntity(view);
-                objectBuilder.setPackageName(packageName);
-                objectBuilder.setSourceOutputDir(outDir);
-                objectBuilder.setGenConfig(genConfig);
-
-                success = objectBuilder.build();
+                success = objectBuilder.build(database, view, packageName, outDir, genConfig);
                 numberFilesGenerated += objectBuilder.getNumberFilesGenerated();
             }
 
@@ -178,13 +166,7 @@ public abstract class DBObjectsBuilder {
                 String packageName = packageBase + (genConfig.isIncludeDatabaseNameInPackage() ? '.' + database.getName().toLowerCase() : "");
                 packageName = packageName + "." + query.getClassName().toLowerCase();
 
-                objectBuilder.setDatabase(database);
-                objectBuilder.setEntity(query);
-                objectBuilder.setPackageName(packageName);
-                objectBuilder.setSourceOutputDir(outDir);
-                objectBuilder.setGenConfig(genConfig);
-
-                success = objectBuilder.build();
+                success = objectBuilder.build(database, query, packageName, outDir, genConfig);
                 numberFilesGenerated += objectBuilder.getNumberFilesGenerated();
             }
         }
