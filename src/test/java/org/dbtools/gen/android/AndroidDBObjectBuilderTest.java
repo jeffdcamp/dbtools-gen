@@ -1,5 +1,6 @@
 package org.dbtools.gen.android;
 
+import org.dbtools.gen.DateType;
 import org.dbtools.gen.GenConfig;
 import org.junit.Test;
 
@@ -16,7 +17,7 @@ public class AndroidDBObjectBuilderTest {
 
         GenConfig genConfig = new GenConfig();
         genConfig.setInjectionSupport(injectionSupport);
-        genConfig.setDateTimeSupport(dateTimeSupport);
+        genConfig.setDateType(DateType.JODA);
 
         AndroidObjectsBuilder objectsBuilder = new AndroidObjectsBuilder(genConfig);
         objectsBuilder.buildAll(schemaFilename, baseOutputDir, basePackageName, genConfig);

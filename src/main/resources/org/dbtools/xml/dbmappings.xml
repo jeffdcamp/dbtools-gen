@@ -77,16 +77,21 @@
         </mapping>
         <mapping>
             <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATETIME</jdbc-type>
+            <sql-type>TIMESTAMP</sql-type>
+        </mapping>
+        <mapping>
+            <java-type>java.sql.Date</java-type>
             <jdbc-type>DATE</jdbc-type>
             <sql-type>DATE</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Time</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIME</jdbc-type>
             <sql-type>TIME</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Timestamp</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIMESTAMP</jdbc-type>
             <sql-type>TIMESTAMP</sql-type>
         </mapping>
@@ -176,16 +181,21 @@
         </mapping>
         <mapping>
             <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATETIME</jdbc-type>
+            <sql-type>TIMESTAMP</sql-type>
+        </mapping>
+        <mapping>
+            <java-type>java.sql.Date</java-type>
             <jdbc-type>DATE</jdbc-type>
             <sql-type>DATE</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Time</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIME</jdbc-type>
             <sql-type>TIME</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Timestamp</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIMESTAMP</jdbc-type>
             <sql-type>TIMESTAMP</sql-type>
         </mapping>
@@ -258,16 +268,21 @@
         </mapping>
         <mapping>
             <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATETIME</jdbc-type>
+            <sql-type>TIMESTAMP</sql-type>
+        </mapping>
+        <mapping>
+            <java-type>java.sql.Date</java-type>
             <jdbc-type>DATE</jdbc-type>
             <sql-type>DATE</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Time</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIME</jdbc-type>
             <sql-type>TIME</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Timestamp</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIMESTAMP</jdbc-type>
             <sql-type>TIMESTAMP</sql-type>
         </mapping>
@@ -353,16 +368,21 @@
         </mapping>
         <mapping>
             <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATETIME</jdbc-type>
+            <sql-type>TIMESTAMP</sql-type>
+        </mapping>
+        <mapping>
+            <java-type>java.sql.Date</java-type>
             <jdbc-type>DATE</jdbc-type>
             <sql-type>DATE</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Time</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIME</jdbc-type>
             <sql-type>DATE</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Timestamp</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIMESTAMP</jdbc-type>
             <sql-type>TIMESTAMP</sql-type>
         </mapping>
@@ -435,16 +455,21 @@
         </mapping>
         <mapping>
             <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATETIME</jdbc-type>
+            <sql-type>DATETIME</sql-type>
+        </mapping>
+        <mapping>
+            <java-type>java.sql.Date</java-type>
             <jdbc-type>DATE</jdbc-type>
             <sql-type>DATETIME</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Time</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIME</jdbc-type>
             <sql-type>SMALLDATETIME</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Timestamp</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIMESTAMP</jdbc-type>
             <sql-type>DATETIME</sql-type>
         </mapping>
@@ -524,16 +549,21 @@
         </mapping>
         <mapping>
             <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATETIME</jdbc-type>
+            <sql-type>TIMESTAMP</sql-type>
+        </mapping>
+        <mapping>
+            <java-type>java.sql.Date</java-type>
             <jdbc-type>DATE</jdbc-type>
             <sql-type>DATE</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Time</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIME</jdbc-type>
             <sql-type>TIME</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Timestamp</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIMESTAMP</jdbc-type>
             <sql-type>TIMESTAMP</sql-type>
         </mapping>
@@ -597,6 +627,11 @@
             <sql-type>TINYINT</sql-type>
         </mapping>
         <mapping>
+            <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATETIME</jdbc-type>
+            <sql-type>DATE</sql-type>
+        </mapping>
+        <mapping>
             <java-type>java.util.Date</java-type>
             <jdbc-type>DATE</jdbc-type>
             <sql-type>DATE</sql-type>
@@ -611,11 +646,6 @@
             <jdbc-type>MONEY</jdbc-type>
             <sql-type>DOUBLE</sql-type>
         </mapping>
-        <mapping>
-            <java-type>java.sql.Timestamp</java-type>
-            <jdbc-type>DATE</jdbc-type>
-            <sql-type>DATE</sql-type>
-        </mapping>
     </type-mapping>
 
     <type-mapping>
@@ -624,6 +654,11 @@
             <java-type>java.lang.Byte</java-type>
             <jdbc-type>SMALLINT</jdbc-type>
             <sql-type>SMALLINT</sql-type>
+        </mapping>
+        <mapping>
+            <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATETIME</jdbc-type>
+            <sql-type>TIMESTAMP</sql-type>
         </mapping>
         <mapping>
             <java-type>java.util.Date</java-type>
@@ -671,12 +706,12 @@
             <sql-type>LONGVARCHAR</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Timestamp</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIMESTAMP</jdbc-type>
             <sql-type>TIMESTAMP</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Time</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIME</jdbc-type>
             <sql-type>TIME</sql-type>
         </mapping>
@@ -718,6 +753,11 @@
             <java-type>java.lang.Byte</java-type>
             <jdbc-type>SMALLINT</jdbc-type>
             <sql-type>SMALLINT</sql-type>
+        </mapping>
+        <mapping>
+            <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATETIME</jdbc-type>
+            <sql-type>TIMESTAMP</sql-type>
         </mapping>
         <mapping>
             <java-type>java.util.Date</java-type>
@@ -765,12 +805,12 @@
             <sql-type>LONG VARCHAR</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Timestamp</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIMESTAMP</jdbc-type>
             <sql-type>TIMESTAMP</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Time</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIME</jdbc-type>
             <sql-type>TIME</sql-type>
         </mapping>
@@ -819,6 +859,11 @@
             <sql-type>SMALLINT</sql-type>
         </mapping>
         <mapping>
+            <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATETIME</jdbc-type>
+            <sql-type>TIMESTAMP</sql-type>
+        </mapping>
+        <mapping>
             <java-type>java.util.Date</java-type>
             <jdbc-type>DATE</jdbc-type>
             <sql-type>DATE</sql-type>
@@ -866,12 +911,12 @@
             <sql-type>LONG VARCHAR</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Timestamp</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIMESTAMP</jdbc-type>
             <sql-type>TIMESTAMP</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Time</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIME</jdbc-type>
             <sql-type>TIME</sql-type>
         </mapping>
@@ -913,6 +958,11 @@
             <java-type>java.lang.Byte</java-type>
             <jdbc-type>SMALLINT</jdbc-type>
             <sql-type>INTEGER</sql-type>
+        </mapping>
+        <mapping>
+            <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATETIME</jdbc-type>
+            <sql-type>TEXT</sql-type>
         </mapping>
         <mapping>
             <java-type>java.util.Date</java-type>
@@ -967,12 +1017,12 @@
             <sql-type>TEXT</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Timestamp</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIMESTAMP</jdbc-type>
             <sql-type>INTEGER</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Time</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIME</jdbc-type>
             <sql-type>TEXT</sql-type>
         </mapping>
@@ -1115,7 +1165,7 @@
             <sql-type>SMALLINT</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Timestamp</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIMESTAMP</jdbc-type>
             <sql-type>DATETIME</sql-type>
         </mapping>
@@ -1150,12 +1200,17 @@
             <sql-type>LONGTEXT</sql-type>
         </mapping>
         <mapping>
+            <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATETIME</jdbc-type>
+            <sql-type>DATE</sql-type>
+        </mapping>
+        <mapping>
             <java-type>java.util.Date</java-type>
             <jdbc-type>DATE</jdbc-type>
             <sql-type>DATE</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Time</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIME</jdbc-type>
             <sql-type>BIGINT</sql-type>
         </mapping>
@@ -1219,9 +1274,14 @@
             <sql-type>TINYINT</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Timestamp</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIMESTAMP</jdbc-type>
             <sql-type>TIMESTAMP</sql-type>
+        </mapping>
+        <mapping>
+            <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATETIME</jdbc-type>
+            <sql-type>DATETIME</sql-type>
         </mapping>
         <mapping>
             <java-type>java.sql.Date</java-type>
@@ -1229,13 +1289,8 @@
             <sql-type>DATETIME</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Time</java-type>
-            <jdbc-type>TIME</jdbc-type>
-            <sql-type>DATETIME</sql-type>
-        </mapping>
-        <mapping>
             <java-type>java.util.Date</java-type>
-            <jdbc-type>DATE</jdbc-type>
+            <jdbc-type>TIME</jdbc-type>
             <sql-type>DATETIME</sql-type>
         </mapping>
         <mapping>
@@ -1278,8 +1333,13 @@
             <sql-type>CHAR BYTE</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Timestamp</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIMESTAMP</jdbc-type>
+            <sql-type>TIMESTAMP</sql-type>
+        </mapping>
+        <mapping>
+            <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATETIME</jdbc-type>
             <sql-type>TIMESTAMP</sql-type>
         </mapping>
         <mapping>
@@ -1288,7 +1348,7 @@
             <sql-type>DATE</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Time</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIME</jdbc-type>
             <sql-type>TIME</sql-type>
         </mapping>
@@ -1398,16 +1458,21 @@
         </mapping>
         <mapping>
             <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATETIME</jdbc-type>
+            <sql-type>TIMESTAMP</sql-type>
+        </mapping>
+        <mapping>
+            <java-type>java.sql.Date</java-type>
             <jdbc-type>DATE</jdbc-type>
             <sql-type>DATE</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Time</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIME</jdbc-type>
             <sql-type>TIME</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Timestamp</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIMESTAMP</jdbc-type>
             <sql-type>TIMESTAMP</sql-type>
         </mapping>
@@ -1487,16 +1552,21 @@
         </mapping>
         <mapping>
             <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATETIME</jdbc-type>
+            <sql-type>DATE</sql-type>
+        </mapping>
+        <mapping>
+            <java-type>java.sql.Date</java-type>
             <jdbc-type>DATE</jdbc-type>
             <sql-type>DATE</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Time</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIME</jdbc-type>
             <sql-type>TIME</sql-type>
         </mapping>
         <mapping>
-            <java-type>java.sql.Timestamp</java-type>
+            <java-type>java.util.Date</java-type>
             <jdbc-type>TIMESTAMP</jdbc-type>
             <sql-type>DATETIME YEAR TO FRACTION(3)</sql-type>
         </mapping>

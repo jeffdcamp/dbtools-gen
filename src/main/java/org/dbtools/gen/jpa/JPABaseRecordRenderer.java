@@ -11,6 +11,7 @@
 package org.dbtools.gen.jpa;
 
 import org.dbtools.codegen.java.*;
+import org.dbtools.gen.DateType;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.ClassInfo;
 import org.dbtools.schema.schemafile.*;
@@ -251,33 +252,55 @@ public class JPABaseRecordRenderer {
                     myClass.addImport(temporalTypeImport);
 
                     newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "TIMESTAMP"));
+                } else if (fieldType == SchemaFieldType.DATETIME) {
+                    myClass.addImport(temporalImport);
+                    myClass.addImport(temporalTypeImport);
+
+                    newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "DATETIME"));
                 } else if (fieldType == SchemaFieldType.DATE) {
                     myClass.addImport(temporalImport);
                     myClass.addImport(temporalTypeImport);
 
                     newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "DATE"));
-                } else if (fieldType == SchemaFieldType.TIMESTAMP) {
+                } else if (fieldType == SchemaFieldType.TIME) {
                     myClass.addImport(temporalImport);
                     myClass.addImport(temporalTypeImport);
 
-                    newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "TIMESTAMP"));
+                    newVariable.addAnnotation(MessageFormat.format(temporalAnnotation, "TIME"));
                 }
 
-                if (genConfig.isDateTimeSupport() && newVariable.getDataType().endsWith("Date")) {
-                    newVariable.setGenerateSetterGetter(false);
+                if (newVariable.getDataType().endsWith("Date")) {
+                    if (genConfig.getDateType() == DateType.JODA) {
+                        newVariable.setGenerateSetterGetter(false);
 
-                    String type = "org.joda.time.DateTime";
+                        String type = "org.joda.time.DateTime";
 
-                    // create setter / getter
-                    String getterContent = "return new org.joda.time.DateTime(" + newVariable.getName() + ");";
-                    myClass.addMethod(newVariable.getGenerateGetterAccess(), type, newVariable.getGetterMethodName(), getterContent);
+                        // create setter / getter
+                        String getterContent = "return new org.joda.time.DateTime(" + newVariable.getName() + ");";
+                        myClass.addMethod(newVariable.getGenerateGetterAccess(), type, newVariable.getGetterMethodName(), getterContent);
 
-                    String newVarName = newVariable.getName();
-                    String setterContent = "this." + newVarName + " = " + newVarName + ".toDate();";
-                    JavaMethod setterMethod = new JavaMethod(newVariable.getGenerateSetterAccess(), "void", newVariable.getSetterMethodName());
-                    setterMethod.addParameter(new JavaVariable(type, newVarName));
-                    setterMethod.setContent(setterContent);
-                    myClass.addMethod(setterMethod);
+                        String newVarName = newVariable.getName();
+                        String setterContent = "this." + newVarName + " = " + newVarName + ".toDate();";
+                        JavaMethod setterMethod = new JavaMethod(newVariable.getGenerateSetterAccess(), "void", newVariable.getSetterMethodName());
+                        setterMethod.addParameter(new JavaVariable(type, newVarName));
+                        setterMethod.setContent(setterContent);
+                        myClass.addMethod(setterMethod);
+                    } else if (genConfig.getDateType() == DateType.JSR_310) {
+                        newVariable.setGenerateSetterGetter(false);
+
+                        String type = "java.time.LocalDateTime";
+
+                        // create setter / getter
+                        String getterContent = "return new java.time.LocalDateTime(" + newVariable.getName() + ");";
+                        myClass.addMethod(newVariable.getGenerateGetterAccess(), type, newVariable.getGetterMethodName(), getterContent);
+
+                        String newVarName = newVariable.getName();
+                        String setterContent = "this." + newVarName + " = " + newVarName + ".toDate();";
+                        JavaMethod setterMethod = new JavaMethod(newVariable.getGenerateSetterAccess(), "void", newVariable.getSetterMethodName());
+                        setterMethod.addParameter(new JavaVariable(type, newVarName));
+                        setterMethod.setContent(setterContent);
+                        myClass.addMethod(setterMethod);
+                    }
                 }
             } // end of JPA stuff
 

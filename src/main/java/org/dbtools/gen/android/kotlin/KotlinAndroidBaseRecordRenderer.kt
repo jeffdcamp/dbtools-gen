@@ -47,6 +47,9 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             }
         }
 
+        constClass.addImport("org.dbtools.android.domain.DBToolsDateFormatter")
+        recordClass.addImport("org.dbtools.android.domain.DBToolsDateFormatter")
+
         // header comment
         addHeader(constClass, className)
         addHeader(recordClass, className)
@@ -135,9 +138,8 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 val fieldType = field.jdbcDataType
                 if (field.isEnumeration) {
                     value = newVariable.name + ".ordinal"
-                } else if (fieldType == SchemaFieldType.DATE || fieldType == SchemaFieldType.TIMESTAMP || fieldType == SchemaFieldType.TIME) {
-                    val getTimeMethod = if (genConfig.isDateTimeSupport) "millis" else "time"
-                    value = "$fieldNameJavaStyle?.$getTimeMethod ?: null"
+                } else if (fieldType == SchemaFieldType.DATETIME || fieldType == SchemaFieldType.DATE || fieldType == SchemaFieldType.TIMESTAMP || fieldType == SchemaFieldType.TIME) {
+                    value = genConfig.dateType.getValuesValue(field, fieldNameJavaStyle)
                 } else if (fieldType == SchemaFieldType.BOOLEAN) {
                     if (field.isNotNull!!) {
                         value = "if ($fieldNameJavaStyle) 1 else 0"
@@ -300,20 +302,11 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         } else if (type == java.lang.Boolean.TYPE || type == Boolean::class.java) {
             return "values.getAsBoolean($paramValue)"
         } else if (type == Date::class.java) {
-            val fieldType = field.jdbcDataType
-            if (fieldType == SchemaFieldType.DATE) {
-                if (genConfig.isDateTimeSupport) {
-                    return "dbStringToDateTime(values.getAsString($paramValue))"
-                } else {
-                    return "dbStringToDate(values.getAsString($paramValue))"
-                }
-            } else {
-                if (genConfig.isDateTimeSupport) {
-                    return "org.joda.time.DateTime(values.getAsLong($paramValue))"
-                } else {
-                    return "java.util.Date(values.getAsLong($paramValue))"
-                }
+            var method = genConfig.dateType.getValuesDbStringToObjectMethod(field, paramValue)
+            if (field.isNotNull) {
+                method += "!!"
             }
+            return method
         } else if (type == java.lang.Float.TYPE || type == Float::class.java) {
             // || type == Fraction.class || type == Money.class) {
             return "values.getAsFloat($paramValue)"
@@ -350,24 +343,14 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         } else if (type == java.lang.Boolean.TYPE) {
             return "if (cursor.getInt(cursor.getColumnIndexOrThrow($paramValue)) != 0) true else false"
         } else if (type == Boolean::class.java) {
-            return "if (!cursor.isNull(cursor.getColumnIndexOrThrow($paramValue))) cursor.getInt(cursor.getColumnIndexOrThrow($paramValue)) != 0 ? true else false : null"
+            return "if (!cursor.isNull(cursor.getColumnIndexOrThrow($paramValue))) (if (cursor.getInt(cursor.getColumnIndexOrThrow($paramValue)) != 0) true else false) else null"
         } else if (type == Date::class.java) {
-            val fieldType = field.jdbcDataType
-            if (fieldType == SchemaFieldType.DATE) {
-                if (genConfig.isDateTimeSupport) {
-                    return "dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow($paramValue)))"
-                } else {
-                    return "dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow($paramValue)))"
-                }
-            } else {
-                if (genConfig.isDateTimeSupport) {
-                    return "if (!cursor.isNull(cursor.getColumnIndexOrThrow($paramValue))) org.joda.time.DateTime(cursor.getLong(cursor.getColumnIndexOrThrow($paramValue))) else null"
-                } else {
-                    return "if (!cursor.isNull(cursor.getColumnIndexOrThrow($paramValue))) java.util.Date(cursor.getLong(cursor.getColumnIndexOrThrow($paramValue))) else null"
-                }
+            var method = genConfig.dateType.getCursorDbStringToObjectMethod(field, paramValue, true)
+            if (field.isNotNull) {
+                method += "!!"
             }
+            return method
         } else if (type == java.lang.Float.TYPE) {
-            // || type == Fraction.class || type == Money.class) {
             return "cursor.getFloat(cursor.getColumnIndexOrThrow($paramValue))"
         } else if (type == Float::class.java) {
             return "if (!cursor.isNull(cursor.getColumnIndexOrThrow($paramValue))) cursor.getFloat(cursor.getColumnIndexOrThrow($paramValue)) else null"
@@ -442,17 +425,19 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
 
     private fun generateFieldVariable(fieldNameJavaStyle: String, field: SchemaField): KotlinVar {
         var typeText = field.kotlinTypeText
-
-        // check to see if we need to override the Date type // todo support JSR 310 (new Java Time)
-        if (typeText.endsWith("Date") && genConfig.isDateTimeSupport) {
-            typeText = "org.joda.time.DateTime"
-        }
-
-        if (typeText.endsWith("Date?") && genConfig.isDateTimeSupport) {
-            typeText = "org.joda.time.DateTime?"
-        }
-
         var fieldDefaultValue = field.defaultValue
+
+        // check to see if we need to override the Date type
+        if (typeText.endsWith("Date") && genConfig.dateType.isAlternative) {
+            typeText = genConfig.dateType.getJavaClassDataType(field)
+            fieldDefaultValue = genConfig.dateType.getJavaClassDataTypeDefaultValue(field)
+        }
+
+        if (typeText.endsWith("Date?") && genConfig.dateType.isAlternative) {
+            typeText = genConfig.dateType.getJavaClassDataType(field) + "?"
+            fieldDefaultValue = "null"
+        }
+
         if (fieldDefaultValue.isBlank()) {
             fieldDefaultValue = field.getJdbcDataType().kotlinDefaultValue
         }

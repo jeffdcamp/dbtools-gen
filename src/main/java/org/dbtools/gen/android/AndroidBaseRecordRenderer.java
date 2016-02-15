@@ -65,6 +65,9 @@ public class AndroidBaseRecordRenderer {
             recordClass.setExtends("AndroidBaseRecord");
         }
 
+        constClass.addImport("org.dbtools.android.domain.DBToolsDateFormatter");
+        recordClass.addImport("org.dbtools.android.domain.DBToolsDateFormatter");
+
         // prep
         cleanupOrphansContent = new StringBuilder();
 
@@ -166,9 +169,8 @@ public class AndroidBaseRecordRenderer {
                 SchemaFieldType fieldType = field.getJdbcDataType();
                 if (field.isEnumeration()) {
                     value = newVariable.getName() + ".ordinal()";
-                } else if (fieldType == SchemaFieldType.DATE || fieldType == SchemaFieldType.TIMESTAMP || fieldType == SchemaFieldType.TIME) {
-                    String getTimeMethod = genConfig.isDateTimeSupport() ? ".getMillis()" : ".getTime()";
-                    value = fieldNameJavaStyle + " != null ? " + fieldNameJavaStyle + getTimeMethod + " : null";
+                } else if (fieldType == SchemaFieldType.DATETIME || fieldType == SchemaFieldType.DATE || fieldType == SchemaFieldType.TIMESTAMP || fieldType == SchemaFieldType.TIME) {
+                    value = genConfig.getDateType().getValuesValue(field, fieldNameJavaStyle);
                 } else if (fieldType == SchemaFieldType.BOOLEAN) {
                     if (field.isNotNull()) {
                         value = fieldNameJavaStyle + " ? 1 : 0";
@@ -354,21 +356,8 @@ public class AndroidBaseRecordRenderer {
         } else if (type == boolean.class || type == Boolean.class) {
             return "values.getAsBoolean(" + paramValue + ")";
         } else if (type == Date.class) {
-            SchemaFieldType fieldType = field.getJdbcDataType();
-            if (fieldType == SchemaFieldType.DATE) {
-                if (genConfig.isDateTimeSupport()) {
-                    return "dbStringToDateTime(values.getAsString(" + paramValue + "))";
-                } else {
-                    return "dbStringToDate(values.getAsString(" + paramValue + "))";
-                }
-            } else {
-                if (genConfig.isDateTimeSupport()) {
-                    return "new org.joda.time.DateTime(values.getAsLong(" + paramValue + "))";
-                } else {
-                    return "new java.util.Date(values.getAsLong(" + paramValue + "))";
-                }
-            }
-        } else if (type == float.class || type == Float.class) { // || type == Fraction.class || type == Money.class) {
+            return genConfig.getDateType().getValuesDbStringToObjectMethod(field, paramValue);
+        } else if (type == float.class || type == Float.class) {
             return "values.getAsFloat(" + paramValue + ")";
         } else if (type == double.class || type == Double.class) {
             return "values.getAsDouble(" + paramValue + ")";
@@ -405,21 +394,8 @@ public class AndroidBaseRecordRenderer {
         } else if (type == Boolean.class) {
             return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + ")) != 0 ? true : false : null";
         } else if (type == Date.class) {
-            SchemaFieldType fieldType = field.getJdbcDataType();
-            if (fieldType == SchemaFieldType.DATE) {
-                if (genConfig.isDateTimeSupport()) {
-                    return "dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
-                } else {
-                    return "dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
-                }
-            } else {
-                if (genConfig.isDateTimeSupport()) {
-                    return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? new org.joda.time.DateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) : null";
-                } else {
-                    return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? new java.util.Date(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) : null";
-                }
-            }
-        } else if (type == float.class) { // || type == Fraction.class || type == Money.class) {
+            return genConfig.getDateType().getCursorDbStringToObjectMethod(field, paramValue, false);
+        } else if (type == float.class) {
             return "cursor.getFloat(cursor.getColumnIndexOrThrow(" + paramValue + "))";
         } else if (type == Float.class) {
             return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? cursor.getFloat(cursor.getColumnIndexOrThrow(" + paramValue + ")) : null";
@@ -518,34 +494,16 @@ public class AndroidBaseRecordRenderer {
         String typeText = field.getJavaTypeText();
         String defaultValue = field.getFormattedClassDefaultValue();
 
-//        boolean fractionType = typeText.endsWith("Fraction");
-//        boolean moneyType = typeText.endsWith("Money");
         boolean dateType = typeText.endsWith("Date");
-
-        // Special handling for Fraction and Money
-//        if (!field.isJavaTypePrimitive() && (fractionType || moneyType)) {
-//            // both Money and Fraction are both float at the core
-//            String dataType = "float";
-//            newVariable = new JavaVariable(dataType, fieldNameJavaStyle);
-//
-//            // custom setters and getters to change primative to Fraction or Money
-//            JavaMethod setterMethod = new JavaMethod(Access.PUBLIC, "void", newVariable.getSetterMethodName());
-//            setterMethod.addParameter(new JavaVariable(typeText, newVariable.getName()));
-//            setterMethod.setContent("this." + newVariable.getName() + " = " + newVariable.getName() + ".floatValue();");
-//            myClass.addMethod(setterMethod);
-//
-//            JavaMethod getterMethod = new JavaMethod(Access.PUBLIC, typeText, newVariable.getGetterMethodName());
-//            getterMethod.setContent("return new " + typeText + "(" + newVariable.getName() + ");");
-//            myClass.addMethod(getterMethod);
-//        } else {
-        if (dateType && genConfig.isDateTimeSupport()) {
-            newVariable = new JavaVariable("org.joda.time.DateTime", fieldNameJavaStyle);
+        if (dateType && genConfig.getDateType().isAlternative()) {
+            String dateDataType = genConfig.getDateType().getJavaClassDataType(field);
+            newVariable =  new JavaVariable(dateDataType, fieldNameJavaStyle);
         } else {
             newVariable = new JavaVariable(typeText, fieldNameJavaStyle);
         }
 
         SchemaFieldType fieldType = field.getJdbcDataType();
-        boolean immutableDate = field.getJavaClassType() == Date.class && genConfig.isDateTimeSupport(); // org.joda.time.DateTime IS immutable
+        boolean immutableDate = field.getJavaClassType() == Date.class && genConfig.getDateType().isMutable();
         if (!fieldType.isJavaTypePrimitive() && !fieldType.isJavaTypeImmutable() && !immutableDate) {
             newVariable.setGetterReturnsClone(true);
             if (!readOnlyEntity) {

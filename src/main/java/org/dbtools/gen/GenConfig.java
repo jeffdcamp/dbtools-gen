@@ -3,7 +3,7 @@ package org.dbtools.gen;
 public class GenConfig {
     private boolean injectionSupport = false;
     private boolean jsr305Support = false; // @Nullable / @Nonnull
-    private boolean dateTimeSupport = false;
+    private DateType dateType = DateType.JAVA_DATE;
     private boolean javaeeSupport = false;
     private boolean includeDatabaseNameInPackage = false;
     private boolean eventBusSupport = false; // EventBus Support
@@ -11,23 +11,6 @@ public class GenConfig {
     private boolean rxJavaSupport = false; // when creating queries, use SQLBuilder (from dbtools-query)
 
     public GenConfig() {
-    }
-
-    public GenConfig(boolean injectionSupport,
-                     boolean jsr305Support,
-                     boolean dateTimeSupport,
-                     boolean javaeeSupport,
-                     boolean includeDatabaseNameInPackage,
-                     boolean eventBusSupport,
-                     boolean rxJavaSupport
-    ) {
-        this.injectionSupport = injectionSupport;
-        this.jsr305Support = jsr305Support;
-        this.dateTimeSupport = dateTimeSupport;
-        this.javaeeSupport = javaeeSupport;
-        this.includeDatabaseNameInPackage = includeDatabaseNameInPackage;
-        this.eventBusSupport = eventBusSupport;
-        this.rxJavaSupport = rxJavaSupport;
     }
 
     public boolean isInjectionSupport() {
@@ -46,12 +29,12 @@ public class GenConfig {
         this.jsr305Support = jsr305Support;
     }
 
-    public boolean isDateTimeSupport() {
-        return dateTimeSupport;
+    public DateType getDateType() {
+        return dateType;
     }
 
-    public void setDateTimeSupport(boolean dateTimeSupport) {
-        this.dateTimeSupport = dateTimeSupport;
+    public void setDateType(DateType dateType) {
+        this.dateType = dateType;
     }
 
     public boolean isJavaeeSupport() {

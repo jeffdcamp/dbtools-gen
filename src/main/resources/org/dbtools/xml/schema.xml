@@ -12,7 +12,10 @@
             <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
             <field name="INDIVIDUAL_TYPE_ID" jdbcDataType="INTEGER" varName="individualType" foreignKeyTable="INDIVIDUAL_TYPE" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="HEAD"/>
             <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
-            <field name="BIRTH_DATE" jdbcDataType="DATE"/>
+            <field name="SAMPLE_DATE_TIME" jdbcDataType="DATETIME"/> <!-- text -->
+            <field name="BIRTH_DATE" jdbcDataType="DATE"/> <!-- text -->
+            <field name="ALARM_TIME" jdbcDataType="TIME"/> <!-- text -->
+            <field name="LAST_MODIFIED" jdbcDataType="TIMESTAMP"/> <!-- long -->
             <field name="NUMBER" jdbcDataType="INTEGER"/>
             <field name="PHONE" jdbcDataType="VARCHAR" size="255" notNull="false"/>
             <field name="EMAIL" jdbcDataType="VARCHAR" size="255"/>

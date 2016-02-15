@@ -4,7 +4,6 @@ import org.dbtools.schema.JavaType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.Time;
 import java.util.Date;
 
 /**
@@ -25,9 +24,10 @@ public enum SchemaFieldType {
     CHAR(new JavaType("char", true, true, char.class, Character.class, "Character", "Char", "''")),
     VARCHAR(new JavaType("String", false, true, String.class, String.class, "String", "String", "\"\"")),
     LONGVARCHAR(new JavaType("String", false, true, String.class, String.class, "String", "String", "")),
-    DATE(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date", "java.util.Date", "null")),
-    TIME(new JavaType("Time", false, false, Time.class, Time.class, "Time", "Time", "null")),
-    TIMESTAMP(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date", "java.util.Date", "null")),
+    DATETIME(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date", "java.util.Date", "java.util.Date()")),
+    DATE(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date", "java.util.Date", "java.util.Date()")),
+    TIME(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date", "java.util.Date", "java.util.Date()")),
+    TIMESTAMP(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date", "java.util.Date", "java.util.Date()")),
     JAVA_OBJECT(new JavaType("Object", false, false, Object.class, Object.class, "Object", "Object", "null")),
     DECIMAL(new JavaType("float", true, true, float.class, Float.class, "Float", "Float", "0.0f")),
     NUMERIC(new JavaType("float", true, true, float.class, Float.class, "Float", "Float", "0.0f")),
@@ -124,45 +124,45 @@ public enum SchemaFieldType {
         return javaType.isImmutable();
     }
 
-    public static SchemaFieldType getJavaTypeFromJDBCTypeID(int jdbcTypeID) {
-        switch (jdbcTypeID) {
-            case java.sql.Types.BIT:
-                return BIT;
-            case java.sql.Types.TINYINT:
-                return TINYINT;
-            case java.sql.Types.SMALLINT:
-                return SMALLINT;
-            case java.sql.Types.INTEGER:
-                return INTEGER;
-            case java.sql.Types.BIGINT:
-                return BIGINT;
-            case java.sql.Types.REAL:
-                return REAL;
-            case java.sql.Types.DOUBLE:
-                return DOUBLE;
-            case java.sql.Types.CHAR:
-                return CHAR;
-            case java.sql.Types.VARCHAR:
-                return VARCHAR;
-            case java.sql.Types.DATE:
-                return DATE;
-            case java.sql.Types.TIME:
-                return TIME;
-            case java.sql.Types.TIMESTAMP:
-                return TIMESTAMP;
-            case java.sql.Types.JAVA_OBJECT:
-                return JAVA_OBJECT;
-            case java.sql.Types.DECIMAL:
-                return DECIMAL;
-            case java.sql.Types.NUMERIC:
-                return NUMERIC;
-            case java.sql.Types.BLOB:
-                return BLOB;
-            case java.sql.Types.CLOB:
-                return CLOB;
-            default:
-                System.out.println("WARNING... Unknown jdbc type specified: [" + jdbcTypeID + "]");
-                return UNKNOWN;
-        }
-    }
+//    public static SchemaFieldType getJavaTypeFromJDBCTypeID(int jdbcTypeID) {
+//        switch (jdbcTypeID) {
+//            case java.sql.Types.BIT:
+//                return BIT;
+//            case java.sql.Types.TINYINT:
+//                return TINYINT;
+//            case java.sql.Types.SMALLINT:
+//                return SMALLINT;
+//            case java.sql.Types.INTEGER:
+//                return INTEGER;
+//            case java.sql.Types.BIGINT:
+//                return BIGINT;
+//            case java.sql.Types.REAL:
+//                return REAL;
+//            case java.sql.Types.DOUBLE:
+//                return DOUBLE;
+//            case java.sql.Types.CHAR:
+//                return CHAR;
+//            case java.sql.Types.VARCHAR:
+//                return VARCHAR;
+//            case java.sql.Types.DATE:
+//                return DATE;
+//            case java.sql.Types.TIME:
+//                return TIME;
+//            case java.sql.Types.TIMESTAMP:
+//                return TIMESTAMP;
+//            case java.sql.Types.JAVA_OBJECT:
+//                return JAVA_OBJECT;
+//            case java.sql.Types.DECIMAL:
+//                return DECIMAL;
+//            case java.sql.Types.NUMERIC:
+//                return NUMERIC;
+//            case java.sql.Types.BLOB:
+//                return BLOB;
+//            case java.sql.Types.CLOB:
+//                return CLOB;
+//            default:
+//                System.out.println("WARNING... Unknown jdbc type specified: [" + jdbcTypeID + "]");
+//                return UNKNOWN;
+//        }
+//    }
 }
