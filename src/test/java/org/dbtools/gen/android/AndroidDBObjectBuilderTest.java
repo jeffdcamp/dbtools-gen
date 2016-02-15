@@ -20,6 +20,6 @@ public class AndroidDBObjectBuilderTest {
         genConfig.setDateType(DateType.JODA);
 
         AndroidObjectsBuilder objectsBuilder = new AndroidObjectsBuilder(genConfig);
-        objectsBuilder.buildAll(schemaFilename, baseOutputDir, basePackageName, genConfig);
+        objectsBuilder.buildAll(schemaFilename, baseOutputDir, basePackageName);
     }
 }

@@ -5,14 +5,14 @@ import org.dbtools.gen.DBObjectsBuilder
 import org.dbtools.gen.GenConfig
 import org.dbtools.schema.schemafile.DatabaseSchema
 
-class KotlinAndroidObjectsBuilder() : DBObjectsBuilder() {
+class KotlinAndroidObjectsBuilder(genConfig: GenConfig) : DBObjectsBuilder(genConfig) {
     val builder = KotlinAndroidDBObjectBuilder()
 
     override fun getObjectBuilder(): DBObjectBuilder? {
         return builder
     }
 
-    fun buildAll(schemaFilename: String, baseOutputDir: String, basePackageName: String, genConfig: GenConfig) {
+    fun buildAll(schemaFilename: String, baseOutputDir: String, basePackageName: String) {
         println("schmaFilename: $schemaFilename")
         println("baseOutputDir: $baseOutputDir")
         println("basePackageName: $basePackageName")
@@ -20,7 +20,6 @@ class KotlinAndroidObjectsBuilder() : DBObjectsBuilder() {
         xmlFilename = schemaFilename
         outputBaseDir = baseOutputDir
         packageBase = basePackageName
-        setGenConfig(genConfig)
 
         build()
         println("Generated [" + builder.numberFilesGenerated + "] files.")

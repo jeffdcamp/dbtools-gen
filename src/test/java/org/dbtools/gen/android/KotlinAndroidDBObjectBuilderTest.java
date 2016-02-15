@@ -20,7 +20,7 @@ public class KotlinAndroidDBObjectBuilderTest {
         genConfig.setInjectionSupport(injectionSupport);
         genConfig.setDateType(DateType.JODA);
 
-        KotlinAndroidObjectsBuilder objectsBuilder = new KotlinAndroidObjectsBuilder();
-        objectsBuilder.buildAll(schemaFilename, baseOutputDir, basePackageName, genConfig);
+        KotlinAndroidObjectsBuilder objectsBuilder = new KotlinAndroidObjectsBuilder(genConfig);
+        objectsBuilder.buildAll(schemaFilename, baseOutputDir, basePackageName);
     }
 }

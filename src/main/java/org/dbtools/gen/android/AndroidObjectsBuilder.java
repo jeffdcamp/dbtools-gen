@@ -13,6 +13,7 @@ public class AndroidObjectsBuilder extends DBObjectsBuilder {
     private AndroidDBObjectBuilder objectBuilder;
 
     public AndroidObjectsBuilder(GenConfig genConfig) {
+        super(genConfig);
         objectBuilder = new AndroidDBObjectBuilder(genConfig);
     }
 
@@ -21,11 +22,10 @@ public class AndroidObjectsBuilder extends DBObjectsBuilder {
         return objectBuilder;
     }
 
-    public void buildAll(String schemaFilename, String baseOutputDir, String basePackageName, GenConfig genConfig) {
+    public void buildAll(String schemaFilename, String baseOutputDir, String basePackageName) {
         setXmlFilename(schemaFilename);
         setOutputBaseDir(baseOutputDir);
         setPackageBase(basePackageName);
-        setGenConfig(genConfig);
 
         build();
         System.out.println("Generated [" + objectBuilder.getNumberFilesGenerated() + "] files.");

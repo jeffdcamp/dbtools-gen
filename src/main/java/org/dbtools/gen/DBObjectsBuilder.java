@@ -41,7 +41,8 @@ public abstract class DBObjectsBuilder {
     /**
      * Creates a new instance of DBObjectsBuilder
      */
-    public DBObjectsBuilder() {
+    public DBObjectsBuilder(GenConfig genConfig) {
+        this.genConfig = genConfig;
         schemaRenderer = new SchemaRenderer();
     }
 
