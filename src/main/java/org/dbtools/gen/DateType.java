@@ -137,7 +137,11 @@ public enum DateType {
         switch (field.getJdbcDataType()) {
             case DATETIME:
                 if (this == JSR_310) {
-                    return "DBToolsDateFormatter.dbStringToLocalDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                    if (kotlin && field.isNotNull()) {
+                        return "DBToolsDateFormatter.dbStringToLocalDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
+                    } else {
+                        return "DBToolsDateFormatter.dbStringToLocalDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                    }
                 } else {
                     return "TIME IS CURRENTLY ONLY SUPPORTED BY JSR_310";
                 }
@@ -145,15 +149,34 @@ public enum DateType {
                 switch (this) {
                     default:
                     case JAVA_DATE:
-                        return "DBToolsDateFormatter.dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                        if (kotlin && field.isNotNull()) {
+                            return "DBToolsDateFormatter.dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
+                        } else {
+                            return "DBToolsDateFormatter.dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                        }
+
                     case JODA:
-                        return "DBToolsDateFormatter.dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                        if (kotlin && field.isNotNull()) {
+                            return "DBToolsDateFormatter.dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
+                        } else {
+                            return "DBToolsDateFormatter.dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                        }
+
                     case JSR_310:
-                        return "DBToolsDateFormatter.dbStringToLocalDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                        if (kotlin && field.isNotNull()) {
+                            return "DBToolsDateFormatter.dbStringToLocalDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
+                        } else {
+                            return "DBToolsDateFormatter.dbStringToLocalDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                        }
+
                 }
             case TIME:
                 if (this == JSR_310) {
-                    return "DBToolsDateFormatter.dbStringToLocalTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                    if (kotlin && field.isNotNull()) {
+                        return "DBToolsDateFormatter.dbStringToLocalTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
+                    } else {
+                        return "DBToolsDateFormatter.dbStringToLocalTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                    }
                 } else {
                     return "TIME IS CURRENTLY ONLY SUPPORTED BY JSR_310";
                 }
@@ -164,19 +187,31 @@ public enum DateType {
                     default:
                     case JAVA_DATE:
                         if (kotlin) {
-                            return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) java.util.Date(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) else null";
+                            if (field.isNotNull()) {
+                                return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) java.util.Date(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + ")))!! else null!!";
+                            } else {
+                                return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) java.util.Date(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) else null";
+                            }
                         } else {
                             return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? new java.util.Date(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) : null";
                         }
                     case JODA:
                         if (kotlin) {
-                            return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) DBToolsDateFormatter.longToDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) else null";
+                            if (field.isNotNull()) {
+                                return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) DBToolsDateFormatter.longToDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + ")))!! else null!!";
+                            } else {
+                                return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) DBToolsDateFormatter.longToDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) else null";
+                            }
                         } else {
                             return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? DBToolsDateFormatter.longToDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) : null";
                         }
                     case JSR_310:
                         if (kotlin) {
-                            return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) DBToolsDateFormatter.longToLocalDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) else null";
+                            if (field.isNotNull()) {
+                                return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) DBToolsDateFormatter.longToLocalDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + ")))!! else null!!";
+                            } else {
+                                return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) DBToolsDateFormatter.longToLocalDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) else null";
+                            }
                         } else {
                             return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? DBToolsDateFormatter.longToLocalDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) : null";
                         }

@@ -345,11 +345,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         } else if (type == Boolean::class.java) {
             return "if (!cursor.isNull(cursor.getColumnIndexOrThrow($paramValue))) (if (cursor.getInt(cursor.getColumnIndexOrThrow($paramValue)) != 0) true else false) else null"
         } else if (type == Date::class.java) {
-            var method = genConfig.dateType.getCursorDbStringToObjectMethod(field, paramValue, true)
-            if (field.isNotNull) {
-                method += "!!"
-            }
-            return method
+            return genConfig.dateType.getCursorDbStringToObjectMethod(field, paramValue, true)
         } else if (type == java.lang.Float.TYPE) {
             return "cursor.getFloat(cursor.getColumnIndexOrThrow($paramValue))"
         } else if (type == Float::class.java) {
