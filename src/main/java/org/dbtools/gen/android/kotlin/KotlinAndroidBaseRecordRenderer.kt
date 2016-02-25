@@ -47,9 +47,6 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             }
         }
 
-        constClass.addImport("org.dbtools.android.domain.DBToolsDateFormatter")
-        recordClass.addImport("org.dbtools.android.domain.DBToolsDateFormatter")
-
         // header comment
         addHeader(constClass, className)
         addHeader(recordClass, className)

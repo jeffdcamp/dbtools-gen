@@ -65,9 +65,6 @@ public class AndroidBaseRecordRenderer {
             recordClass.setExtends("AndroidBaseRecord");
         }
 
-        constClass.addImport("org.dbtools.android.domain.DBToolsDateFormatter");
-        recordClass.addImport("org.dbtools.android.domain.DBToolsDateFormatter");
-
         // prep
         cleanupOrphansContent = new StringBuilder();
 
