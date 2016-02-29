@@ -68,16 +68,16 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
             SchemaEntityType.TABLE -> {
                 val tableEntity = entity as SchemaTable
                 if (tableEntity.isReadonly) {
-                    myClass.addImport(if (genConfig.isRxJavaSupport) "org.dbtools.android.domain.RxAndroidBaseManagerReadOnly" else "org.dbtools.android.domain.AndroidBaseManagerReadOnly")
-                    myClass.extends = if (genConfig.isRxJavaSupport) "RxAndroidBaseManagerReadOnly<$recordClassName>" else "AndroidBaseManagerReadOnly<$recordClassName>"
+                    myClass.addImport(if (genConfig.isRxJavaSupport) "org.dbtools.android.domain.RxKotlinAndroidBaseManagerReadOnly" else "org.dbtools.android.domain.KotlinAndroidBaseManagerReadOnly")
+                    myClass.extends = if (genConfig.isRxJavaSupport) "RxKotlinAndroidBaseManagerReadOnly<$recordClassName>" else "KotlinAndroidBaseManagerReadOnly<$recordClassName>"
                 } else {
-                    myClass.addImport(if (genConfig.isRxJavaSupport) "org.dbtools.android.domain.RxAndroidBaseManagerWritable" else "org.dbtools.android.domain.AndroidBaseManagerWritable")
-                    myClass.extends = if (genConfig.isRxJavaSupport) "RxAndroidBaseManagerWritable<$recordClassName>" else "AndroidBaseManagerWritable<$recordClassName>"
+                    myClass.addImport(if (genConfig.isRxJavaSupport) "org.dbtools.android.domain.RxKotlinAndroidBaseManagerWritable" else "org.dbtools.android.domain.KotlinAndroidBaseManagerWritable")
+                    myClass.extends = if (genConfig.isRxJavaSupport) "RxKotlinAndroidBaseManagerWritable<$recordClassName>" else "KotlinAndroidBaseManagerWritable<$recordClassName>"
                 }
             }
             SchemaEntityType.VIEW, SchemaEntityType.QUERY -> {
-                myClass.addImport(if (genConfig.isRxJavaSupport) "org.dbtools.android.domain.RxAndroidBaseManagerReadOnly" else "org.dbtools.android.domain.AndroidBaseManagerReadOnly")
-                myClass.extends = if (genConfig.isRxJavaSupport) "RxAndroidBaseManagerReadOnly<$recordClassName>" else "AndroidBaseManagerReadOnly<$recordClassName>"
+                myClass.addImport(if (genConfig.isRxJavaSupport) "org.dbtools.android.domain.RxKotlinAndroidBaseManagerReadOnly" else "org.dbtools.android.domain.KotlinAndroidBaseManagerReadOnly")
+                myClass.extends = if (genConfig.isRxJavaSupport) "RxKotlinAndroidBaseManagerReadOnly<$recordClassName>" else "KotlinAndroidBaseManagerReadOnly<$recordClassName>"
             }
         }
 
