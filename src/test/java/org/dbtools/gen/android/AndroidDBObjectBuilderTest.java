@@ -17,7 +17,7 @@ public class AndroidDBObjectBuilderTest {
 
         GenConfig genConfig = new GenConfig();
         genConfig.setInjectionSupport(injectionSupport);
-        genConfig.setDateType(DateType.JODA);
+        genConfig.setDateType(DateType.JSR_310);
 
         AndroidObjectsBuilder objectsBuilder = new AndroidObjectsBuilder(genConfig);
         objectsBuilder.buildAll(schemaFilename, baseOutputDir, basePackageName);

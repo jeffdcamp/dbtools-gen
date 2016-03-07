@@ -290,13 +290,13 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         }
 
         val type = field.javaClassType
-        if (type == Integer.TYPE || type == Int::class.java) {
+        if (type == Integer.TYPE || type == Int::class.java || type == java.lang.Integer::class.java) {
             return "values.getAsInteger($paramValue)"
-        } else if (type == String::class.java) {
+        } else if (type == String::class.java || type == java.lang.String::class.java) {
             return "values.getAsString($paramValue)"
-        } else if (type == java.lang.Long.TYPE || type == Long::class.java) {
+        } else if (type == java.lang.Long.TYPE || type == Long::class.java || type == java.lang.Long::class.java) {
             return "values.getAsLong($paramValue)"
-        } else if (type == java.lang.Boolean.TYPE || type == Boolean::class.java) {
+        } else if (type == java.lang.Boolean.TYPE || type == Boolean::class.java || type == java.lang.Boolean::class.java) {
             return "values.getAsBoolean($paramValue)"
         } else if (type == Date::class.java) {
             var method = genConfig.dateType.getValuesDbStringToObjectMethod(field, paramValue)
@@ -304,10 +304,10 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 method += "!!"
             }
             return method
-        } else if (type == java.lang.Float.TYPE || type == Float::class.java) {
+        } else if (type == java.lang.Float.TYPE || type == Float::class.java || type == java.lang.Float::class.java) {
             // || type == Fraction.class || type == Money.class) {
             return "values.getAsFloat($paramValue)"
-        } else if (type == java.lang.Double.TYPE || type == Double::class.java) {
+        } else if (type == java.lang.Double.TYPE || type == Double::class.java || type == java.lang.Double::class.java) {
             return "values.getAsDouble($paramValue)"
         } else if (type == ByteArray::class.java || type == Array<Byte>::class.java) {
             return "values.getAsByteArray($paramValue)"
@@ -327,29 +327,29 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         val type = field.javaClassType
         if (type == Integer.TYPE) {
             return "cursor.getInt(cursor.getColumnIndexOrThrow($paramValue))"
-        } else if (type == Int::class.java) {
+        } else if (type == Int::class.java || type == java.lang.Integer::class.java) {
             return "if (!cursor.isNull(cursor.getColumnIndexOrThrow($paramValue))) cursor.getInt(cursor.getColumnIndexOrThrow($paramValue)) else null"
         } else if (type == String::class.java && field.isNotNull!!) {
             return "cursor.getString(cursor.getColumnIndexOrThrow($paramValue))"
-        } else if (type == String::class.java) {
+        } else if (type == String::class.java || type == java.lang.String::class.java) {
             return "if (!cursor.isNull(cursor.getColumnIndexOrThrow($paramValue))) cursor.getString(cursor.getColumnIndexOrThrow($paramValue)) else null"
         } else if (type == java.lang.Long.TYPE) {
             return "cursor.getLong(cursor.getColumnIndexOrThrow($paramValue))"
-        } else if (type == Long::class.java) {
+        } else if (type == Long::class.java || type == java.lang.Long::class.java) {
             return "if (!cursor.isNull(cursor.getColumnIndexOrThrow($paramValue))) cursor.getLong(cursor.getColumnIndexOrThrow($paramValue)) else null"
         } else if (type == java.lang.Boolean.TYPE) {
             return "if (cursor.getInt(cursor.getColumnIndexOrThrow($paramValue)) != 0) true else false"
-        } else if (type == Boolean::class.java) {
+        } else if (type == Boolean::class.java || type == java.lang.Boolean::class.java) {
             return "if (!cursor.isNull(cursor.getColumnIndexOrThrow($paramValue))) (if (cursor.getInt(cursor.getColumnIndexOrThrow($paramValue)) != 0) true else false) else null"
         } else if (type == Date::class.java) {
             return genConfig.dateType.getCursorDbStringToObjectMethod(field, paramValue, true)
         } else if (type == java.lang.Float.TYPE) {
             return "cursor.getFloat(cursor.getColumnIndexOrThrow($paramValue))"
-        } else if (type == Float::class.java) {
+        } else if (type == Float::class.java || type == java.lang.Float::class.java) {
             return "if (!cursor.isNull(cursor.getColumnIndexOrThrow($paramValue))) cursor.getFloat(cursor.getColumnIndexOrThrow($paramValue)) else null"
         } else if (type == java.lang.Double.TYPE || type == Double::class.java) {
             return "cursor.getDouble(cursor.getColumnIndexOrThrow($paramValue))"
-        } else if (type == Double::class.java) {
+        } else if (type == Double::class.java || type == java.lang.Double::class.java) {
             return "if (!cursor.isNull(cursor.getColumnIndexOrThrow($paramValue))) cursor.getDouble(cursor.getColumnIndexOrThrow($paramValue)) else null"
         } else if (type == ByteArray::class.java || type == Array<Byte>::class.java) {
             return "cursor.getBlob(cursor.getColumnIndexOrThrow($paramValue))"

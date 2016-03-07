@@ -20,6 +20,7 @@
             <field name="PHONE" jdbcDataType="VARCHAR" size="255" notNull="false"/>
             <field name="EMAIL" jdbcDataType="VARCHAR" size="255"/>
             <field name="DATA" jdbcDataType="BLOB"/>
+            <field name="SPOUSE_INDIVIDUAL_ID" jdbcDataType="BIGINT" notNull="false"/> <!-- test for nullable -->
         </table>
         <view name="INDIVIDUAL_VIEW">
             <field name="id" jdbcDataType="BIGINT"/>
