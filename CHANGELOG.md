@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+  Version 5.0.3 *(2016-03)*
+----------------------------
+
+ * Kotlin generated files (better handling of nullable fields)
+ * Remove generated setters for readonly tables / queries / views
+ 
+   Version 5.0.1 *(2016-02)*
+ ----------------------------
+ * Added Support for Kotlin
+ * Added Support for JSR-310 (use dateType 'JSR-310' in the dbtools-gen plugin)
+ * NEW XXRecordConst file that contains all the static fields and methods from the BaseRecord
+ 
   Version 4.0.1 *(2015-10)*
 ----------------------------
 
