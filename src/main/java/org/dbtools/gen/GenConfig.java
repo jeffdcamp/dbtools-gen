@@ -6,7 +6,6 @@ public class GenConfig {
     private DateType dateType = DateType.JAVA_DATE;
     private boolean javaeeSupport = false;
     private boolean includeDatabaseNameInPackage = false;
-    private boolean eventBusSupport = false; // EventBus Support
     private boolean sqlQueryBuilderSupport = false; // when creating queries, use SQLBuilder (from dbtools-query)
     private boolean rxJavaSupport = false; // when creating queries, use SQLBuilder (from dbtools-query)
 
@@ -51,14 +50,6 @@ public class GenConfig {
 
     public void setIncludeDatabaseNameInPackage(boolean includeDatabaseNameInPackage) {
         this.includeDatabaseNameInPackage = includeDatabaseNameInPackage;
-    }
-
-    public boolean isEventBusSupport() {
-        return eventBusSupport;
-    }
-
-    public void setEventBusSupport(boolean eventBusSupport) {
-        this.eventBusSupport = eventBusSupport;
     }
 
     public boolean isRxJavaSupport() {

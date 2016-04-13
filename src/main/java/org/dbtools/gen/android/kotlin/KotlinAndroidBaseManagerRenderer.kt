@@ -40,16 +40,6 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
 
         // generate all of the main methods
         createManager(entity, packageName, recordClassName)
-
-        if (genConfig.isEventBusSupport) {
-            myClass.addImport("org.dbtools.android.domain.DBToolsEventBus")
-            val busVariable = myClass.addVar("bus", "DBToolsEventBus")
-            if (genConfig.isInjectionSupport) {
-                myClass.addImport("javax.inject.Inject")
-                busVariable.addAnnotation("Inject")
-                busVariable.lateInit = true
-            }
-        }
     }
 
     private fun createManager(entity: SchemaEntity, packageName: String, recordClassName: String) {

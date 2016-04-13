@@ -52,17 +52,6 @@ public class AndroidBaseManagerRenderer {
 
         // generate all of the main methods
         createManager(entity, packageName, recordClassName);
-
-        if (genConfig.isEventBusSupport()) {
-            myClass.addImport("org.dbtools.android.domain.DBToolsEventBus");
-            JavaVariable busVariable = myClass.addVariable("DBToolsEventBus", "bus", true);
-            busVariable.setAccess(Access.DEFAULT_NONE);
-
-            if (genConfig.isInjectionSupport()) {
-                myClass.addImport("javax.inject.Inject");
-                busVariable.addAnnotation("Inject");
-            }
-        }
     }
 
     private void createManager(SchemaEntity entity, String packageName, String recordClassName) {
