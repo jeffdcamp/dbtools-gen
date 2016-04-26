@@ -93,15 +93,15 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
             databaseNameParam.addAnnotation(AnnotationConsts.NONNULL)
         }
 
-        myClass.addFun("getReadableDatabase", "DatabaseWrapper<*>", listOf(databaseNameParam), "return databaseManager.getReadableDatabase(databaseName)").apply {
+        myClass.addFun("getReadableDatabase", "DatabaseWrapper<*, *>", listOf(databaseNameParam), "return databaseManager.getReadableDatabase(databaseName)").apply {
             isOverride = true
         }
-        myClass.addFun("getReadableDatabase", "DatabaseWrapper<*>", content = "return databaseManager.getReadableDatabase(databaseName)")
+        myClass.addFun("getReadableDatabase", "DatabaseWrapper<*, *>", content = "return databaseManager.getReadableDatabase(databaseName)")
 
-        myClass.addFun("getWritableDatabase", "DatabaseWrapper<*>", listOf(databaseNameParam), "return databaseManager.getWritableDatabase(databaseName)").apply {
+        myClass.addFun("getWritableDatabase", "DatabaseWrapper<*, *>", listOf(databaseNameParam), "return databaseManager.getWritableDatabase(databaseName)").apply {
             isOverride = true
         }
-        myClass.addFun("getWritableDatabase", "DatabaseWrapper<*>", content = "return databaseManager.getWritableDatabase(databaseName)")
+        myClass.addFun("getWritableDatabase", "DatabaseWrapper<*, *>", content = "return databaseManager.getWritableDatabase(databaseName)")
 
         myClass.addFun("getAndroidDatabase", "org.dbtools.android.domain.AndroidDatabase?", listOf(databaseNameParam), "return databaseManager.getDatabase(databaseName)").apply {
             isOverride = true

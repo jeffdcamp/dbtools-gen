@@ -85,7 +85,7 @@ public class AndroidBaseRecordRenderer {
         }
 
         // post field method content
-        StringBuilder contentValuesContent = new StringBuilder("ContentValues values = new ContentValues();\n");
+        StringBuilder contentValuesContent = new StringBuilder();
         StringBuilder valuesContent = new StringBuilder("Object[] values = new Object[]{\n");
         String setContentValuesContent = "";
         String setContentCursorContent = "";
@@ -215,7 +215,7 @@ public class AndroidBaseRecordRenderer {
 
         // All keys constant
         if (!recordClass.isEnum()) {
-            recordClass.addImport("android.content.ContentValues");
+            recordClass.addImport("org.dbtools.android.domain.database.contentvalues.DBToolsContentValues");
             recordClass.addImport("android.database.Cursor");
 
 
@@ -245,15 +245,16 @@ public class AndroidBaseRecordRenderer {
             allColumnsFullVar.setAccess(Access.PUBLIC);
             recordClass.addMethod(Access.PUBLIC, "String[]", "getAllColumnsFull", "return " + constClassName + "." + ALL_COLUMNS_FULL_VAR_NAME + ".clone();");
 
-            contentValuesContent.append("return values;");
-            recordClass.addMethod(Access.PUBLIC, "ContentValues", "getContentValues", contentValuesContent.toString()).addAnnotation("Override");
+            List<JavaVariable> getCValuesParams = new ArrayList<>();
+            getCValuesParams.add(new JavaVariable("DBToolsContentValues", "values"));
+            recordClass.addMethod(Access.PUBLIC, "void", "getContentValues", getCValuesParams, contentValuesContent.toString()).addAnnotation("Override");
 
             valuesContent.append("};\n");
             valuesContent.append("return values;");
             recordClass.addMethod(Access.PUBLIC, "Object[]", "getValues", valuesContent.toString()).addAnnotation("Override");
 
             List<JavaVariable> setCValuesParams = new ArrayList<>();
-            setCValuesParams.add(new JavaVariable("ContentValues", "values"));
+            setCValuesParams.add(new JavaVariable("DBToolsContentValues", "values"));
             recordClass.addMethod(Access.PUBLIC, "void", "setContent", setCValuesParams, setContentValuesContent);
 
             List<JavaVariable> setCCursorParams = new ArrayList<>();

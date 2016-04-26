@@ -42,6 +42,9 @@ public class DatabaseBaseManagerRenderer {
 
         // constructor
         myClass.setCreateDefaultConstructor(false);
+        myClass.addImport("org.dbtools.android.domain.config.DatabaseConfig");
+        JavaVariable params = new JavaVariable("DatabaseConfig", "databaseConfig");
+        myClass.addConstructor(Access.PUBLIC, Arrays.asList(params), "super(databaseConfig);");
 
         createOnCreate(databaseSchema);
         createOnCreateViews(databaseSchema);
@@ -66,7 +69,6 @@ public class DatabaseBaseManagerRenderer {
     }
 
     private void addImports() {
-        myClass.addImport("android.util.Log");
         myClass.addImport("org.dbtools.android.domain.AndroidDatabase");
         myClass.addImport("org.dbtools.android.domain.AndroidBaseManager");
         myClass.addImport("org.dbtools.android.domain.AndroidDatabaseManager");
@@ -75,7 +77,7 @@ public class DatabaseBaseManagerRenderer {
 
     private void createOnCreate(DatabaseSchema databaseSchema) {
         StringBuilder content = new StringBuilder();
-        content.append("Log.i(TAG, \"Creating database: \" + androidDatabase.getName());\n");
+        content.append("getLogger().i(TAG, \"Creating database: \" + androidDatabase.getName());\n");
 
         for (SchemaDatabase database : databaseSchema.getDatabases()) {
             String databaseName = database.getName();
@@ -144,8 +146,8 @@ public class DatabaseBaseManagerRenderer {
         StringBuilder createContent = new StringBuilder();
         StringBuilder dropContent = new StringBuilder();
 
-        createContent.append("Log.i(TAG, \"Creating database views: \" + androidDatabase.getName());\n");
-        dropContent.append("Log.i(TAG, \"Dropping database views: \" + androidDatabase.getName());\n");
+        createContent.append("getLogger().i(TAG, \"Creating database views: \" + androidDatabase.getName());\n");
+        dropContent.append("getLogger().i(TAG, \"Dropping database views: \" + androidDatabase.getName());\n");
 
         for (SchemaDatabase database : databaseSchema.getDatabases()) {
             String databaseName = database.getName();

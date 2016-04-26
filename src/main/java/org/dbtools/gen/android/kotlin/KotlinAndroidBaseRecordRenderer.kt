@@ -64,7 +64,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         }
 
         // post field method content
-        val contentValuesContent = StringBuilder("val values = ContentValues()\n")
+        val contentValuesContent = StringBuilder()
         val valuesContent = StringBuilder("return arrayOf(\n")
         var valuesContentItemCount = 0;
         var setContentValuesContent = ""
@@ -197,7 +197,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
 
         // All keys constant
         if (!recordClass.isEnum()) {
-            recordClass.addImport("android.content.ContentValues")
+            recordClass.addImport("org.dbtools.android.domain.database.contentvalues.DBToolsContentValues")
             recordClass.addImport("android.database.Cursor")
 
             // columns
@@ -227,8 +227,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             constClass.addConstant(ALL_COLUMNS_FULL_VAR_NAME, defaultValue = allColumnsFullDefaultValue)
             recordClass.addFun("getAllColumnsFull", "Array<String>", content = "return $constClassName.$ALL_COLUMNS_FULL_VAR_NAME.clone()")
 
-            contentValuesContent.append("return values")
-            recordClass.addFun("getContentValues", "ContentValues", content = contentValuesContent.toString()).apply {
+            recordClass.addFun("getContentValues", parameters = listOf(KotlinVal("values", "DBToolsContentValues<*>")), content = contentValuesContent.toString()).apply {
                 isOverride = true
             }
 
@@ -237,7 +236,9 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 isOverride = true
             }
 
-            recordClass.addFun("setContent", parameters = listOf(KotlinVal("values", "ContentValues")), content = setContentValuesContent)
+            recordClass.addFun("setContent", parameters = listOf(KotlinVal("values", "DBToolsContentValues<*>")), content = setContentValuesContent).apply {
+                isOverride = true;
+            }
             recordClass.addFun("setContent", parameters = listOf(KotlinVal("cursor", "Cursor")), content = setContentCursorContent).apply {
                 isOverride = true
             }

@@ -43,10 +43,10 @@ class KotlinAndroidRecordRenderer(val genConfig: GenConfig) {
 
         if (!myClass.isEnum()) {
             myClass.addImport("android.database.Cursor")
-            myClass.addImport("android.content.ContentValues")
+            myClass.addImport("org.dbtools.android.domain.database.contentvalues.DBToolsContentValues")
             myClass.addConstructor()
             myClass.addConstructor(listOf(KotlinVal("cursor", "Cursor")), "setContent(cursor)")
-            myClass.addConstructor(listOf(KotlinVal("values", "ContentValues")), "setContent(values)")
+            myClass.addConstructor(listOf(KotlinVal("values", "DBToolsContentValues")), "setContent(values)")
         }
 
         if (entity.type == SchemaEntityType.VIEW) {

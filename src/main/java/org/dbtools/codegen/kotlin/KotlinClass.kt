@@ -124,12 +124,12 @@ open class KotlinClass(var name: String = "", var packageName:String = "", val c
         constantFuns.add(function)
     }
 
-    fun addConstructor(parameters: List<KotlinVal> = ArrayList<KotlinVal>(), content: String = "", access: KotlinAccess = KotlinAccess.PUBLIC): KotlinFun {
+    fun addConstructor(parameters: List<KotlinVal> = ArrayList<KotlinVal>(), content: String = "", access: KotlinAccess = KotlinAccess.PUBLIC, returnType: String = ""): KotlinFun {
         if (isInterface()) {
             throw IllegalStateException("Cannot add a constructor to an Interface")
         }
 
-        return addFun(name, "", parameters, content, access, KotlinFunType.CONSTRUCTOR)
+        return addFun(name, returnType, parameters, content, access, KotlinFunType.CONSTRUCTOR)
     }
 
     fun addFun(newFun: KotlinFun): KotlinFun {

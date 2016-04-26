@@ -4,14 +4,12 @@ import org.dbtools.codegen.kotlin.KotlinClass
 import org.dbtools.codegen.kotlin.KotlinVal
 import org.dbtools.gen.GenConfig
 import org.dbtools.schema.schemafile.DatabaseSchema
-import org.dbtools.util.JavaUtil
 
 class KotlinDatabaseManagerRenderer(val genConfig: GenConfig, val outDir: String = "") {
 
     private var myClass = KotlinClass()
 
     private val className = "DatabaseManager"
-    private val dbConstClassName = "DatabaseManagerConst";
 
     private var packageBase: String = ""
 
@@ -23,57 +21,35 @@ class KotlinDatabaseManagerRenderer(val genConfig: GenConfig, val outDir: String
             extends = "DatabaseBaseManager" // extend the generated base class
         }
 
-        myClass.addVal("application", "Application")
-
-        val params = listOf(KotlinVal("application", "Application"))
-        val constructorContent = "this.application = application"
-        val constructor = myClass.addConstructor(params, constructorContent)
+        val params = listOf(KotlinVal("databaseConfig", "DatabaseConfig"))
+        val constructor = myClass.addConstructor(params, returnType = "super(databaseConfig)")
 
         if (genConfig.isInjectionSupport) {
             myClass.addAnnotation("Singleton")
             constructor.addAnnotation("javax.inject.Inject")
         }
         addImports()
-        createIdentifyDatabases(databaseSchema)
-        createCreateNewDatabaseWrapper()
+        createDatabaseVersions(databaseSchema)
         createOnUpgrade()
         createOnUpgradeViews()
 
         myClass.writeToDisk(outDir, false)
     }
 
-    private fun createIdentifyDatabases(databaseSchema: DatabaseSchema) {
-        val content = StringBuilder()
-
+    private fun createDatabaseVersions(databaseSchema: DatabaseSchema) {
         for (database in databaseSchema.databases) {
-            val databaseConstName = JavaUtil.nameToJavaConst(database.name) + "_DATABASE_NAME"
             val databaseVersion = database.name + "TablesVersion"
             val databaseViewsVersion = database.name + "ViewsVersion"
 
-            content.append("addDatabase(application, $dbConstClassName.$databaseConstName, $databaseVersion, $databaseViewsVersion)\n")
-
-            myClass.addVal(databaseVersion, defaultValue = "1")
-            myClass.addVal(databaseViewsVersion, defaultValue = "1")
-        }
-
-        myClass.addFun("identifyDatabases", content = content.toString()).apply {
-            isOverride = true
-        }
-    }
-
-    private fun createCreateNewDatabaseWrapper() {
-        myClass.addImport("org.dbtools.android.domain.database.DatabaseWrapper")
-        myClass.addImport("org.dbtools.android.domain.database.AndroidDatabaseWrapper")
-
-        myClass.addFun("createNewDatabaseWrapper", "DatabaseWrapper<*>", listOf(KotlinVal("androidDatabase", "AndroidDatabase")), "return AndroidDatabaseWrapper(androidDatabase.path)").apply {
-            isOverride = true
+            myClass.addConstant(databaseVersion, defaultValue = "1")
+            myClass.addConstant(databaseViewsVersion, defaultValue = "1")
         }
     }
 
     private fun createOnUpgrade() {
         val content = StringBuilder()
 
-        content.append("Log.i(TAG, \"Upgrading database [\$androidDatabase.name] from version \$oldVersion to \$newVersion\")\n")
+        content.append("getLogger().i(TAG, \"Upgrading database [\$androidDatabase.name] from version \$oldVersion to \$newVersion\")\n")
 
         val params = listOf(KotlinVal("androidDatabase", "AndroidDatabase"),
                 KotlinVal("oldVersion", "Int"),
@@ -86,7 +62,7 @@ class KotlinDatabaseManagerRenderer(val genConfig: GenConfig, val outDir: String
     private fun createOnUpgradeViews() {
         val content = StringBuilder()
 
-        content.append("Log.i(TAG, \"Upgrading database [\$androidDatabase.name] VIEWS from version \$oldVersion to \$newVersion\")\n")
+        content.append("getLogger().i(TAG, \"Upgrading database [\$androidDatabase.name] VIEWS from version \$oldVersion to \$newVersion\")\n")
         content.append("// automatically drop/create views\n")
         content.append("super.onUpgradeViews(androidDatabase, oldVersion, newVersion)\n")
 
@@ -99,8 +75,7 @@ class KotlinDatabaseManagerRenderer(val genConfig: GenConfig, val outDir: String
     }
 
     private fun addImports() {
-        myClass.addImport("android.util.Log")
-        myClass.addImport("android.app.Application")
+        myClass.addImport("org.dbtools.android.domain.config.DatabaseConfig")
         myClass.addImport("org.dbtools.android.domain.AndroidDatabase")
 
         if (genConfig.isInjectionSupport) {

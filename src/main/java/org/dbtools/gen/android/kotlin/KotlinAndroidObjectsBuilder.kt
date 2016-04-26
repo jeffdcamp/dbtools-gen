@@ -32,5 +32,9 @@ class KotlinAndroidObjectsBuilder(genConfig: GenConfig) : DBObjectsBuilder(genCo
         val databaseManager = KotlinDatabaseManagerRenderer(genConfig, outputBaseDir)
         databaseManager.setPackageBase(packageBase)
         databaseManager.generate(databaseSchema) // this file will only be created if it does not already exist
+
+        val kotlinAppDatabaseConfig = KotlinAppDatabaseConfigRenderer(genConfig, outputBaseDir)
+        kotlinAppDatabaseConfig.setPackageBase(packageBase)
+        kotlinAppDatabaseConfig.generate(databaseSchema) // this file will only be created if it does not already exist
     }
 }

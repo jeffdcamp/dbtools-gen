@@ -44,5 +44,11 @@ public class AndroidObjectsBuilder extends DBObjectsBuilder {
         databaseManager.setOutDir(outputBaseDir);
         databaseManager.setGenConfig(genConfig);
         databaseManager.generate(databaseSchema); // this file will only be created if it does not already exist
+
+        AppDatabaseConfigRenderer appDatabaseConfigRenderer = new AppDatabaseConfigRenderer();
+        appDatabaseConfigRenderer.setPackageBase(packageBase);
+        appDatabaseConfigRenderer.setOutDir(outputBaseDir);
+        appDatabaseConfigRenderer.setGenConfig(genConfig);
+        appDatabaseConfigRenderer.generate(databaseSchema); // this file will only be created if it does not already exist
     }
 }
