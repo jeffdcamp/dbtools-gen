@@ -62,7 +62,7 @@ class KotlinAndroidRecordRenderer(val genConfig: GenConfig) {
         val entityClassName = createClassName(entity) + "Const"
 
         myClass.addConstant("DROP_VIEW", dataType = "String", formatDefaultValue = false)
-        myClass.appendStaticInitializer("DROP_VIEW = \"DROP VIEW IF EXISTS \" + $entityClassName.TABLE + \";\";")
+        myClass.appendStaticInitializer("DROP_VIEW = \"DROP VIEW IF EXISTS \" + $entityClassName.TABLE + \"\"")
 
         val headerComment = StringBuilder()
         headerComment.append("// todo Replace the following the CREATE_VIEW sql (The following is a template suggestion for your view)\n")
@@ -78,7 +78,7 @@ class KotlinAndroidRecordRenderer(val genConfig: GenConfig) {
     }
 
     private fun createStandardView(entity: SchemaEntity) {
-        val entityClassName = createClassName(entity) + "Const";
+        val entityClassName = createClassName(entity) + "Const"
 
         val createContent = StringBuilder()
         createContent.append("\"CREATE VIEW IF NOT EXISTS \" + ").append(entityClassName).append(".TABLE + \" AS SELECT \" +\n")
@@ -224,7 +224,7 @@ class KotlinAndroidRecordRenderer(val genConfig: GenConfig) {
         createContent.append("\n")
         createContent.append(TAB).append(TAB).append(TAB)
         createContent.append(".table(\"FROM SOME TABLE(S)\")\n")
-        createContent.append(".buildQuery();\n")
+        createContent.append(".buildQuery()\n")
 
         myClass.addConstant("QUERY", dataType = "String", formatDefaultValue = false)
         myClass.appendStaticInitializer("\nQUERY = " + createContent.toString())

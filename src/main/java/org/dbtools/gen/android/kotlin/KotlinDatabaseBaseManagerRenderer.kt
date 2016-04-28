@@ -19,7 +19,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
 
     fun generate(databaseSchema: DatabaseSchema, packageName: String) {
         println("Generating DatabaseBaseManager...")
-        this.packageBase = packageName;
+        this.packageBase = packageName
 
         val className = "DatabaseBaseManager"
         myClass.apply { 
@@ -73,7 +73,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
 
     private fun createOnCreate(databaseSchema: DatabaseSchema) {
         val content = StringBuilder()
-        content.append("getLogger().i(TAG, \"Creating database: \$androidDatabase.name\");\n")
+        content.append("getLogger().i(TAG, \"Creating database: \$androidDatabase.name\")\n")
 
         for (database in databaseSchema.databases) {
             var databaseName = database.name
@@ -95,12 +95,12 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         val createDatabaseMethodName = "create" + Character.toUpperCase(varName[0]) + varName.substring(1)
 
         content.append("if (androidDatabase.name.equals($constClassName.$databaseConstName)) {\n")
-        content.append(TAB).append(createDatabaseMethodName).append("(androidDatabase);\n")
+        content.append(TAB).append(createDatabaseMethodName).append("(androidDatabase)\n")
         content.append("}\n")
 
         val createDatabaseContent = StringBuilder()
         createDatabaseContent.append("val database = androidDatabase.databaseWrapper\n")
-        createDatabaseContent.append("database.beginTransaction();\n")
+        createDatabaseContent.append("database.beginTransaction()\n")
 
         // include database name in base package name
         val databaseBasePackage = createDatabaseBasePackage(database)
@@ -110,7 +110,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
             if (table.isEnumerationTable) {
                 createDatabaseContent.append("AndroidBaseManager.createTable(database, ")
                         .append(JavaUtil.createTableImport(databaseBasePackage, table.className) + "Const")
-                        .append(".CREATE_TABLE);\n")
+                        .append(".CREATE_TABLE)\n")
             }
         }
 
@@ -119,13 +119,13 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
             if (!table.isEnumerationTable) {
                 createDatabaseContent.append("AndroidBaseManager.createTable(database, ")
                         .append(JavaUtil.createTableImport(databaseBasePackage, table.className) + "Const")
-                        .append(".CREATE_TABLE);\n")
+                        .append(".CREATE_TABLE)\n")
             }
         }
 
         createDatabaseContent.append("\n")
-        createDatabaseContent.append("database.setTransactionSuccessful();\n")
-        createDatabaseContent.append("database.endTransaction();\n")
+        createDatabaseContent.append("database.setTransactionSuccessful()\n")
+        createDatabaseContent.append("database.endTransaction()\n")
 
         myClass.addFun(createDatabaseMethodName, parameters = listOf(KotlinVal("androidDatabase", "AndroidDatabase")), content = createDatabaseContent.toString())
     }
@@ -171,7 +171,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         val createDatabaseViewsContent = StringBuilder()
 
         createDatabaseViewsContent.append("val database = androidDatabase.databaseWrapper\n")
-        createDatabaseViewsContent.append("database.beginTransaction();\n")
+        createDatabaseViewsContent.append("database.beginTransaction()\n")
 
         // include database name in base package name
         val databaseBasePackage = createDatabaseBasePackage(database)
@@ -180,12 +180,12 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         for (view in database.views) {
             createDatabaseViewsContent.append("AndroidBaseManager.createTable(database, ")
                     .append(JavaUtil.createTableImport(databaseBasePackage, view.className))
-                    .append(".CREATE_VIEW);\n")
+                    .append(".CREATE_VIEW)\n")
         }
 
         createDatabaseViewsContent.append("\n")
-        createDatabaseViewsContent.append("database.setTransactionSuccessful();\n")
-        createDatabaseViewsContent.append("database.endTransaction();\n")
+        createDatabaseViewsContent.append("database.setTransactionSuccessful()\n")
+        createDatabaseViewsContent.append("database.endTransaction()\n")
 
         myClass.addFun(createDatabaseViewsMethodName, parameters = listOf(KotlinVal("androidDatabase", "AndroidDatabase")), content = createDatabaseViewsContent.toString())
     }
@@ -199,12 +199,12 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         val dropDatabaseViewsMethodName = "drop" + Character.toUpperCase(varName[0]) + varName.substring(1)
 
         content.append("if (androidDatabase.name.equals($constClassName.$databaseConstName)) {\n")
-        content.append(TAB).append(dropDatabaseViewsMethodName).append("(androidDatabase);\n")
+        content.append(TAB).append(dropDatabaseViewsMethodName).append("(androidDatabase)\n")
         content.append("}\n")
 
         val dropDatabaseViewsContent = StringBuilder()
         dropDatabaseViewsContent.append("val database = androidDatabase.databaseWrapper\n")
-        dropDatabaseViewsContent.append("database.beginTransaction();\n")
+        dropDatabaseViewsContent.append("database.beginTransaction()\n")
 
         // include database name in base package name
         val databaseBasePackage = createDatabaseBasePackage(database)
@@ -213,12 +213,12 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         for (view in database.views) {
             dropDatabaseViewsContent.append("AndroidBaseManager.dropTable(database, ")
                     .append(JavaUtil.createTableImport(databaseBasePackage, view.className))
-                    .append(".DROP_VIEW);\n")
+                    .append(".DROP_VIEW)\n")
         }
 
         dropDatabaseViewsContent.append("\n")
-        dropDatabaseViewsContent.append("database.setTransactionSuccessful();\n")
-        dropDatabaseViewsContent.append("database.endTransaction();\n")
+        dropDatabaseViewsContent.append("database.setTransactionSuccessful()\n")
+        dropDatabaseViewsContent.append("database.endTransaction()\n")
 
         myClass.addFun(dropDatabaseViewsMethodName, parameters = listOf(KotlinVal("androidDatabase", "AndroidDatabase")), content = dropDatabaseViewsContent.toString())
     }

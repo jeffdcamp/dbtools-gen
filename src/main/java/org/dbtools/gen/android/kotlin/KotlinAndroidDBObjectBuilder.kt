@@ -31,7 +31,7 @@ class KotlinAndroidDBObjectBuilder() : DBObjectBuilder {
 
     override fun build(database: SchemaDatabase, entity: SchemaEntity, packageName: String, outDir: String, genConfig: GenConfig): Boolean {
         val lastDirChar = outDir[outDir.length - 1]
-        val workingOutDir: String;
+        val workingOutDir: String
         if (lastDirChar != File.separatorChar) {
             workingOutDir = outDir + File.separatorChar
         } else {

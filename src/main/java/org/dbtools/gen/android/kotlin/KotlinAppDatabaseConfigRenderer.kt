@@ -11,7 +11,7 @@ class KotlinAppDatabaseConfigRenderer(val genConfig: GenConfig, val outDir: Stri
     private var myClass = KotlinClass()
 
     private val className = "AppDatabaseConfig"
-    private val dbConstClassName = "DatabaseManagerConst";
+    private val dbConstClassName = "DatabaseManagerConst"
     private var packageBase: String = ""
 
     fun generate(databaseSchema: DatabaseSchema) {

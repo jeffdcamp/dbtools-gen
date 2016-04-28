@@ -77,7 +77,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         val valuesContent = StringBuilder("return arrayOf(\n")
         val bindInsertStatementContent = StringBuilder()
         val bindUpdateStatementContent = StringBuilder()
-        var valuesContentItemCount = 0;
+        var valuesContentItemCount = 0
         var setContentValuesContent = ""
         var setContentCursorContent = ""
 
@@ -329,7 +329,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             }
 
             recordClass.addFun("setContent", parameters = listOf(KotlinVal("values", "DBToolsContentValues<*>")), content = setContentValuesContent).apply {
-                isOverride = true;
+                isOverride = true
             }
             recordClass.addFun("setContent", parameters = listOf(KotlinVal("cursor", "Cursor")), content = setContentCursorContent).apply {
                 isOverride = true
@@ -550,7 +550,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             bindStatementContent.append("if (").append(value).append(" != null").append(") {\n")
             bindStatementContent.append(TAB).append("statement.$bindMethodName(").append(bindIndex).append(", ").append(value).append("!!)\n")
             bindStatementContent.append("} else {\n")
-            bindStatementContent.append(TAB).append("statement.bindNull(").append(bindIndex).append(");\n")
+            bindStatementContent.append(TAB).append("statement.bindNull(").append(bindIndex).append(")\n")
             bindStatementContent.append("}\n")
         }
     }
