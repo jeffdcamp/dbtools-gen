@@ -117,11 +117,15 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
                 myClass.addFun("getPrimaryKey", "String", content =  "return $recordConstClassName.PRIMARY_KEY_COLUMN").apply { isOverride = true }
                 myClass.addFun("getDropSql", "String", content =  "return $recordConstClassName.DROP_TABLE").apply { isOverride = true }
                 myClass.addFun("getCreateSql", "String", content =  "return $recordConstClassName.CREATE_TABLE").apply { isOverride = true }
+                myClass.addFun("getInsertSql", "String", content =  "return $recordConstClassName.INSERT_STATEMENT").apply { isOverride = true }
+                myClass.addFun("getUpdateSql", "String", content =  "return $recordConstClassName.UPDATE_STATEMENT").apply { isOverride = true }
             }
             SchemaEntityType.VIEW -> {
                 myClass.addFun("getPrimaryKey", "String", content =  "return \"\"").apply { isOverride = true }
                 myClass.addFun("getDropSql", "String", content =  "return $recordClassName.DROP_VIEW").apply { isOverride = true }
                 myClass.addFun("getCreateSql", "String", content =  "return $recordClassName.CREATE_VIEW").apply { isOverride = true }
+                myClass.addFun("getInsertSql", "String", content =  "return \"\"").apply { isOverride = true }
+                myClass.addFun("getUpdateSql", "String", content =  "return \"\"").apply { isOverride = true }
             }
             SchemaEntityType.QUERY -> {
                 myClass.addFun("getQuery", "String").apply {
@@ -132,6 +136,8 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
                 myClass.addFun("getPrimaryKey", "String", content =  "return \"\"").apply { isOverride = true }
                 myClass.addFun("getDropSql", "String", content =  "return \"\"").apply { isOverride = true }
                 myClass.addFun("getCreateSql", "String", content =  "return \"\"").apply { isOverride = true }
+                myClass.addFun("getInsertSql", "String", content =  "return \"\"").apply { isOverride = true }
+                myClass.addFun("getUpdateSql", "String", content =  "return \"\"").apply { isOverride = true }
             }
         }
     }

@@ -118,11 +118,15 @@ public class AndroidBaseManagerRenderer {
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return " + recordConstClassName + "." + AndroidBaseRecordRenderer.PRIMARY_KEY_COLUMN + ";"));
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getDropSql", "return " + recordConstClassName + ".DROP_TABLE;"));
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getCreateSql", "return " + recordConstClassName + ".CREATE_TABLE;"));
+                addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getInsertSql", "return " + recordConstClassName + ".INSERT_STATEMENT;"));
+                addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getUpdateSql", "return " + recordConstClassName + ".UPDATE_STATEMENT;"));
                 break;
             case VIEW:
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return null;"));
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getDropSql", "return " + recordClassName + ".DROP_VIEW;"));
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getCreateSql", "return " + recordClassName + ".CREATE_VIEW;"));
+                addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getInsertSql", "return \"\";"));
+                addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getUpdateSql", "return \"\";"));
                 break;
             case QUERY:
                 JavaMethod getQueryMethod = myClass.addMethod(Access.PUBLIC, "String", "getQuery", "");
@@ -132,6 +136,8 @@ public class AndroidBaseManagerRenderer {
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return null;"));
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getDropSql", "return \"\";"));
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getCreateSql", "return \"\";"));
+                addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getInsertSql", "return \"\";"));
+                addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getUpdateSql", "return \"\";"));
                 break;
         }
     }

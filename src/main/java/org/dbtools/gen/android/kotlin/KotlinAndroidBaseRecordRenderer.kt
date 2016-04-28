@@ -26,8 +26,14 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
     private val enumerationClasses = ArrayList<KotlinEnum>()
     private val cleanupOrphansContent = StringBuilder()
     private val useInnerEnums = true
+    private var bindInsertStatementContentIndex = 1 // 1 based
+    private var bindUpdateStatementContentIndex = 1 // 1 based
 
     fun generate(database: SchemaDatabase, entity: SchemaEntity, packageName: String, databaseMapping: DatabaseMapping) {
+        // reset data
+        bindInsertStatementContentIndex = 1
+        bindUpdateStatementContentIndex = 1
+
         val enumTable = entity.isEnumerationTable
         val entityType = entity.type
         val entityClassName = entity.className
@@ -45,6 +51,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 addImport("org.dbtools.android.domain.AndroidBaseRecord")
                 extends = "AndroidBaseRecord()"
             }
+            recordClass.addImport("org.dbtools.android.domain.database.statement.StatementWrapper")
         }
 
         // header comment
@@ -52,6 +59,8 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         addHeader(recordClass, className)
 
         var primaryKeyAdded = false
+        var primaryKeyFieldName = ""
+        var primaryKeyField: SchemaField? = null
 
         // constants and variables
         val databaseName = database.name
@@ -66,6 +75,8 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         // post field method content
         val contentValuesContent = StringBuilder()
         val valuesContent = StringBuilder("return arrayOf(\n")
+        val bindInsertStatementContent = StringBuilder()
+        val bindUpdateStatementContent = StringBuilder()
         var valuesContentItemCount = 0;
         var setContentValuesContent = ""
         var setContentCursorContent = ""
@@ -83,6 +94,8 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 if (primaryKeyAdded) {
                     throw IllegalStateException("Cannot have more than 1 Primary Key [$fieldNameJavaStyle]")
                 } else {
+                    primaryKeyField = field
+                    primaryKeyFieldName = fieldName
                     primaryKeyAdded = true
                 }
             }
@@ -133,18 +146,47 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             if (!(primaryKey && field.isIncrement)) {
                 var value = fieldNameJavaStyle
                 val fieldType = field.jdbcDataType
+                val notNullField = field.isNotNull
+                val primitiveField = fieldType.isJavaTypePrimitive()
+
                 if (field.isEnumeration) {
-                    value = newVariable.name + ".ordinal"
+                    value = newVariable.name + ".ordinal.toLong()"
                 } else if (fieldType == SchemaFieldType.DATETIME || fieldType == SchemaFieldType.DATE || fieldType == SchemaFieldType.TIMESTAMP || fieldType == SchemaFieldType.TIME) {
-                    value = genConfig.dateType.getValuesValue(field, fieldNameJavaStyle)
+                    val dateValue = genConfig.dateType.getValuesValue(field, fieldNameJavaStyle)
+                    if (notNullField) {
+                        value = dateValue + "!!"
+                    } else {
+                        value = dateValue
+                    }
                 } else if (fieldType == SchemaFieldType.BOOLEAN) {
-                    if (field.isNotNull!!) {
+                    if (field.isNotNull) {
                         value = "if ($fieldNameJavaStyle) 1 else 0"
                     } else {
                         value = "if ($fieldNameJavaStyle != null) (if ($fieldNameJavaStyle) 1 else 0) else 0"
                     }
                 }
+
                 contentValuesContent.append("values.put(").append(fullFieldColumn).append(", ").append(value).append(")\n")
+
+                // bindStatementContent
+                when (fieldType) {
+                    SchemaFieldType.BOOLEAN, SchemaFieldType.BIT, SchemaFieldType.TINYINT, SchemaFieldType.SMALLINT, SchemaFieldType.INTEGER, SchemaFieldType.BIGINT, SchemaFieldType.NUMERIC, SchemaFieldType.BIGINTEGER, SchemaFieldType.TIMESTAMP -> {
+                        addBindInsert(bindInsertStatementContent, "bindLong", value, primitiveField, notNullField)
+                        addBindUpdate(bindUpdateStatementContent, "bindLong", value, primitiveField, notNullField)
+                    }
+                    SchemaFieldType.REAL, SchemaFieldType.FLOAT, SchemaFieldType.DOUBLE, SchemaFieldType.DECIMAL, SchemaFieldType.BIGDECIMAL -> {
+                        addBindInsert(bindInsertStatementContent, "bindDouble", value, primitiveField, notNullField)
+                        addBindUpdate(bindUpdateStatementContent, "bindDouble", value, primitiveField, notNullField)
+                    }
+                    SchemaFieldType.CHAR, SchemaFieldType.VARCHAR, SchemaFieldType.LONGVARCHAR, SchemaFieldType.CLOB, SchemaFieldType.DATETIME, SchemaFieldType.DATE, SchemaFieldType.TIME -> {
+                        addBindInsert(bindInsertStatementContent, "bindString", value, primitiveField, notNullField)
+                        addBindUpdate(bindUpdateStatementContent, "bindString", value, primitiveField, notNullField)
+                    }
+                    SchemaFieldType.BLOB -> {
+                        addBindInsert(bindInsertStatementContent, "bindBlob", value, primitiveField, notNullField)
+                        addBindUpdate(bindUpdateStatementContent, "bindBlob", value, primitiveField, notNullField)
+                    }
+                }
 
                 if (valuesContentItemCount > 0) {
                     valuesContent.append(",\n")
@@ -169,6 +211,12 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             constClass.addFun(newVariable.getGetterMethodName(), newVariable.dataType, listOf(KotlinVal("cursor", "Cursor")), "return " + getContentValuesCursorGetterMethod(field, fieldColumn, newVariable) + "")
         }
 
+        // bind the primary key value LAST (it is the where clause part of the update code)
+        if (primaryKeyField != null) {
+            addBindUpdate(bindUpdateStatementContent, "bindLong", primaryKeyField.getName(true), primaryKeyField.jdbcDataType.isJavaTypePrimitive, primaryKeyField.isNotNull)
+        }
+
+
         if (!primaryKeyAdded && (entityType == SchemaEntityType.VIEW || entityType == SchemaEntityType.QUERY)) {
             recordClass.addFun("getIdColumnName", "String", content = "return \"\"").apply {
                 isOverride = true
@@ -185,12 +233,49 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
 
         // SchemaDatabase variables
         if (entityType == SchemaEntityType.TABLE) {
+            // CREATE TABLE
             val table = entity as SchemaTable
             var createTable = SqliteRenderer.generateTableSchema(table, databaseMapping)
             createTable = createTable.replace("\n", "\" + \n" + TAB + TAB + "\"")
             createTable = createTable.replace("\t", "") // remove tabs
             constClass.addConstant("CREATE_TABLE", "\"$createTable\"").apply { const = true }
             constClass.addConstant("DROP_TABLE", "\"${SchemaRenderer.generateDropSchema(true, table)}\"").apply { const = true }
+
+            // INSERT and UPDATE
+            val insertStatement = StringBuilder("INSERT INTO $tableName (")
+            val updateStatement = StringBuilder("UPDATE $tableName SET ")
+
+            // columns
+            var columnCount = 0
+            for (field in entity.fields) {
+                if (!(field.isPrimaryKey && field.isIncrement)) {
+                    insertStatement.append(if (columnCount > 0) "," else "")
+                    insertStatement.append(field.name)
+
+                    updateStatement.append(if (columnCount > 0) ", " else "")
+                    updateStatement.append(field.name).append("=").append("?")
+
+                    columnCount++
+                }
+            }
+
+            // mid
+            insertStatement.append(')')
+            insertStatement.append(" VALUES (")
+
+            updateStatement.append(" WHERE ").append(primaryKeyFieldName).append(" = ?")
+
+            // ?'s
+            for (i in 0..columnCount - 1) {
+                insertStatement.append(if (i > 0) ",?" else "?")
+            }
+
+            // close
+            insertStatement.append(')')
+
+            // add to class
+            constClass.addConstant("INSERT_STATEMENT", defaultValue = "\"" + insertStatement.toString() + "\"").apply { const = true }
+            constClass.addConstant("UPDATE_STATEMENT", defaultValue = "\"" + updateStatement.toString() + "\"").apply { const = true }
         }
 
         // Content values
@@ -233,6 +318,13 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
 
             valuesContent.append(")\n")
             recordClass.addFun("getValues", "Array<Any?>", content = valuesContent.toString()).apply {
+                isOverride = true
+            }
+
+            recordClass.addFun("bindInsertStatement", parameters = listOf(KotlinVal("statement", "StatementWrapper")), content = bindInsertStatementContent.toString()).apply {
+                isOverride = true
+            }
+            recordClass.addFun("bindUpdateStatement", parameters = listOf(KotlinVal("statement", "StatementWrapper")), content = bindUpdateStatementContent.toString()).apply {
                 isOverride = true
             }
 
@@ -438,6 +530,28 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
 
         return KotlinVar(fieldNameJavaStyle, typeText).apply {
             defaultValue = fieldDefaultValue
+        }
+    }
+
+    private fun addBindInsert(bindStatementContent: StringBuilder, bindMethodName: String, value: String, primitive: Boolean, notNull: Boolean) {
+        addBind(bindStatementContent, bindInsertStatementContentIndex, bindMethodName, value, primitive, notNull)
+        bindInsertStatementContentIndex++
+    }
+
+    private fun addBindUpdate(bindStatementContent: StringBuilder, bindMethodName: String, value: String, primitive: Boolean, notNull: Boolean) {
+        addBind(bindStatementContent, bindUpdateStatementContentIndex, bindMethodName, value, primitive, notNull)
+        bindUpdateStatementContentIndex++
+    }
+
+    private fun addBind(bindStatementContent: StringBuilder, bindIndex: Int, bindMethodName: String, value: String, isPrimitive: Boolean, notNull: Boolean) {
+        if (isPrimitive || notNull) {
+            bindStatementContent.append("statement.$bindMethodName(").append(bindIndex).append(", ").append(value).append(")\n")
+        } else {
+            bindStatementContent.append("if (").append(value).append(" != null").append(") {\n")
+            bindStatementContent.append(TAB).append("statement.$bindMethodName(").append(bindIndex).append(", ").append(value).append("!!)\n")
+            bindStatementContent.append("} else {\n")
+            bindStatementContent.append(TAB).append("statement.bindNull(").append(bindIndex).append(");\n")
+            bindStatementContent.append("}\n")
         }
     }
 

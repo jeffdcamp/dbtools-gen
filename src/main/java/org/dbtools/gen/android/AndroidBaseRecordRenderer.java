@@ -38,6 +38,8 @@ public class AndroidBaseRecordRenderer {
     private StringBuilder cleanupOrphansContent;
     private boolean useInnerEnums = true;
     private GenConfig genConfig;
+    private int bindInsertStatementContentIndex = 1; // 1 based
+    private int bindUpdateStatementContentIndex = 1; // 1 based
 
     /**
      * Creates a new instance of AndroidBaseRecordRenderer.
@@ -46,6 +48,10 @@ public class AndroidBaseRecordRenderer {
     }
 
     public void generate(SchemaDatabase database, SchemaEntity entity, String packageName, DatabaseMapping databaseMapping) {
+        // reset data
+        bindInsertStatementContentIndex = 1;
+        bindUpdateStatementContentIndex = 1;
+
         boolean enumTable = entity.isEnumerationTable();
         SchemaEntityType entityType = entity.getType();
         String entityClassName = entity.getClassName();
@@ -63,6 +69,8 @@ public class AndroidBaseRecordRenderer {
 
             recordClass.addImport("org.dbtools.android.domain.AndroidBaseRecord");
             recordClass.setExtends("AndroidBaseRecord");
+
+            recordClass.addImport("org.dbtools.android.domain.database.statement.StatementWrapper");
         }
 
         // prep
@@ -73,6 +81,8 @@ public class AndroidBaseRecordRenderer {
         addHeader(recordClass, className);
 
         boolean primaryKeyAdded = false;
+        String primaryKeyFieldName = "";
+        SchemaField primaryKeyField = null;
 
         // constants and variables
         String databaseName = database.getName();
@@ -87,6 +97,8 @@ public class AndroidBaseRecordRenderer {
         // post field method content
         StringBuilder contentValuesContent = new StringBuilder();
         StringBuilder valuesContent = new StringBuilder("Object[] values = new Object[]{\n");
+        StringBuilder bindInsertStatementContent = new StringBuilder();
+        StringBuilder bindUpdateStatementContent = new StringBuilder();
         String setContentValuesContent = "";
         String setContentCursorContent = "";
 
@@ -104,6 +116,8 @@ public class AndroidBaseRecordRenderer {
                 if (primaryKeyAdded) {
                     throw new IllegalStateException("Cannot have more than 1 Primary Key [" + fieldNameJavaStyle + "]");
                 } else {
+                    primaryKeyField = field;
+                    primaryKeyFieldName = fieldName;
                     primaryKeyAdded = true;
                 }
             }
@@ -164,6 +178,9 @@ public class AndroidBaseRecordRenderer {
             if (!(primaryKey && field.isIncrement())) {
                 String value = fieldNameJavaStyle;
                 SchemaFieldType fieldType = field.getJdbcDataType();
+                boolean notNullField = field.isNotNull();
+                boolean primitiveField = fieldType.isJavaTypePrimitive();
+
                 if (field.isEnumeration()) {
                     value = newVariable.getName() + ".ordinal()";
                 } else if (fieldType == SchemaFieldType.DATETIME || fieldType == SchemaFieldType.DATE || fieldType == SchemaFieldType.TIMESTAMP || fieldType == SchemaFieldType.TIME) {
@@ -175,8 +192,47 @@ public class AndroidBaseRecordRenderer {
                         value = fieldNameJavaStyle + " != null ? (" + fieldNameJavaStyle + " ? 1 : 0) : 0";
                     }
                 }
+
                 contentValuesContent.append("values.put(").append(fullFieldColumn).append(", ").append(value).append(");\n");
                 valuesContent.append(TAB).append(value).append(",\n");
+
+                // bindStatementContent
+                switch (fieldType) {
+                    case BOOLEAN:
+                    case BIT:
+                    case TINYINT:
+                    case SMALLINT:
+                    case INTEGER:
+                    case BIGINT:
+                    case NUMERIC:
+                    case BIGINTEGER:
+                    case TIMESTAMP:
+                        addBindInsert(bindInsertStatementContent, "bindLong", value, primitiveField, notNullField);
+                        addBindUpdate(bindUpdateStatementContent, "bindLong", value, primitiveField, notNullField);
+                        break;
+                    case REAL:
+                    case FLOAT:
+                    case DOUBLE:
+                    case DECIMAL:
+                    case BIGDECIMAL:
+                        addBindInsert(bindInsertStatementContent, "bindDouble", value, primitiveField, notNullField);
+                        addBindUpdate(bindUpdateStatementContent, "bindDouble", value, primitiveField, notNullField);
+                        break;
+                    case CHAR:
+                    case VARCHAR:
+                    case LONGVARCHAR:
+                    case CLOB:
+                    case DATETIME:
+                    case DATE:
+                    case TIME:
+                        addBindInsert(bindInsertStatementContent, "bindString", value, primitiveField, notNullField);
+                        addBindUpdate(bindUpdateStatementContent, "bindString", value, primitiveField, notNullField);
+                        break;
+                    case BLOB:
+                        addBindInsert(bindInsertStatementContent, "bindBlob", value, primitiveField, notNullField);
+                        addBindUpdate(bindUpdateStatementContent, "bindBlob", value, primitiveField, notNullField);
+                        break;
+                }
 
                 setContentValuesContent += fieldNameJavaStyle + " = " + getContentValuesGetterMethod(field, fullFieldColumn, newVariable) + ";\n";
             } else {
@@ -193,6 +249,11 @@ public class AndroidBaseRecordRenderer {
             cursorGetter.setParameters(Arrays.asList(new JavaVariable("Cursor", "cursor")));
         }
 
+        // bind the primary key value LAST (it is the where clause part of the update code)
+        if (primaryKeyField != null) {
+            addBindUpdate(bindUpdateStatementContent, "bindLong", primaryKeyField.getName(true), primaryKeyField.getJdbcDataType().isJavaTypePrimitive(), primaryKeyField.isNotNull());
+        }
+
         if (!primaryKeyAdded && (entityType == SchemaEntityType.VIEW || entityType == SchemaEntityType.QUERY)) {
             recordClass.addMethod(Access.PUBLIC, "String", "getIdColumnName", "return null;").addAnnotation("Override");
 
@@ -203,12 +264,49 @@ public class AndroidBaseRecordRenderer {
 
         // SchemaDatabase variables
         if (entityType == SchemaEntityType.TABLE) {
+            // CREATE TABLE
             SchemaTable table = (SchemaTable) entity;
             String createTable = SqliteRenderer.generateTableSchema(table, databaseMapping);
             createTable = createTable.replace("\n", "\" + \n" + TAB + TAB + "\"");
             createTable = createTable.replace("\t", ""); // remove tabs
             constClass.addConstant("String", "CREATE_TABLE", createTable);
             constClass.addConstant("String", "DROP_TABLE", SchemaRenderer.generateDropSchema(true, table));
+
+            // INSERT and UPDATE
+            StringBuilder insertStatement = new StringBuilder("INSERT INTO " + tableName + " (");
+            StringBuilder updateStatement = new StringBuilder("UPDATE " + tableName + " SET ");
+
+            // columns
+            int columnCount = 0;
+            for (SchemaField field : entity.getFields()) {
+                if (!(field.isPrimaryKey() && field.isIncrement())) {
+                    insertStatement.append((columnCount > 0) ? "," : "");
+                    insertStatement.append(field.getName());
+
+                    updateStatement.append((columnCount > 0) ? ", " : "");
+                    updateStatement.append(field.getName()).append("=").append("?");
+
+                    columnCount++;
+                }
+            }
+
+            // mid
+            insertStatement.append(')');
+            insertStatement.append(" VALUES (");
+
+            updateStatement.append(" WHERE ").append(primaryKeyFieldName).append(" = ?");
+
+            // ?'s
+            for (int i = 0; i < columnCount; i++) {
+                insertStatement.append((i > 0) ? ",?" : "?");
+            }
+
+            // close
+            insertStatement.append(')');
+
+            // add to class
+            constClass.addConstant("String", "INSERT_STATEMENT", insertStatement.toString());
+            constClass.addConstant("String", "UPDATE_STATEMENT", updateStatement.toString());
         }
 
         // Content values
@@ -252,6 +350,11 @@ public class AndroidBaseRecordRenderer {
             valuesContent.append("};\n");
             valuesContent.append("return values;");
             recordClass.addMethod(Access.PUBLIC, "Object[]", "getValues", valuesContent.toString()).addAnnotation("Override");
+
+            List<JavaVariable> bindStatementParams = new ArrayList<>();
+            bindStatementParams.add(new JavaVariable("StatementWrapper", "statement"));
+            recordClass.addMethod(Access.PUBLIC, "void", "bindInsertStatement", bindStatementParams, bindInsertStatementContent.toString()).addAnnotation("Override");
+            recordClass.addMethod(Access.PUBLIC, "void", "bindUpdateStatement", bindStatementParams, bindUpdateStatementContent.toString()).addAnnotation("Override");
 
             List<JavaVariable> setCValuesParams = new ArrayList<>();
             setCValuesParams.add(new JavaVariable("DBToolsContentValues", "values"));
@@ -676,8 +779,26 @@ public class AndroidBaseRecordRenderer {
         }
     }
 
-    public static String createClassName(boolean enumTable, String className) {
-        return enumTable ? className : className + "BaseRecord";
+    private void addBindInsert(StringBuilder bindStatementContent, String bindMethodName, String value, boolean primitive, boolean notNull) {
+        addBind(bindStatementContent, bindInsertStatementContentIndex, bindMethodName, value, primitive, notNull);
+        bindInsertStatementContentIndex++;
+    }
+
+    private void addBindUpdate(StringBuilder bindStatementContent, String bindMethodName, String value, boolean primitive, boolean notNull) {
+        addBind(bindStatementContent, bindUpdateStatementContentIndex, bindMethodName, value, primitive, notNull);
+        bindUpdateStatementContentIndex++;
+    }
+
+    private void addBind(StringBuilder bindStatementContent, int bindIndex, String bindMethodName, String value, boolean primitive, boolean notNull) {
+        if (primitive || notNull) {
+            bindStatementContent.append("statement." + bindMethodName + "(").append(bindIndex).append(", ").append(value).append(");\n");
+        } else {
+            bindStatementContent.append("if (").append(value).append(" != null").append(") {\n");
+            bindStatementContent.append(TAB).append("statement." + bindMethodName + "(").append(bindIndex).append(", ").append(value).append(");\n");
+            bindStatementContent.append("} else {\n");
+            bindStatementContent.append(TAB).append("statement.bindNull(").append(bindIndex).append(");\n");
+            bindStatementContent.append("}\n");
+        }
     }
 
     public void writeToFile(String directoryName) {
@@ -687,6 +808,10 @@ public class AndroidBaseRecordRenderer {
         for (JavaEnum enumClass : enumerationClasses) {
             enumClass.writeToDisk(directoryName);
         }
+    }
+
+    public static String createClassName(boolean enumTable, String className) {
+        return enumTable ? className : className + "BaseRecord";
     }
 
     public void setGenConfig(GenConfig genConfig) {
