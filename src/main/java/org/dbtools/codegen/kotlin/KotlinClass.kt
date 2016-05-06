@@ -194,7 +194,11 @@ open class KotlinClass(var name: String = "", var packageName:String = "", val c
         // implements
         var implementsNamesString = ""
         if (!implementsInterfaces.isEmpty()) {
-            implementsNamesString = " implements "
+            if (extendsNameString.isEmpty()) {
+                implementsNamesString = " : "
+            } else {
+                implementsNamesString = ", "
+            }
 
             for (i in implementsInterfaces.indices) {
                 if (i > 0) {
