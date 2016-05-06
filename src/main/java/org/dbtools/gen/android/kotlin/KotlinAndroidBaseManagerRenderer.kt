@@ -112,6 +112,10 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
 //            addAnnotation("javax.inject.Inject")
         }
 
+        myClass.addFun("getDatabaseConfig", "org.dbtools.android.domain.config.DatabaseConfig", content = "return databaseManager.getDatabaseConfig()").apply {
+            isOverride = true
+        }
+
         when (type) {
             SchemaEntityType.TABLE -> {
                 myClass.addFun("getPrimaryKey", "String", content =  "return $recordConstClassName.PRIMARY_KEY_COLUMN").apply { isOverride = true }

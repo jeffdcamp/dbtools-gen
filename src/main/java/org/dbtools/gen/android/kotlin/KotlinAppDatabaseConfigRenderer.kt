@@ -31,6 +31,7 @@ class KotlinAppDatabaseConfigRenderer(val genConfig: GenConfig, val outDir: Stri
         addImports()
         createIdentifyDatabases(databaseSchema)
         createCreateNewDatabaseWrapper()
+        createNewDBToolsContentValues()
         createNewDBToolsLogger()
 
         myClass.writeToDisk(outDir, false)
@@ -68,7 +69,14 @@ class KotlinAppDatabaseConfigRenderer(val genConfig: GenConfig, val outDir: Stri
         myClass.addFun("createNewDBToolsLogger", "DBToolsLogger", content = "return DBToolsAndroidLogger()").apply {
             isOverride = true
         }
+    }
 
+    private fun createNewDBToolsContentValues() {
+        myClass.addImport("org.dbtools.android.domain.database.contentvalues.AndroidDBToolsContentValues")
+        myClass.addImport("org.dbtools.android.domain.database.contentvalues.DBToolsContentValues")
+        myClass.addFun("createNewDBToolsContentValues", "DBToolsContentValues<*>", content = "return AndroidDBToolsContentValues()").apply {
+            isOverride = true
+        }
     }
 
     private fun addImports() {

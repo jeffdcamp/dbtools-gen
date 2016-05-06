@@ -37,6 +37,7 @@ public class AppDatabaseConfigRenderer {
 
         createIdentifyDatabases(databaseSchema);
         createCreateNewDatabaseWrapper();
+        createNewDBToolsContentValues();
         createNewDBToolsLogger();
 
         myClass.writeToDisk(outDir, false);
@@ -71,6 +72,13 @@ public class AppDatabaseConfigRenderer {
         myClass.addImport("org.dbtools.android.domain.log.DBToolsLogger");
 
         myClass.addMethod(Access.PUBLIC, "DBToolsLogger", "createNewDBToolsLogger", null, "return new DBToolsAndroidLogger();");
+    }
+
+    private void createNewDBToolsContentValues() {
+        myClass.addImport("org.dbtools.android.domain.database.contentvalues.AndroidDBToolsContentValues");
+        myClass.addImport("org.dbtools.android.domain.database.contentvalues.DBToolsContentValues");
+
+        myClass.addMethod(Access.PUBLIC, "DBToolsContentValues", "createNewDBToolsContentValues", null, "return new AndroidDBToolsContentValues();");
     }
 
     private void addImports() {

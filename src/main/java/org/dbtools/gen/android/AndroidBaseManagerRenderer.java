@@ -110,7 +110,9 @@ public class AndroidBaseManagerRenderer {
         myClass.setCreateDefaultConstructor(false);
         myClass.addVariable("DatabaseManager", "databaseManager");
         JavaVariable constructorParam = new JavaVariable("DatabaseManager", "databaseManager");
-        JavaMethod defaultConstructor = myClass.addConstructor(Access.PUBLIC, Arrays.asList(constructorParam), "this.databaseManager = databaseManager;");
+        myClass.addConstructor(Access.PUBLIC, Arrays.asList(constructorParam), "this.databaseManager = databaseManager;");
+
+        myClass.addMethod(Access.PUBLIC, "org.dbtools.android.domain.config.DatabaseConfig", "getDatabaseConfig", "return databaseManager.getDatabaseConfig();");
 
         switch (type) {
             default:

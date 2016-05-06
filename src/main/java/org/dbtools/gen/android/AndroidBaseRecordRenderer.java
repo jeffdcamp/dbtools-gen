@@ -97,6 +97,7 @@ public class AndroidBaseRecordRenderer {
         // post field method content
         StringBuilder contentValuesContent = new StringBuilder();
         StringBuilder valuesContent = new StringBuilder("Object[] values = new Object[]{\n");
+        StringBuilder copyContent = new StringBuilder(entityClassName + " copy = new " + entityClassName + "();\n");
         StringBuilder bindInsertStatementContent = new StringBuilder();
         StringBuilder bindUpdateStatementContent = new StringBuilder();
         String setContentValuesContent = "";
@@ -105,8 +106,11 @@ public class AndroidBaseRecordRenderer {
         List<String> columns = new ArrayList<>();
         for (SchemaField field : entity.getFields()) {
             boolean primaryKey = field.isPrimaryKey();
-
             String fieldName = field.getName();
+            SchemaFieldType fieldType = field.getJdbcDataType();
+            boolean notNullField = field.isNotNull();
+            boolean primitiveField = fieldType.isJavaTypePrimitive(!field.isNotNull());
+            boolean dateTypeField = fieldType == SchemaFieldType.DATETIME || fieldType == SchemaFieldType.DATE || fieldType == SchemaFieldType.TIMESTAMP || fieldType == SchemaFieldType.TIME;
 
             // override default name
             String fieldNameJavaStyle = field.getName(true);
@@ -153,9 +157,9 @@ public class AndroidBaseRecordRenderer {
 
             JavaVariable newVariable;
             if (field.isEnumeration()) {
-                newVariable = generateEnumeration(entity.isReadonly(), field, fieldNameJavaStyle, packageName, database);
+                newVariable = generateEnumeration(field, fieldNameJavaStyle, packageName, database);
             } else {
-                newVariable = generateFieldVariable(entity.isReadonly(), fieldNameJavaStyle, field);
+                newVariable = generateFieldVariable(fieldNameJavaStyle, field);
             }
 
             // Primary key / not enum methods
@@ -174,16 +178,24 @@ public class AndroidBaseRecordRenderer {
                 recordClass.addVariable(newVariable);
             }
 
+            // copy
+            copyContent.append("copy.").append(newVariable.getSetterMethodName()).append("(");
+
+            if (dateTypeField) {
+                copyContent.append(genConfig.getDateType().getCopy(newVariable.getName()));
+            } else {
+                copyContent.append(newVariable.getName());
+            }
+
+            copyContent.append(");\n");
+
             // method values
             if (!(primaryKey && field.isIncrement())) {
                 String value = fieldNameJavaStyle;
-                SchemaFieldType fieldType = field.getJdbcDataType();
-                boolean notNullField = field.isNotNull();
-                boolean primitiveField = fieldType.isJavaTypePrimitive();
 
                 if (field.isEnumeration()) {
                     value = newVariable.getName() + ".ordinal()";
-                } else if (fieldType == SchemaFieldType.DATETIME || fieldType == SchemaFieldType.DATE || fieldType == SchemaFieldType.TIMESTAMP || fieldType == SchemaFieldType.TIME) {
+                } else if (dateTypeField) {
                     value = genConfig.getDateType().getValuesValue(field, fieldNameJavaStyle);
                 } else if (fieldType == SchemaFieldType.BOOLEAN) {
                     if (field.isNotNull()) {
@@ -207,16 +219,16 @@ public class AndroidBaseRecordRenderer {
                     case NUMERIC:
                     case BIGINTEGER:
                     case TIMESTAMP:
-                        addBindInsert(bindInsertStatementContent, "bindLong", value, primitiveField, notNullField);
-                        addBindUpdate(bindUpdateStatementContent, "bindLong", value, primitiveField, notNullField);
+                        addBindInsert(bindInsertStatementContent, "bindLong", fieldNameJavaStyle, value, primitiveField, notNullField || field.isEnumeration());
+                        addBindUpdate(bindUpdateStatementContent, "bindLong", fieldNameJavaStyle, value, primitiveField, notNullField || field.isEnumeration());
                         break;
                     case REAL:
                     case FLOAT:
                     case DOUBLE:
                     case DECIMAL:
                     case BIGDECIMAL:
-                        addBindInsert(bindInsertStatementContent, "bindDouble", value, primitiveField, notNullField);
-                        addBindUpdate(bindUpdateStatementContent, "bindDouble", value, primitiveField, notNullField);
+                        addBindInsert(bindInsertStatementContent, "bindDouble", fieldNameJavaStyle, value, primitiveField, notNullField);
+                        addBindUpdate(bindUpdateStatementContent, "bindDouble", fieldNameJavaStyle, value, primitiveField, notNullField);
                         break;
                     case CHAR:
                     case VARCHAR:
@@ -225,12 +237,12 @@ public class AndroidBaseRecordRenderer {
                     case DATETIME:
                     case DATE:
                     case TIME:
-                        addBindInsert(bindInsertStatementContent, "bindString", value, primitiveField, notNullField);
-                        addBindUpdate(bindUpdateStatementContent, "bindString", value, primitiveField, notNullField);
+                        addBindInsert(bindInsertStatementContent, "bindString", fieldNameJavaStyle, value, primitiveField, notNullField);
+                        addBindUpdate(bindUpdateStatementContent, "bindString", fieldNameJavaStyle, value, primitiveField, notNullField);
                         break;
                     case BLOB:
-                        addBindInsert(bindInsertStatementContent, "bindBlob", value, primitiveField, notNullField);
-                        addBindUpdate(bindUpdateStatementContent, "bindBlob", value, primitiveField, notNullField);
+                        addBindInsert(bindInsertStatementContent, "bindBlob", fieldNameJavaStyle, value, primitiveField, notNullField);
+                        addBindUpdate(bindUpdateStatementContent, "bindBlob", fieldNameJavaStyle, value, primitiveField, notNullField);
                         break;
                 }
 
@@ -251,7 +263,7 @@ public class AndroidBaseRecordRenderer {
 
         // bind the primary key value LAST (it is the where clause part of the update code)
         if (primaryKeyField != null) {
-            addBindUpdate(bindUpdateStatementContent, "bindLong", primaryKeyField.getName(true), primaryKeyField.getJdbcDataType().isJavaTypePrimitive(), primaryKeyField.isNotNull());
+            addBindUpdate(bindUpdateStatementContent, "bindLong", primaryKeyField.getName(true), primaryKeyField.getName(true), primaryKeyField.getJdbcDataType().isJavaTypePrimitive(), primaryKeyField.isNotNull());
         }
 
         if (!primaryKeyAdded && (entityType == SchemaEntityType.VIEW || entityType == SchemaEntityType.QUERY)) {
@@ -350,6 +362,9 @@ public class AndroidBaseRecordRenderer {
             valuesContent.append("};\n");
             valuesContent.append("return values;");
             recordClass.addMethod(Access.PUBLIC, "Object[]", "getValues", valuesContent.toString()).addAnnotation("Override");
+
+            copyContent.append("return copy;");
+            recordClass.addMethod(Access.PUBLIC, entityClassName, "copy", copyContent.toString());
 
             List<JavaVariable> bindStatementParams = new ArrayList<>();
             bindStatementParams.add(new JavaVariable("StatementWrapper", "statement"));
@@ -511,7 +526,7 @@ public class AndroidBaseRecordRenderer {
         }
     }
 
-    private JavaVariable generateEnumeration(boolean readOnlyEntity, SchemaField field, String fieldNameJavaStyle, String packageName, SchemaDatabase database) {
+    private JavaVariable generateEnumeration(SchemaField field, String fieldNameJavaStyle, String packageName, SchemaDatabase database) {
         JavaVariable newVariable;
         if (field.getJdbcDataType().isNumberDataType()) {
             if (!field.getForeignKeyTable().isEmpty()) {
@@ -542,9 +557,7 @@ public class AndroidBaseRecordRenderer {
                 newVariable = new JavaVariable(enumName, fieldNameJavaStyle);
 
                 newVariable.setGenerateGetter(true, field.isNotNull(), genConfig.isJsr305Support());
-                if (!readOnlyEntity) {
-                    newVariable.setGenerateSetter(true, field.isNotNull(), genConfig.isJsr305Support());
-                }
+                newVariable.setGenerateSetter(true, field.isNotNull(), genConfig.isJsr305Support()); // always allow setter to support copy()
 
                 newVariable.setDefaultValue(enumName + "." + field.getEnumerationDefault(), false);
             } else if (!field.getEnumerationClass().isEmpty()) {
@@ -554,9 +567,7 @@ public class AndroidBaseRecordRenderer {
                 newVariable = new JavaVariable(enumClassName, fieldNameJavaStyle);
 
                 newVariable.setGenerateGetter(true, field.isNotNull(), genConfig.isJsr305Support());
-                if (!readOnlyEntity) {
-                    newVariable.setGenerateSetter(true, field.isNotNull(), genConfig.isJsr305Support());
-                }
+                newVariable.setGenerateSetter(true, field.isNotNull(), genConfig.isJsr305Support()); // always allow setter to support copy()
 
                 newVariable.setDefaultValue(enumClassName + "." + field.getEnumerationDefault(), false);
             } else {
@@ -577,9 +588,7 @@ public class AndroidBaseRecordRenderer {
                 boolean jsr305SupportedField = !varClass.isPrimitive() || varClass.isEnum();
 
                 newVariable.setGenerateGetter(true, field.isNotNull(), jsr305SupportedField && genConfig.isJsr305Support());
-                if (!readOnlyEntity) {
-                    newVariable.setGenerateSetter(true, field.isNotNull(), jsr305SupportedField && genConfig.isJsr305Support());
-                }
+                newVariable.setGenerateSetter(true, field.isNotNull(), jsr305SupportedField && genConfig.isJsr305Support()); // always allow setter to support copy()
                 newVariable.setDefaultValue(enumName + "." + field.getEnumerationDefault(), false);
             }
         } else {
@@ -589,7 +598,7 @@ public class AndroidBaseRecordRenderer {
         return newVariable;
     }
 
-    private JavaVariable generateFieldVariable(boolean readOnlyEntity, String fieldNameJavaStyle, SchemaField field) {
+    private JavaVariable generateFieldVariable(String fieldNameJavaStyle, SchemaField field) {
         JavaVariable newVariable;
 
         String typeText = field.getJavaTypeText();
@@ -607,18 +616,14 @@ public class AndroidBaseRecordRenderer {
         boolean immutableDate = field.getJavaClassType() == Date.class && genConfig.getDateType().isMutable();
         if (!fieldType.isJavaTypePrimitive() && !fieldType.isJavaTypeImmutable() && !immutableDate) {
             newVariable.setGetterReturnsClone(true);
-            if (!readOnlyEntity) {
-                newVariable.setSetterClonesParam(true);
-            }
+            newVariable.setSetterClonesParam(true); // always allow setter to support copy()
         }
 
         Class varClass = field.getJavaClassType();
         boolean jsr305SupportedField = !varClass.isPrimitive() || varClass.isEnum();
 
         newVariable.setGenerateGetter(true, field.isNotNull(), jsr305SupportedField && genConfig.isJsr305Support());
-        if (!readOnlyEntity) {
-            newVariable.setGenerateSetter(true, field.isNotNull(), jsr305SupportedField && genConfig.isJsr305Support());
-        }
+        newVariable.setGenerateSetter(true, field.isNotNull(), jsr305SupportedField && genConfig.isJsr305Support()); // always allow setter to support copy()
 
         newVariable.setDefaultValue(defaultValue);
 
@@ -779,21 +784,21 @@ public class AndroidBaseRecordRenderer {
         }
     }
 
-    private void addBindInsert(StringBuilder bindStatementContent, String bindMethodName, String value, boolean primitive, boolean notNull) {
-        addBind(bindStatementContent, bindInsertStatementContentIndex, bindMethodName, value, primitive, notNull);
+    private void addBindInsert(StringBuilder bindStatementContent, String bindMethodName, String fieldNameJavaStyle, String value, boolean primitive, boolean notNull) {
+        addBind(bindStatementContent, bindInsertStatementContentIndex, bindMethodName, fieldNameJavaStyle, value, primitive, notNull);
         bindInsertStatementContentIndex++;
     }
 
-    private void addBindUpdate(StringBuilder bindStatementContent, String bindMethodName, String value, boolean primitive, boolean notNull) {
-        addBind(bindStatementContent, bindUpdateStatementContentIndex, bindMethodName, value, primitive, notNull);
+    private void addBindUpdate(StringBuilder bindStatementContent, String bindMethodName, String fieldNameJavaStyle, String value, boolean primitive, boolean notNull) {
+        addBind(bindStatementContent, bindUpdateStatementContentIndex, bindMethodName, fieldNameJavaStyle, value, primitive, notNull);
         bindUpdateStatementContentIndex++;
     }
 
-    private void addBind(StringBuilder bindStatementContent, int bindIndex, String bindMethodName, String value, boolean primitive, boolean notNull) {
+    private void addBind(StringBuilder bindStatementContent, int bindIndex, String bindMethodName, String fieldNameJavaStyle, String value, boolean primitive, boolean notNull) {
         if (primitive || notNull) {
             bindStatementContent.append("statement." + bindMethodName + "(").append(bindIndex).append(", ").append(value).append(");\n");
         } else {
-            bindStatementContent.append("if (").append(value).append(" != null").append(") {\n");
+            bindStatementContent.append("if (").append(fieldNameJavaStyle).append(" != null").append(") {\n");
             bindStatementContent.append(TAB).append("statement." + bindMethodName + "(").append(bindIndex).append(", ").append(value).append(");\n");
             bindStatementContent.append("} else {\n");
             bindStatementContent.append(TAB).append("statement.bindNull(").append(bindIndex).append(");\n");

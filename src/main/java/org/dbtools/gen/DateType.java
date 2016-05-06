@@ -21,9 +21,27 @@ public enum DateType {
         switch (this) {
             default:
             case JAVA_DATE:
-                return "getTime()";
+                switch (field.getJdbcDataType()) {
+                    default:
+                    case TIMESTAMP:
+                        return "org.dbtools.android.domain.DBToolsDateFormatter.dateToLong(" + fieldName + ")";
+                    case DATETIME:
+                    case DATE:
+                        return "org.dbtools.android.domain.DBToolsDateFormatter.dateToDBString(" + fieldName + ")";
+                    case TIME:
+                        return "TIME IS CURRENTLY ONLY SUPPORTED BY JSR_310";
+                }
             case JODA:
-                return "org.dbtools.android.domain.DBToolsDateFormatter.dateTimeToLong(" + fieldName + ")";
+                switch (field.getJdbcDataType()) {
+                    default:
+                    case TIMESTAMP:
+                        return "org.dbtools.android.domain.DBToolsDateFormatter.dateTimeToLong(" + fieldName + ")";
+                    case DATETIME:
+                    case DATE:
+                        return "org.dbtools.android.domain.DBToolsDateFormatter.dateTimeToDBString(" + fieldName + ")";
+                    case TIME:
+                        return "TIME IS CURRENTLY ONLY SUPPORTED BY JSR_310";
+                }
             case JSR_310:
                 switch (field.getJdbcDataType()) {
                     default:
@@ -96,10 +114,14 @@ public enum DateType {
     public String getValuesDbStringToObjectMethod(SchemaField field, String paramValue) {
         switch (field.getJdbcDataType()) {
             case DATETIME:
-                if (this == JSR_310) {
-                    return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalDateTime(values.getAsString(" + paramValue + "))";
-                } else {
-                    return "TIME IS CURRENTLY ONLY SUPPORTED BY JSR_310";
+                switch (this) {
+                    default:
+                    case JAVA_DATE:
+                        return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDate(values.getAsString(" + paramValue + "))";
+                    case JODA:
+                        return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDateTime(values.getAsString(" + paramValue + "))";
+                    case JSR_310:
+                        return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalDateTime(values.getAsString(" + paramValue + "))";
                 }
             case DATE:
                 switch (this) {
@@ -111,7 +133,6 @@ public enum DateType {
                     case JSR_310:
                         return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalDate(values.getAsString(" + paramValue + "))";
                 }
-
             case TIME:
                 if (this == JSR_310) {
                     return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalTime(values.getAsString(" + paramValue + "))";
@@ -136,14 +157,28 @@ public enum DateType {
     public String getCursorDbStringToObjectMethod(SchemaField field, String paramValue, boolean kotlin) {
         switch (field.getJdbcDataType()) {
             case DATETIME:
-                if (this == JSR_310) {
-                    if (kotlin && field.isNotNull()) {
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
-                    } else {
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
-                    }
-                } else {
-                    return "TIME IS CURRENTLY ONLY SUPPORTED BY JSR_310";
+                switch (this) {
+                    default:
+                    case JAVA_DATE:
+                        if (kotlin && field.isNotNull()) {
+                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
+                        } else {
+                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                        }
+
+                    case JODA:
+                        if (kotlin && field.isNotNull()) {
+                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
+                        } else {
+                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                        }
+
+                    case JSR_310:
+                        if (kotlin && field.isNotNull()) {
+                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
+                        } else {
+                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                        }
                 }
             case DATE:
                 switch (this) {
@@ -168,7 +203,6 @@ public enum DateType {
                         } else {
                             return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
                         }
-
                 }
             case TIME:
                 if (this == JSR_310) {
@@ -180,7 +214,6 @@ public enum DateType {
                 } else {
                     return "TIME IS CURRENTLY ONLY SUPPORTED BY JSR_310";
                 }
-
             default:
             case TIMESTAMP:
                 switch (this) {
@@ -216,6 +249,18 @@ public enum DateType {
                             return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? org.dbtools.android.domain.DBToolsDateFormatter.longToLocalDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) : null";
                         }
                 }
+        }
+    }
+
+    public String getCopy(String fieldName) {
+        switch (this) {
+            default:
+            case JAVA_DATE:
+                return fieldName + " != null ? new java.util.Date(" + fieldName + ".getTime()) : null ";
+            case JODA:
+            case JSR_310:
+                // immutable
+                return fieldName;
         }
     }
 }
