@@ -15,13 +15,11 @@ import org.dbtools.gen.GenConfig
 import org.dbtools.gen.android.AndroidManagerRenderer
 import org.dbtools.gen.android.AndroidRecordRenderer
 import org.dbtools.renderer.SchemaRenderer
-import org.dbtools.schema.schemafile.SchemaDatabase
-import org.dbtools.schema.schemafile.SchemaEntity
+import org.dbtools.schema.schemafile.*
 import java.io.File
 import java.util.*
 
 class KotlinAndroidDBObjectBuilder() : DBObjectBuilder {
-
     private var filesGeneratedCount = 0
     private val filesGenerated = ArrayList<String>()
 
@@ -94,5 +92,9 @@ class KotlinAndroidDBObjectBuilder() : DBObjectBuilder {
 
     override fun getFilesGenerated(): List<String> {
         return Collections.unmodifiableList(filesGenerated)
+    }
+
+    override fun buildDatabaseManagersHolder(database: SchemaDatabase, packageBase: String, packageName: String, tables: MutableList<SchemaTable>, views: MutableList<SchemaView>, queries: MutableList<SchemaQuery>, outDir: String) {
+        KotlinDatabaseManagersHolderRenderer().generate(database, packageBase, packageName, tables, views, queries, outDir)
     }
 }

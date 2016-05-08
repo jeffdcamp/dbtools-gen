@@ -31,11 +31,12 @@ public class DatabaseManagerRenderer {
 
         myClass.setExtends("DatabaseBaseManager"); // extend the generated base class
         myClass.setCreateDefaultConstructor(false);
+
+        List<JavaVariable> params = Arrays.asList(new JavaVariable("DatabaseConfig", "databaseConfig"));
+        JavaMethod defaultConstructor = myClass.addConstructor(Access.PUBLIC, params, "super(databaseConfig);");
+
         if (genConfig.isInjectionSupport()) {
             myClass.addAnnotation("Singleton");
-
-            List<JavaVariable> params = Arrays.asList(new JavaVariable("DatabaseConfig", "databaseConfig"));
-            JavaMethod defaultConstructor = myClass.addConstructor(Access.PUBLIC, params, "super(databaseConfig);");
             defaultConstructor.addAnnotation("javax.inject.Inject");
         }
         addImports();

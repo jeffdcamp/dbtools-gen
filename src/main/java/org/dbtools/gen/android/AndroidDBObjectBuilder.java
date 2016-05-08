@@ -14,8 +14,7 @@ import org.dbtools.gen.DBObjectBuilder;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.renderer.SchemaRenderer;
 import org.dbtools.schema.dbmappings.DatabaseMapping;
-import org.dbtools.schema.schemafile.SchemaDatabase;
-import org.dbtools.schema.schemafile.SchemaEntity;
+import org.dbtools.schema.schemafile.*;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -122,5 +121,11 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
     @Override
     public List<String> getFilesGenerated() {
         return Collections.unmodifiableList(filesGenerated);
+    }
+
+    @Override
+    public void buildDatabaseManagersHolder(SchemaDatabase database, String packageBase, String packageName, List<SchemaTable> tables, List<SchemaView> views, List<SchemaQuery> queries, String outDir) {
+        DatabaseManagersHolderRenderer renderer = new DatabaseManagersHolderRenderer();
+        renderer.generate(database, packageBase, packageName, tables, views, queries, outDir);
     }
 }

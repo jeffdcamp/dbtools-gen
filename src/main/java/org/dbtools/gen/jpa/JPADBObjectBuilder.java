@@ -11,8 +11,7 @@ package org.dbtools.gen.jpa;
 
 import org.dbtools.gen.DBObjectBuilder;
 import org.dbtools.gen.GenConfig;
-import org.dbtools.schema.schemafile.SchemaDatabase;
-import org.dbtools.schema.schemafile.SchemaEntity;
+import org.dbtools.schema.schemafile.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -109,5 +108,10 @@ public class JPADBObjectBuilder implements DBObjectBuilder {
     @Override
     public List<String> getFilesGenerated() {
         return filesGenerated;
+    }
+
+    @Override
+    public void buildDatabaseManagersHolder(SchemaDatabase database, String basePackageName, String packageName, List<SchemaTable> tables, List<SchemaView> views, List<SchemaQuery> queries, String outDir) {
+        // do nothing for JPA
     }
 }

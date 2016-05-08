@@ -11,8 +11,7 @@
 package org.dbtools.gen;
 
 
-import org.dbtools.schema.schemafile.SchemaDatabase;
-import org.dbtools.schema.schemafile.SchemaEntity;
+import org.dbtools.schema.schemafile.*;
 
 import java.util.List;
 
@@ -21,6 +20,8 @@ public interface DBObjectBuilder {
     boolean build(SchemaDatabase database, SchemaEntity entity, String packageName, String outDir, GenConfig genConfig);
     int getNumberFilesGenerated();
     List<String> getFilesGenerated();
+    void buildDatabaseManagersHolder(SchemaDatabase database, String packageBase, String packageName, List<SchemaTable> tables, List<SchemaView> views, List<SchemaQuery> queries, String outDir);
+
 //    void setDatabase(SchemaDatabase schemaDatabase);
 //    void setEntity(SchemaEntity table);
 //    void setPackageName(String packageName);

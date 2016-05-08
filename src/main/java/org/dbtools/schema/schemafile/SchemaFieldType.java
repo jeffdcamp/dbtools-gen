@@ -33,7 +33,7 @@ public enum SchemaFieldType {
     NUMERIC(new JavaType("float", true, true, float.class, Float.class, "Float", "Float", "0.0f")),
     BIGDECIMAL(new JavaType("java.math.BigDecimal", false, true, BigDecimal.class, BigDecimal.class, "java.math.BigDecimal", "java.math.BigDecimal", "0.0")),
     BIGINTEGER(new JavaType("java.math.BigInteger", false, true, BigInteger.class, BigInteger.class, "java.math.BigInteger", "java.math.BigInteger", "0")),
-    BLOB(new JavaType("byte[]", true, true, byte[].class, Byte[].class, "Byte[]", "Byte[]", "null")),
+    BLOB(new JavaType("byte[]", true, true, byte[].class, byte[].class, "byte[]", "byte[]", "null")),
     CLOB(new JavaType("String", false, true, String.class, String.class, "String", "String", "null")),
 
     // not currently supported

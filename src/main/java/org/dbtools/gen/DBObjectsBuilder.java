@@ -170,6 +170,17 @@ public abstract class DBObjectsBuilder {
                 success = objectBuilder.build(database, query, packageName, outDir, genConfig);
                 numberFilesGenerated += objectBuilder.getNumberFilesGenerated();
             }
+
+            if (!genConfig.isInjectionSupport()) {
+                String packageName = packageBase + (genConfig.isIncludeDatabaseNameInPackage() ? '.' + database.getName().toLowerCase() : "");
+
+                String outDir = outputBaseDir;
+                if (genConfig.isIncludeDatabaseNameInPackage()) {
+                    outDir += "/" + database.getName().toLowerCase();
+                }
+
+                objectBuilder.buildDatabaseManagersHolder(database, packageBase, packageName, tables, views, queries, outDir);
+            }
         }
 
         return success;
