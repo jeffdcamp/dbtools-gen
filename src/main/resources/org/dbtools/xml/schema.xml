@@ -21,6 +21,9 @@
             <field name="PHONE" jdbcDataType="VARCHAR" size="255"/>
             <field name="EMAIL" jdbcDataType="VARCHAR" size="255"/>
             <field name="DATA" jdbcDataType="BLOB"/>
+            <field name="AMOUNT1" jdbcDataType="FLOAT"/>
+            <field name="AMOUNT2" jdbcDataType="DOUBLE"/>
+            <field name="ENABLED" jdbcDataType="BOOLEAN"/>
             <field name="SPOUSE_INDIVIDUAL_ID" jdbcDataType="BIGINT"/>
         </table>
         <view name="INDIVIDUAL_VIEW">

@@ -20,7 +20,7 @@ public enum SchemaFieldType {
     BIGINT(new JavaType("long", true, true, long.class, Long.class, "Long", "Long", "0")),
     REAL(new JavaType("float", true, true, float.class, Float.class, "Float", "Float", "0.0f")),
     FLOAT(new JavaType("float", true, true, float.class, Float.class, "Float", "Float", "0.0f")),
-    DOUBLE(new JavaType("double", true, true, double.class, Double.class, "Double", "Double", "0.0d")),
+    DOUBLE(new JavaType("double", true, true, double.class, Double.class, "Double", "Double", "0.0")),
     CHAR(new JavaType("char", true, true, char.class, Character.class, "Character", "Char", "''")),
     VARCHAR(new JavaType("String", false, true, String.class, String.class, "String", "String", "\"\"")),
     LONGVARCHAR(new JavaType("String", false, true, String.class, String.class, "String", "String", "")),
@@ -33,7 +33,7 @@ public enum SchemaFieldType {
     NUMERIC(new JavaType("float", true, true, float.class, Float.class, "Float", "Float", "0.0f")),
     BIGDECIMAL(new JavaType("java.math.BigDecimal", false, true, BigDecimal.class, BigDecimal.class, "java.math.BigDecimal", "java.math.BigDecimal", "0.0")),
     BIGINTEGER(new JavaType("java.math.BigInteger", false, true, BigInteger.class, BigInteger.class, "java.math.BigInteger", "java.math.BigInteger", "0")),
-    BLOB(new JavaType("byte[]", true, true, byte[].class, byte[].class, "byte[]", "byte[]", "null")),
+    BLOB(new JavaType("byte[]", true, true, byte[].class, byte[].class, "byte[]", "ByteArray", "null")),
     CLOB(new JavaType("String", false, true, String.class, String.class, "String", "String", "null")),
 
     // not currently supported

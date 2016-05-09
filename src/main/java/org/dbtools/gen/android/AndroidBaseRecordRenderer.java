@@ -182,7 +182,7 @@ public class AndroidBaseRecordRenderer {
             copyContent.append("copy.").append(newVariable.getSetterMethodName()).append("(");
 
             if (dateTypeField) {
-                copyContent.append(genConfig.getDateType().getCopy(newVariable.getName()));
+                copyContent.append(genConfig.getDateType().getCopy(newVariable.getName(), false));
             } else {
                 copyContent.append(newVariable.getName());
             }
@@ -472,7 +472,7 @@ public class AndroidBaseRecordRenderer {
         } else if (type == boolean.class || type == Boolean.class) {
             return "values.getAsBoolean(" + paramValue + ")";
         } else if (type == Date.class) {
-            return genConfig.getDateType().getValuesDbStringToObjectMethod(field, paramValue);
+            return genConfig.getDateType().getValuesDbStringToObjectMethod(field, paramValue, false);
         } else if (type == float.class || type == Float.class) {
             return "values.getAsFloat(" + paramValue + ")";
         } else if (type == double.class || type == Double.class) {

@@ -111,7 +111,7 @@ public enum DateType {
         return dateDataType;
     }
 
-    public String getValuesDbStringToObjectMethod(SchemaField field, String paramValue) {
+    public String getValuesDbStringToObjectMethod(SchemaField field, String paramValue, boolean kotlin) {
         switch (field.getJdbcDataType()) {
             case DATETIME:
                 switch (this) {
@@ -145,7 +145,11 @@ public enum DateType {
                 switch (this) {
                     default:
                     case JAVA_DATE:
-                        return "new java.util.Date(values.getAsLong(" + paramValue + "))";
+                        if (kotlin) {
+                            return "java.util.Date(values.getAsLong(" + paramValue + "))";
+                        } else {
+                            return "new java.util.Date(values.getAsLong(" + paramValue + "))";
+                        }
                     case JODA:
                         return "org.dbtools.android.domain.DBToolsDateFormatter.longToDateTime(values.getAsLong(" + paramValue + "))";
                     case JSR_310:
@@ -252,11 +256,15 @@ public enum DateType {
         }
     }
 
-    public String getCopy(String fieldName) {
+    public String getCopy(String fieldName, boolean kotlin) {
         switch (this) {
             default:
             case JAVA_DATE:
-                return fieldName + " != null ? new java.util.Date(" + fieldName + ".getTime()) : null ";
+                if (kotlin) {
+                    return "if (" + fieldName + " != null) java.util.Date((" + fieldName + " as java.util.Date).getTime()) else null ";
+                } else {
+                    return fieldName + " != null ? new java.util.Date(" + fieldName + ".getTime()) : null ";
+                }
             case JODA:
             case JSR_310:
                 // immutable

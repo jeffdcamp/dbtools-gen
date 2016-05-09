@@ -150,7 +150,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             // copy
             copyContent.append("copy.").append(newVariable.name).append(" = ")
             if (dateTypeField) {
-                copyContent.append(genConfig.dateType.getCopy(newVariable.name))
+                copyContent.append(genConfig.dateType.getCopy(newVariable.name, true))
             } else {
                 copyContent.append(newVariable.name)
             }
@@ -169,11 +169,15 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                     } else {
                         value = dateValue
                     }
+                } else if (fieldType == SchemaFieldType.INTEGER) {
+                    value = "($fieldNameJavaStyle as Int).toLong()"
+                } else if (fieldType == SchemaFieldType.FLOAT) {
+                    value = "($fieldNameJavaStyle as Float).toDouble()"
                 } else if (fieldType == SchemaFieldType.BOOLEAN) {
                     if (field.isNotNull) {
-                        value = "if ($fieldNameJavaStyle) 1 else 0"
+                        value = "if ($fieldNameJavaStyle) 1L else 0L"
                     } else {
-                        value = "if ($fieldNameJavaStyle != null) (if ($fieldNameJavaStyle) 1 else 0) else 0"
+                        value = "if ($fieldNameJavaStyle != null) (if ($fieldNameJavaStyle as Boolean) 1L else 0L) else 0L"
                     }
                 }
 
@@ -406,7 +410,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         } else if (type == java.lang.Boolean.TYPE || type == Boolean::class.java || type == java.lang.Boolean::class.java) {
             return "values.getAsBoolean($paramValue)"
         } else if (type == Date::class.java) {
-            var method = genConfig.dateType.getValuesDbStringToObjectMethod(field, paramValue)
+            var method = genConfig.dateType.getValuesDbStringToObjectMethod(field, paramValue, true)
             if (field.isNotNull) {
                 method += "!!"
             }

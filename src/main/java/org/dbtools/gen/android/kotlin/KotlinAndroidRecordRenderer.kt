@@ -46,7 +46,7 @@ class KotlinAndroidRecordRenderer(val genConfig: GenConfig) {
             myClass.addImport("org.dbtools.android.domain.database.contentvalues.DBToolsContentValues")
             myClass.addConstructor()
             myClass.addConstructor(listOf(KotlinVal("cursor", "Cursor")), "setContent(cursor)")
-            myClass.addConstructor(listOf(KotlinVal("values", "DBToolsContentValues")), "setContent(values)")
+            myClass.addConstructor(listOf(KotlinVal("values", "DBToolsContentValues<*>")), "setContent(values)")
         }
 
         if (entity.type == SchemaEntityType.VIEW) {
@@ -92,7 +92,7 @@ class KotlinAndroidRecordRenderer(val genConfig: GenConfig) {
             val schemaField = entity.fields[i]
 
             val fieldConstName = KotlinClass.formatConstant(schemaField.getName(true))
-            val entityConstClassName = entityClassName + "Const"
+            val entityConstClassName = entityClassName
             createContent.append(entityConstClassName).append(".").append("FULL_C_").append(fieldConstName)
             createContent.append(" + \" AS \" + ")
             createContent.append(entityConstClassName).append(".").append("C_").append(fieldConstName)
@@ -102,7 +102,7 @@ class KotlinAndroidRecordRenderer(val genConfig: GenConfig) {
         createContent.append(TAB).append(TAB).append(TAB)
         createContent.append("\" FROM \" + ").append(entityClassName).append(".TABLE")
 
-        myClass.addConstant("String", "CREATE_VIEW", createContent.toString(), false)
+        myClass.addConstant("CREATE_VIEW", createContent.toString(), formatDefaultValue = false)
     }
 
     private fun createQuery(entity: SchemaEntity) {
@@ -145,8 +145,8 @@ class KotlinAndroidRecordRenderer(val genConfig: GenConfig) {
         createContent.append(TAB).append(TAB).append(TAB)
         createContent.append("\")\"")
 
-        myClass.addConstant("QUERY", createContent.toString(), "String", false)
-        myClass.addConstant("QUERY_RAW", "SELECT * FROM \" + QUERY", "String", false)
+        myClass.addConstant("QUERY", createContent.toString(), formatDefaultValue = false)
+        myClass.addConstant("QUERY_RAW", "\"SELECT * FROM \" + QUERY", formatDefaultValue = false)
     }
 
     private fun createSqlBuilderView(entity: SchemaEntity) {
