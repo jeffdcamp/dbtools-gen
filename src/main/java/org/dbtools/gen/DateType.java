@@ -24,10 +24,10 @@ public enum DateType {
                 switch (field.getJdbcDataType()) {
                     default:
                     case TIMESTAMP:
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.dateToLong(" + fieldName + ")";
+                        return "org.dbtools.android.domain.date.DBToolsDateFormatter.dateToLong(" + fieldName + ")";
                     case DATETIME:
                     case DATE:
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.dateToDBString(" + fieldName + ")";
+                        return "org.dbtools.android.domain.date.DBToolsDateFormatter.dateToDBString(" + fieldName + ")";
                     case TIME:
                         return "TIME IS CURRENTLY ONLY SUPPORTED BY JSR_310";
                 }
@@ -35,10 +35,10 @@ public enum DateType {
                 switch (field.getJdbcDataType()) {
                     default:
                     case TIMESTAMP:
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.dateTimeToLong(" + fieldName + ")";
+                        return "org.dbtools.android.domain.date.DBToolsJodaFormatter.dateTimeToLong(" + fieldName + ")";
                     case DATETIME:
                     case DATE:
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.dateTimeToDBString(" + fieldName + ")";
+                        return "org.dbtools.android.domain.date.DBToolsJodaFormatter.dateTimeToDBString(" + fieldName + ")";
                     case TIME:
                         return "TIME IS CURRENTLY ONLY SUPPORTED BY JSR_310";
                 }
@@ -46,13 +46,13 @@ public enum DateType {
                 switch (field.getJdbcDataType()) {
                     default:
                     case TIMESTAMP:
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.localDateTimeToLong(" + fieldName + ")";
+                        return "org.dbtools.android.domain.date.DBToolsThreeTenFormatter.localDateTimeToLong(" + fieldName + ")";
                     case DATETIME:
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.localDateTimeToDBString(" + fieldName + ")";
+                        return "org.dbtools.android.domain.date.DBToolsThreeTenFormatter.localDateTimeToDBString(" + fieldName + ")";
                     case DATE:
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.localDateToDBString(" + fieldName + ")";
+                        return "org.dbtools.android.domain.date.DBToolsThreeTenFormatter.localDateToDBString(" + fieldName + ")";
                     case TIME:
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.localTimeToDBString(" + fieldName + ")";
+                        return "org.dbtools.android.domain.date.DBToolsThreeTenFormatter.localTimeToDBString(" + fieldName + ")";
                 }
         }
     }
@@ -117,25 +117,25 @@ public enum DateType {
                 switch (this) {
                     default:
                     case JAVA_DATE:
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDate(values.getAsString(" + paramValue + "))";
+                        return "org.dbtools.android.domain.date.DBToolsDateFormatter.dbStringToDate(values.getAsString(" + paramValue + "))";
                     case JODA:
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDateTime(values.getAsString(" + paramValue + "))";
+                        return "org.dbtools.android.domain.date.DBToolsJodaFormatter.dbStringToDateTime(values.getAsString(" + paramValue + "))";
                     case JSR_310:
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalDateTime(values.getAsString(" + paramValue + "))";
+                        return "org.dbtools.android.domain.date.DBToolsThreeTenFormatter.dbStringToLocalDateTime(values.getAsString(" + paramValue + "))";
                 }
             case DATE:
                 switch (this) {
                     default:
                     case JAVA_DATE:
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDate(values.getAsString(" + paramValue + "))";
+                        return "org.dbtools.android.domain.date.DBToolsDateFormatter.dbStringToDate(values.getAsString(" + paramValue + "))";
                     case JODA:
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDateTime(values.getAsString(" + paramValue + "))";
+                        return "org.dbtools.android.domain.date.DBToolsJodaFormatter.dbStringToDateTime(values.getAsString(" + paramValue + "))";
                     case JSR_310:
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalDate(values.getAsString(" + paramValue + "))";
+                        return "org.dbtools.android.domain.date.DBToolsThreeTenFormatter.dbStringToLocalDate(values.getAsString(" + paramValue + "))";
                 }
             case TIME:
                 if (this == JSR_310) {
-                    return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalTime(values.getAsString(" + paramValue + "))";
+                    return "org.dbtools.android.domain.date.DBToolsThreeTenFormatter.dbStringToLocalTime(values.getAsString(" + paramValue + "))";
                 } else {
                     return "TIME IS CURRENTLY ONLY SUPPORTED BY JSR_310";
                 }
@@ -151,9 +151,9 @@ public enum DateType {
                             return "new java.util.Date(values.getAsLong(" + paramValue + "))";
                         }
                     case JODA:
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.longToDateTime(values.getAsLong(" + paramValue + "))";
+                        return "org.dbtools.android.domain.date.DBToolsJodaFormatter.longToDateTime(values.getAsLong(" + paramValue + "))";
                     case JSR_310:
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.longToLocalDateTime(values.getAsLong(" + paramValue + "))";
+                        return "org.dbtools.android.domain.date.DBToolsThreeTenFormatter.longToLocalDateTime(values.getAsLong(" + paramValue + "))";
                 }
         }
     }
@@ -165,23 +165,23 @@ public enum DateType {
                     default:
                     case JAVA_DATE:
                         if (kotlin && field.isNotNull()) {
-                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
+                            return "org.dbtools.android.domain.date.DBToolsDateFormatter.dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
                         } else {
-                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                            return "org.dbtools.android.domain.date.DBToolsDateFormatter.dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
                         }
 
                     case JODA:
                         if (kotlin && field.isNotNull()) {
-                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
+                            return "org.dbtools.android.domain.date.DBToolsJodaFormatter.dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
                         } else {
-                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                            return "org.dbtools.android.domain.date.DBToolsJodaFormatter.dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
                         }
 
                     case JSR_310:
                         if (kotlin && field.isNotNull()) {
-                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
+                            return "org.dbtools.android.domain.date.DBToolsThreeTenFormatter.dbStringToLocalDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
                         } else {
-                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                            return "org.dbtools.android.domain.date.DBToolsThreeTenFormatter.dbStringToLocalDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
                         }
                 }
             case DATE:
@@ -189,31 +189,31 @@ public enum DateType {
                     default:
                     case JAVA_DATE:
                         if (kotlin && field.isNotNull()) {
-                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
+                            return "org.dbtools.android.domain.date.DBToolsDateFormatter.dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
                         } else {
-                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                            return "org.dbtools.android.domain.date.DBToolsDateFormatter.dbStringToDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
                         }
 
                     case JODA:
                         if (kotlin && field.isNotNull()) {
-                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
+                            return "org.dbtools.android.domain.date.DBToolsJodaFormatter.dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
                         } else {
-                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                            return "org.dbtools.android.domain.date.DBToolsJodaFormatter.dbStringToDateTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
                         }
 
                     case JSR_310:
                         if (kotlin && field.isNotNull()) {
-                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
+                            return "org.dbtools.android.domain.date.DBToolsThreeTenFormatter.dbStringToLocalDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
                         } else {
-                            return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                            return "org.dbtools.android.domain.date.DBToolsThreeTenFormatter.dbStringToLocalDate(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
                         }
                 }
             case TIME:
                 if (this == JSR_310) {
                     if (kotlin && field.isNotNull()) {
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
+                        return "org.dbtools.android.domain.date.DBToolsThreeTenFormatter.dbStringToLocalTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))!!";
                     } else {
-                        return "org.dbtools.android.domain.DBToolsDateFormatter.dbStringToLocalTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
+                        return "org.dbtools.android.domain.date.DBToolsThreeTenFormatter.dbStringToLocalTime(cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")))";
                     }
                 } else {
                     return "TIME IS CURRENTLY ONLY SUPPORTED BY JSR_310";
@@ -235,22 +235,22 @@ public enum DateType {
                     case JODA:
                         if (kotlin) {
                             if (field.isNotNull()) {
-                                return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) org.dbtools.android.domain.DBToolsDateFormatter.longToDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + ")))!! else null!!";
+                                return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) org.dbtools.android.domain.date.DBToolsJodaFormatter.longToDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + ")))!! else null!!";
                             } else {
-                                return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) org.dbtools.android.domain.DBToolsDateFormatter.longToDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) else null";
+                                return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) org.dbtools.android.domain.date.DBToolsJodaFormatter.longToDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) else null";
                             }
                         } else {
-                            return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? org.dbtools.android.domain.DBToolsDateFormatter.longToDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) : null";
+                            return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? org.dbtools.android.domain.date.DBToolsJodaFormatter.longToDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) : null";
                         }
                     case JSR_310:
                         if (kotlin) {
                             if (field.isNotNull()) {
-                                return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) org.dbtools.android.domain.DBToolsDateFormatter.longToLocalDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + ")))!! else null!!";
+                                return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) org.dbtools.android.domain.date.DBToolsThreeTenFormatter.longToLocalDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + ")))!! else null!!";
                             } else {
-                                return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) org.dbtools.android.domain.DBToolsDateFormatter.longToLocalDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) else null";
+                                return "if (!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + "))) org.dbtools.android.domain.date.DBToolsThreeTenFormatter.longToLocalDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) else null";
                             }
                         } else {
-                            return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? org.dbtools.android.domain.DBToolsDateFormatter.longToLocalDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) : null";
+                            return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? org.dbtools.android.domain.date.DBToolsThreeTenFormatter.longToLocalDateTime(cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))) : null";
                         }
                 }
         }
