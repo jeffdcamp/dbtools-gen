@@ -1,0 +1,3 @@
+include ':dbtools-gen'
+include ':plugin-gradle'
+

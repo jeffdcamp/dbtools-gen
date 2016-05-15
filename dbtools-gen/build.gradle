@@ -1,0 +1,68 @@
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: 'jacoco'
+apply plugin: 'maven'
+
+dependencies {
+    compile 'org.simpleframework:simple-xml:2.7.1'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:2.0.52-beta'
+}
+
+tasks.withType(Test) {
+    testLogging {
+        exceptionFormat "full"
+    }
+}
+
+def coverageSourceDirs = [
+        'src/main/java',
+]
+
+jacoco {
+    toolVersion "0.7.2.201409121644"
+    //    toolVersion "0.7.6.201602180812" Gradle 2.13
+}
+
+task testDebugJacoco(type: JacocoReport, dependsOn: "testDebugUnitTest") {
+    group = "Reporting"
+    description = "Generate Jacoco coverage reports after running tests."
+    classDirectories = fileTree(
+            dir: "$buildDir/intermediates/classes/debug",
+            excludes: ['**/R.class',
+                       '**/R$*.class',
+                       '**/*$ViewInjector*.*',
+                       '**/BuildConfig.*',
+                       '**/Manifest*.*']
+    )
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+    additionalSourceDirs = files(coverageSourceDirs)
+    sourceDirectories = files(coverageSourceDirs)
+    executionData = files("$buildDir/jacoco/testDebugUnitTest.exec")
+}
+
+// =============== Maven Deployment ===============
+// ./gradlew clean check installLocal
+task installLocal(type: Upload) {
+    description "Installs the artifacts to the local Maven repository."
+    configuration = configurations['archives']
+    repositories {
+        mavenDeployer {
+            repository (url: "file://${System.env.HOME}/.m2/repository/")
+            pom.groupId = GROUP
+            pom.artifactId = POM_ARTIFACT_ID
+            pom.version = VERSION_NAME
+            pom.packaging = POM_PACKAGING
+            uniqueVersion = false // don't put in a timestamp on the filename (other project will not be able to depend on it)
+        }
+    }
+}
+
+// DEPLOY to Maven Central (this must be the last line of this file)
+// ./gradlew clean check uploadArchives
+apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

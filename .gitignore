@@ -17,5 +17,10 @@ nb-configuration.xml
 *.iws
 .idea/
 
+# Gradle
+.gradle/
+build/
+local.properties
+
 # Maven
 target/

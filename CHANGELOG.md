@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+  Version 7.0.3 *(2016-05)*
+---------------------------
+* Moved project from Maven to Gradle
+* Multi-project: Merged in gradle-dbtools-plugin
+* Split Java and Kotlin sources
+* Improved schema.xml XSD documentation
+
+
   Version 7.0.2 *(2016-05)*
 ---------------------------
 * Support for dbtools-android 7.0.2
