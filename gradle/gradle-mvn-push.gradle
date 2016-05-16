@@ -17,7 +17,6 @@
 /*
  * Changes from original:
  * - Different username and password variables SONATYPE_XXXX
- * - Added dbtools-gen gav dependency substitution
  */
 
 apply plugin: 'maven'
@@ -91,16 +90,6 @@ afterEvaluate { project ->
               name POM_DEVELOPER_NAME
             }
           }
-        }
-
-        // change dependency to internal projects to an proper gav
-        pom.whenConfigured {pom ->
-          def dep = pom.dependencies.find { dep ->
-            dep.artifactId == 'dbtools-gen'
-          }
-
-          dep.version = pom.version
-          dep.groupId = pom.groupId
         }
       }
     }
