@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+  Version 7.0.4 *(2016-05)*
+---------------------------
+* Support for dbtools-android 7.0.4
+
+
   Version 7.0.3 *(2016-05)*
 ---------------------------
 * Moved project from Maven to Gradle
