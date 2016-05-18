@@ -1,9 +1,9 @@
 Change Log
 ==========
 
-  Version 7.0.4 *(2016-05)*
+  Version 7.0.5 *(2016-05)*
 ---------------------------
-* Support for dbtools-android 7.0.4
+* Support for dbtools-android 7.0.5
 
 
   Version 7.0.3 *(2016-05)*
