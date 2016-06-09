@@ -9,6 +9,7 @@ For platform specific DBTools usage see
  * [DBTools JPA](https://github.com/jeffdcamp/dbtools-jpa)
  * [DBTools Android](https://github.com/jeffdcamp/dbtools-android)
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.dbtools/dbtools-gen/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.dbtools/dbtools-gen)
 
 Usage
 -----
