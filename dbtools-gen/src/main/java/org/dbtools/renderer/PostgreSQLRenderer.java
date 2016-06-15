@@ -157,23 +157,7 @@ public class PostgreSQLRenderer extends SchemaRenderer {
             }
 
             // check for uniqueDeclarations
-            List<SchemaTableUnique> uniqueDeclarations = table.getUniqueDeclarations();
-            for (SchemaTableUnique uniqueDeclaration : uniqueDeclarations) {
-                String uniqueFieldString = "";
-
-                List<SchemaUniqueField> uniqueFieldsCombo = uniqueDeclaration.getUniqueFields();
-                for (int k = 0; k < uniqueFieldsCombo.size(); k++) {
-                    SchemaUniqueField schemaUniqueField = uniqueFieldsCombo.get(k);
-
-                    if (k > 0) {
-                        uniqueFieldString += ", ";
-                    }
-
-                    uniqueFieldString += schemaUniqueField.getName();
-                }
-
-                schema.append(",\n\tUNIQUE(").append(uniqueFieldString).append(")");
-            }
+            generateUniqueConstraints(schema, table);
 
             // add table footer
             schema.append("\n);");
