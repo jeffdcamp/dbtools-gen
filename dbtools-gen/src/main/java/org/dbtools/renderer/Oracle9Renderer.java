@@ -157,19 +157,19 @@ public class Oracle9Renderer extends SchemaRenderer {
             }
 
             // check for uniqueDeclarations
-            List uniqueDeclarations = table.getUniqueDeclarations();
-            for (Object uniqueDeclaration : uniqueDeclarations) {
+            List<SchemaTableUnique> uniqueDeclarations = table.getUniqueDeclarations();
+            for (SchemaTableUnique uniqueDeclaration : uniqueDeclarations) {
                 String uniqueFieldString = "";
 
-                List uniqueFieldsCombo = (List) uniqueDeclaration;
+                List<SchemaUniqueField> uniqueFieldsCombo = uniqueDeclaration.getUniqueFields();
                 for (int k = 0; k < uniqueFieldsCombo.size(); k++) {
-                    String uniqueField = (String) uniqueFieldsCombo.get(k);
+                    SchemaUniqueField schemaUniqueField = uniqueFieldsCombo.get(k);
 
                     if (k > 0) {
                         uniqueFieldString += ", ";
                     }
 
-                    uniqueFieldString += uniqueField;
+                    uniqueFieldString += schemaUniqueField.getName();
                 }
 
                 schema.append(",\n\tUNIQUE(").append(uniqueFieldString).append(")");
