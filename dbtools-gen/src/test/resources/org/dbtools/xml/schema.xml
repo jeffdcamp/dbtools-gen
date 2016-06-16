@@ -29,7 +29,16 @@
                 <uniqueField name="NAME"/>
                 <uniqueField name="BIRTH_DATE"/>
             </unique>
+            <unique>
+                <uniqueField name="ALARM_TIME"/>
+            </unique>
         </table>
+
+        <table name="HOUSEHOLD">
+            <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
+            <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
+        </table>
+
         <view name="INDIVIDUAL_VIEW">
             <field name="id" jdbcDataType="BIGINT"/>
             <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
