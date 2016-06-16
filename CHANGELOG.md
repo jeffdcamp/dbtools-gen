@@ -1,10 +1,13 @@
 Change Log
 ==========
 
+  Version 7.0.6 *(2016-06)*
+---------------------------
+* Fixed issues with schema rendering with Derby, FireBird, HSQLDB, iAnywhere, MySQL, Oracle, PostgreSQL
+ 
   Version 7.0.5 *(2016-05)*
 ---------------------------
 * Support for dbtools-android 7.0.5
-
 
   Version 7.0.3 *(2016-05)*
 ---------------------------
