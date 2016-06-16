@@ -165,22 +165,7 @@ public class MySQLRenderer extends SchemaRenderer {
             }
 
             // check for uniqueDeclarations
-            List uniqueDeclarations = table.getUniqueDeclarations();
-            for (Object uniqueDeclaration : uniqueDeclarations) {
-                String uniqueFieldString = "";
-
-                List uniqueFields = (ArrayList) uniqueDeclaration;
-                for (int k = 0; k < uniqueFields.size(); k++) {
-                    String uniqueField = (String) uniqueFields.get(k);
-
-                    if (k > 0) {
-                        uniqueFieldString += ", ";
-                    }
-                    uniqueFieldString += uniqueField;
-                }
-
-                schema.append(",\n\tUNIQUE(").append(uniqueFieldString).append(")");
-            }
+            generateUniqueConstraints(schema, table);
 
             String tableType = table.getParameter("tableType");
             // add table footer
