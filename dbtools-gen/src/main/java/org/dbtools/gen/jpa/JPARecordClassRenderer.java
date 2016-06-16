@@ -11,9 +11,13 @@ package org.dbtools.gen.jpa;
 
 import org.dbtools.codegen.java.JavaClass;
 import org.dbtools.schema.schemafile.SchemaEntity;
+import org.dbtools.schema.schemafile.SchemaTable;
+import org.dbtools.schema.schemafile.SchemaTableUnique;
+import org.dbtools.schema.schemafile.SchemaUniqueField;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author Jeff
@@ -49,7 +53,34 @@ public class JPARecordClassRenderer {
         myClass.addAnnotation("@javax.persistence.Entity()");
         //myClass.addImplements("java.io.Serializable");
         myClass.addImport("javax.persistence.Table");
-        myClass.addAnnotation("@Table(name=" + baseClassName + ".TABLE)");
+        if (entity instanceof SchemaTable && !((SchemaTable) entity).getUniqueDeclarations().isEmpty()) {
+            myClass.addImplements("javax.persistence.UniqueConstraint");
+            myClass.addAnnotation("@Table(name=" + baseClassName + ".TABLE, uniqueConstraints={" +
+                    getUniqueConstraints(((SchemaTable) entity).getUniqueDeclarations()) + "})");
+        } else {
+            myClass.addAnnotation("@Table(name=" + baseClassName + ".TABLE)");
+        }
+    }
+
+    private String getUniqueConstraints(List<SchemaTableUnique> uniqueDeclarations) {
+        StringBuilder constraints = new StringBuilder();
+        StringBuilder fields = new StringBuilder();
+        for (SchemaTableUnique uniqueDeclaration : uniqueDeclarations) {
+            if (constraints.length() > 0) {
+                constraints.append(", ");
+            }
+            constraints.append("@UniqueConstraint(columnNames={");
+            for (SchemaUniqueField schemaUniqueField : uniqueDeclaration.getUniqueFields()) {
+                if (fields.length() > 0) {
+                    fields.append(", ");
+                }
+                fields.append("\"").append(schemaUniqueField.getName()).append("\"");
+            }
+            constraints.append(fields.toString());
+            fields.setLength(0);
+            constraints.append("})");
+        }
+        return constraints.toString();
     }
 
     public static String createClassName(SchemaEntity entity) {
