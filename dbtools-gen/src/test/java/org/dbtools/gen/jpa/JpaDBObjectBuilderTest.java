@@ -1,10 +1,10 @@
-package org.dbtools.gen.android;
+package org.dbtools.gen.jpa;
 
 import org.dbtools.gen.DateType;
 import org.dbtools.gen.GenConfig;
 import org.junit.Test;
 
-public class AndroidDBObjectBuilderTest {
+public class JPADBObjectBuilderTest {
     @Test
     public void testBasicGen() {
         String userDir = System.getProperty("user.dir");
@@ -18,7 +18,7 @@ public class AndroidDBObjectBuilderTest {
         genConfig.setInjectionSupport(injectionSupport);
         genConfig.setDateType(DateType.JSR_310);
 
-        AndroidObjectsBuilder objectsBuilder = new AndroidObjectsBuilder(genConfig);
+        JPAObjectsBuilder objectsBuilder = new JPAObjectsBuilder(genConfig);
         objectsBuilder.buildAll(schemaFilename, baseOutputDir, basePackageName);
     }
 }

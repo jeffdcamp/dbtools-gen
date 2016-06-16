@@ -182,23 +182,7 @@ public class IAnywhereRenderer extends SchemaRenderer {
             }
 
             // check for uniqueDeclarations
-            List uniqueDeclarations = table.getUniqueDeclarations();
-            for (Object uniqueDeclaration : uniqueDeclarations) {
-                String uniqueFieldString = "";
-
-                List uniqueFieldsCombo = (List) uniqueDeclaration;
-                for (int k = 0; k < uniqueFieldsCombo.size(); k++) {
-                    String uniqueField = (String) uniqueFieldsCombo.get(k);
-
-                    if (k > 0) {
-                        uniqueFieldString += ", ";
-                    }
-
-                    uniqueFieldString += uniqueField;
-                }
-
-                schema.append(",\n\tUNIQUE(").append(uniqueFieldString).append(")");
-            }
+            generateUniqueConstraints(schema, table);
 
             // add table footer
             schema.append("\n);");
