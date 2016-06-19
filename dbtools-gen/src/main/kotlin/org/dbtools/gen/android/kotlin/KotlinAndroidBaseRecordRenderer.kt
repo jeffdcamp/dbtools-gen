@@ -150,7 +150,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             // copy
             copyContent.append("copy.").append(newVariable.name).append(" = ")
             if (dateTypeField) {
-                copyContent.append(genConfig.dateType.getCopy(newVariable.name, true))
+                copyContent.append(genConfig.dateType.getCopy(newVariable.name, true, field.isNotNull))
             } else {
                 copyContent.append(newVariable.name)
             }

@@ -256,14 +256,22 @@ public enum DateType {
         }
     }
 
-    public String getCopy(String fieldName, boolean kotlin) {
+    public String getCopy(String fieldName, boolean kotlin, boolean notNull) {
         switch (this) {
             default:
             case JAVA_DATE:
                 if (kotlin) {
-                    return "if (" + fieldName + " != null) java.util.Date((" + fieldName + " as java.util.Date).getTime()) else null ";
+                    if (notNull) {
+                        return "java.util.Date(" + fieldName + ".getTime())";
+                    } else {
+                        return "if (" + fieldName + " != null) java.util.Date((" + fieldName + " as java.util.Date).getTime()) else null ";
+                    }
                 } else {
-                    return fieldName + " != null ? new java.util.Date(" + fieldName + ".getTime()) : null ";
+                    if (notNull) {
+                        return "new java.util.Date(" + fieldName + ".getTime())";
+                    } else {
+                        return fieldName + " != null ? new java.util.Date(" + fieldName + ".getTime()) : null ";
+                    }
                 }
             case JODA:
             case JSR_310:

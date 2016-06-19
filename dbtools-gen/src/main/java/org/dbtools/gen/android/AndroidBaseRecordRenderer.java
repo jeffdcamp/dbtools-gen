@@ -182,7 +182,7 @@ public class AndroidBaseRecordRenderer {
             copyContent.append("copy.").append(newVariable.getSetterMethodName()).append("(");
 
             if (dateTypeField) {
-                copyContent.append(genConfig.getDateType().getCopy(newVariable.getName(), false));
+                copyContent.append(genConfig.getDateType().getCopy(newVariable.getName(), false, field.isNotNull()));
             } else {
                 copyContent.append(newVariable.getName());
             }
