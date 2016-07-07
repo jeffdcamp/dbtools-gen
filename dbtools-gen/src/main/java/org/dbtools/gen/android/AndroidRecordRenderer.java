@@ -57,6 +57,11 @@ public class AndroidRecordRenderer {
         if (!myClass.isEnum()) {
             myClass.addImport("android.database.Cursor");
             myClass.addImport("org.dbtools.android.domain.database.contentvalues.DBToolsContentValues");
+
+            List<JavaVariable> constructorVarsCopy = new ArrayList<>();
+            constructorVarsCopy.add(new JavaVariable(entity.getClassName(), "record"));
+            myClass.addConstructor(Access.PUBLIC, constructorVarsCopy, "super(record);");
+
             List<JavaVariable> constructorVarsCursor = new ArrayList<>();
             constructorVarsCursor.add(new JavaVariable("Cursor", "cursor"));
             myClass.addConstructor(Access.PUBLIC, constructorVarsCursor, "setContent(cursor);");

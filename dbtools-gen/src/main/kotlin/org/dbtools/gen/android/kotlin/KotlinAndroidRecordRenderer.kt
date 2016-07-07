@@ -45,6 +45,7 @@ class KotlinAndroidRecordRenderer(val genConfig: GenConfig) {
             myClass.addImport("android.database.Cursor")
             myClass.addImport("org.dbtools.android.domain.database.contentvalues.DBToolsContentValues")
             myClass.addConstructor()
+            myClass.addConstructor(listOf(KotlinVal("record", entity.className)), returnType = "super(record)")
             myClass.addConstructor(listOf(KotlinVal("cursor", "Cursor")), "setContent(cursor)")
             myClass.addConstructor(listOf(KotlinVal("values", "DBToolsContentValues<*>")), "setContent(values)")
         }

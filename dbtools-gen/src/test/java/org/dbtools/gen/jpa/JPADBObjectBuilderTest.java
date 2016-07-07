@@ -11,7 +11,7 @@ public class JPADBObjectBuilderTest {
 
         String schemaFilename = userDir + "/src/test/resources/org/dbtools/xml/schema.xml";
         boolean injectionSupport = true; // support for CDI (Dagger, Guice, etc)
-        String baseOutputDir = userDir + "/target/test-src/src/main/java/org/mycompany/domain";
+        String baseOutputDir = userDir + "/build/test-src/src/main/java/org/mycompany/domain";
         String basePackageName = "org.mycompany.domain";
 
         GenConfig genConfig = new GenConfig();

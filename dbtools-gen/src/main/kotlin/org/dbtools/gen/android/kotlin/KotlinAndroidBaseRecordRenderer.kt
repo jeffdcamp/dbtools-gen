@@ -49,7 +49,8 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             recordClass = KotlinClass(className, packageName).apply {
                 abstract = true
                 addImport("org.dbtools.android.domain.AndroidBaseRecord")
-                extends = "AndroidBaseRecord()"
+                extends = "AndroidBaseRecord"
+                createDefaultConstructor = true
             }
             recordClass.addImport("org.dbtools.android.domain.database.statement.StatementWrapper")
         }
@@ -75,6 +76,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         // post field method content
         val contentValuesContent = StringBuilder()
         val valuesContent = StringBuilder("return arrayOf(\n")
+        val copyConstructorContent = StringBuilder()
         val copyContent = StringBuilder("var copy = $entityClassName()\n")
         val bindInsertStatementContent = StringBuilder()
         val bindUpdateStatementContent = StringBuilder()
@@ -147,7 +149,12 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 recordClass.addVar(newVariable)
             }
 
-            // copy
+            if (!primaryKey) {
+                copyConstructorContent.append("this.").append(newVariable.name).append(" = ")
+                copyConstructorContent.append("record.").append(newVariable.name).append("\n");
+            }
+
+            // copy (include primary key)
             copyContent.append("copy.").append(newVariable.name).append(" = ")
             if (dateTypeField) {
                 copyContent.append(genConfig.dateType.getCopy(newVariable.name, true, field.isNotNull))
@@ -335,6 +342,8 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             recordClass.addFun("getValues", "Array<Any?>", content = valuesContent.toString()).apply {
                 isOverride = true
             }
+
+            recordClass.addConstructor(listOf(KotlinVal("record", entityClassName)), copyConstructorContent.toString())
 
             copyContent.append("return copy")
             recordClass.addFun("copy", entityClassName, content = copyContent.toString())

@@ -10,7 +10,17 @@ class HelloTest : TestCase() {
     fun testSimpleClass() : Unit {
         val myClass = KotlinClass("Test", "org.sample")
 
-        myClass.writeToDisk("target/test-src/src/main/kotlin/org/sample")
+        myClass.writeToDisk("build/test-src/src/main/kotlin/org/sample")
+    }
+
+    fun testDefaultConstructor() : Unit {
+        val myClass = KotlinClass("DefaultCustructor", "org.sample")
+
+        myClass.addVar("name", "String")
+        myClass.addVal("age", "Int")
+        myClass.createDefaultConstructor = true
+
+        myClass.writeToDisk("build/test-src/src/main/kotlin/org/sample")
     }
 
     fun testConstructor2() : Unit {
@@ -22,7 +32,7 @@ class HelloTest : TestCase() {
                 parameters = listOf(KotlinVal("name", "String"), KotlinVal("age", "Int", "0")),
                 content = "this.name = name\nthis.age = age")
 
-        myClass.writeToDisk("target/test-src/src/main/kotlin/org/sample")
+        myClass.writeToDisk("build/test-src/src/main/kotlin/org/sample")
     }
 
     /**
@@ -45,7 +55,7 @@ class HelloTest : TestCase() {
                 content = "this.name = name\nthis.age = age")
         construct1.addAnnotation("@Inject")
 
-        myClass.writeToDisk("target/test-src/src/main/kotlin/org/sample")
+        myClass.writeToDisk("build/test-src/src/main/kotlin/org/sample")
     }
 
     fun testFunc1() : Unit {
@@ -56,7 +66,7 @@ class HelloTest : TestCase() {
                 returnType = "String",
                 content = "return \"Hello World\"")
 
-        myClass.writeToDisk("target/test-src/src/main/kotlin/org/sample")
+        myClass.writeToDisk("build/test-src/src/main/kotlin/org/sample")
     }
 
     fun testFunc2() : Unit {
@@ -69,7 +79,7 @@ class HelloTest : TestCase() {
         fun2.addAnnotation("OnClick")
 
 
-        myClass.writeToDisk("target/test-src/src/main/kotlin/org/sample")
+        myClass.writeToDisk("build/test-src/src/main/kotlin/org/sample")
     }
 
     fun testConst1() : Unit {
@@ -78,7 +88,7 @@ class HelloTest : TestCase() {
         myClass.addConstant("C_ID", "String", "_id")
         myClass.addConstant("C_NAME", "String", "name")
 
-        myClass.writeToDisk("target/test-src/src/main/kotlin/org/sample")
+        myClass.writeToDisk("build/test-src/src/main/kotlin/org/sample")
     }
 
     fun testStaticFunction() : Unit {
@@ -86,7 +96,7 @@ class HelloTest : TestCase() {
 
         myClass.addStaticFun(KotlinFun("doWork", listOf(KotlinVal("name", "String")), content = "println(name)\nprintln(\"Hello World\")"))
 
-        myClass.writeToDisk("target/test-src/src/main/kotlin/org/sample")
+        myClass.writeToDisk("build/test-src/src/main/kotlin/org/sample")
     }
 
     fun testStaticInit() : Unit {
@@ -95,7 +105,7 @@ class HelloTest : TestCase() {
         myClass.addConstant("list", "ArrayList<String>()", "List<String>");
         myClass.appendStaticInitializer("list.add(\"Dude\")}")
 
-        myClass.writeToDisk("target/test-src/src/main/kotlin/org/sample")
+        myClass.writeToDisk("build/test-src/src/main/kotlin/org/sample")
     }
 
     fun testConstVar1() : Unit {
@@ -107,7 +117,7 @@ class HelloTest : TestCase() {
         myClass.addVar("id", "Long")
         myClass.addVar("name", "String")
 
-        myClass.writeToDisk("target/test-src/src/main/kotlin/org/sample")
+        myClass.writeToDisk("build/test-src/src/main/kotlin/org/sample")
     }
 
     fun testConstVar2() : Unit {
@@ -119,7 +129,7 @@ class HelloTest : TestCase() {
         myClass.addVar("id", "Long")
         myClass.addVar("name", "String")
 
-        myClass.writeToDisk("target/test-src/src/main/kotlin/org/sample")
+        myClass.writeToDisk("build/test-src/src/main/kotlin/org/sample")
     }
 
     fun testSingletonClass() : Unit {
@@ -130,7 +140,7 @@ class HelloTest : TestCase() {
 
         myClass.addFun(KotlinFun("doWork", listOf(KotlinVal("name", "String")), content = "println(name)\nprintln(\"Hello World\")"))
 
-        myClass.writeToDisk("target/test-src/src/main/kotlin/org/sample")
+        myClass.writeToDisk("build/test-src/src/main/kotlin/org/sample")
     }
 
     fun testDatatype() : Unit {
@@ -140,6 +150,6 @@ class HelloTest : TestCase() {
 
         myClass.addFun(KotlinFun("doWork", listOf(KotlinVal("name", "String")), content = "println(name)\nprintln(\"Hello World\")"))
 
-        myClass.writeToDisk("target/test-src/src/main/kotlin/org/sample")
+        myClass.writeToDisk("build/test-src/src/main/kotlin/org/sample")
     }
 }

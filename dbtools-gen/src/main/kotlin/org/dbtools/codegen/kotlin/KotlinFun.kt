@@ -113,12 +113,12 @@ class KotlinFun {
 
         // constructor delegate
         if (constructorDelegate.isNotEmpty()) {
-            text += ": $constructorDelegate"
+            text += " : $constructorDelegate"
         }
 
         // return
         if (returnType.isNotEmpty()) {
-            text += ": $returnType"
+            text += " : $returnType"
         }
 
         // exceptions

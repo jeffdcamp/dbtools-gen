@@ -10,7 +10,7 @@ public class SchemaRendererTest {
 
     private String userDir = System.getProperty("user.dir");
     private String schemaFilename = userDir + "/src/test/resources/org/dbtools/xml/schema.xml";
-    private String outputDir = userDir + "/target/test";
+    private String outputDir = userDir + "/build/test";
     private String outputFilenameTemplate = "schema-%s.sql";
 
     @Test

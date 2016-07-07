@@ -13,7 +13,7 @@ public class KotlinAndroidDBObjectBuilderTest {
         String schemaFilename = userDir + "/src/main/resources/org/dbtools/xml/schema.xml";
         boolean injectionSupport = true; // support for CDI (Dagger, Guice, etc)
         boolean dateTimeSupport = true; // support for jsr DateTime (Joda Time)
-        String baseOutputDir = userDir + "/target/test-src/src/main/kotlin/org/mycompany/domain";
+        String baseOutputDir = userDir + "/build/test-src/src/main/kotlin/org/mycompany/domain";
         String basePackageName = "org.mycompany.domain";
 
         GenConfig genConfig = new GenConfig();

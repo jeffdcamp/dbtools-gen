@@ -11,7 +11,7 @@ public class DBToolsInitTest {
     @Test
     public void testInitDBTools() throws Exception {
         String userDir = System.getProperty("user.dir");
-        String databaseSchemaDir = userDir + "/target/test-src/src/main/database";
+        String databaseSchemaDir = userDir + "/build/test-src/src/main/database";
 
         DBToolsInit init = new DBToolsInit();
         init.initDBTools(databaseSchemaDir);
