@@ -53,13 +53,15 @@ public class JPARecordClassRenderer {
         myClass.addAnnotation("@javax.persistence.Entity()");
         //myClass.addImplements("java.io.Serializable");
         myClass.addImport("javax.persistence.Table");
+        StringBuilder tableAnnotationBuilder = new StringBuilder("@Table(name=").append(baseClassName).append(".TABLE");
         if (entity instanceof SchemaTable && !((SchemaTable) entity).getUniqueDeclarations().isEmpty()) {
-            myClass.addImplements("javax.persistence.UniqueConstraint");
-            myClass.addAnnotation("@Table(name=" + baseClassName + ".TABLE, uniqueConstraints={" +
-                    getUniqueConstraints(((SchemaTable) entity).getUniqueDeclarations()) + "})");
-        } else {
-            myClass.addAnnotation("@Table(name=" + baseClassName + ".TABLE)");
+            myClass.addImport("javax.persistence.UniqueConstraint");
+            tableAnnotationBuilder.append(", uniqueConstraints={")
+                    .append(getUniqueConstraints(((SchemaTable) entity).getUniqueDeclarations()))
+                    .append("}");
         }
+        tableAnnotationBuilder.append(")");
+        myClass.addAnnotation(tableAnnotationBuilder.toString());
     }
 
     private String getUniqueConstraints(List<SchemaTableUnique> uniqueDeclarations) {
