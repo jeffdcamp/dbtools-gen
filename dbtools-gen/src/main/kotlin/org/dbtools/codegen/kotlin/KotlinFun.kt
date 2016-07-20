@@ -21,6 +21,7 @@ class KotlinFun {
     var isInline = false
     var isLateInit = false
     var isOverride = false
+    var isOpen = false
     val parameters = ArrayList<KotlinVal>()
     val annotations = ArrayList<String>()
     val exceptions = ArrayList<String>()
@@ -76,6 +77,10 @@ class KotlinFun {
         // modifiers
         if (isOverride) {
             text += "override "
+        }
+
+        if (isOpen) {
+            text += "open "
         }
 
         if (isAbstract) {

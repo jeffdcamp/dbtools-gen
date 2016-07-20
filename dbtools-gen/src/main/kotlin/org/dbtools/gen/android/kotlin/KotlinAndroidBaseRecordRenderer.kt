@@ -77,7 +77,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         val contentValuesContent = StringBuilder()
         val valuesContent = StringBuilder("return arrayOf(\n")
         val copyConstructorContent = StringBuilder()
-        val copyContent = StringBuilder("var copy = $entityClassName()\n")
+        val copyContent = StringBuilder("val copy = $entityClassName()\n")
         val bindInsertStatementContent = StringBuilder()
         val bindUpdateStatementContent = StringBuilder()
         var valuesContentItemCount = 0
@@ -346,7 +346,9 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             recordClass.addConstructor(listOf(KotlinVal("record", entityClassName)), copyConstructorContent.toString())
 
             copyContent.append("return copy")
-            recordClass.addFun("copy", entityClassName, content = copyContent.toString())
+            recordClass.addFun("copy", entityClassName, content = copyContent.toString()).apply {
+                isOpen = true
+            }
 
             recordClass.addFun("bindInsertStatement", parameters = listOf(KotlinVal("statement", "StatementWrapper")), content = bindInsertStatementContent.toString()).apply {
                 isOverride = true

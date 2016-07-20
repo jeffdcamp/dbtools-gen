@@ -127,7 +127,9 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         createDatabaseContent.append("database.setTransactionSuccessful()\n")
         createDatabaseContent.append("database.endTransaction()\n")
 
-        myClass.addFun(createDatabaseMethodName, parameters = listOf(KotlinVal("androidDatabase", "AndroidDatabase")), content = createDatabaseContent.toString())
+        myClass.addFun(createDatabaseMethodName, parameters = listOf(KotlinVal("androidDatabase", "AndroidDatabase")), content = createDatabaseContent.toString()).apply {
+            isOpen = true
+        }
     }
 
     private fun createOnCreateViews(databaseSchema: DatabaseSchema) {
@@ -187,7 +189,9 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         createDatabaseViewsContent.append("database.setTransactionSuccessful()\n")
         createDatabaseViewsContent.append("database.endTransaction()\n")
 
-        myClass.addFun(createDatabaseViewsMethodName, parameters = listOf(KotlinVal("androidDatabase", "AndroidDatabase")), content = createDatabaseViewsContent.toString())
+        myClass.addFun(createDatabaseViewsMethodName, parameters = listOf(KotlinVal("androidDatabase", "AndroidDatabase")), content = createDatabaseViewsContent.toString()).apply {
+            isOpen = true
+        }
     }
 
     private fun createDropViews(content: StringBuilder, databaseConstName: String, databaseMethodName: String, database: SchemaDatabase) {
@@ -220,7 +224,9 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         dropDatabaseViewsContent.append("database.setTransactionSuccessful()\n")
         dropDatabaseViewsContent.append("database.endTransaction()\n")
 
-        myClass.addFun(dropDatabaseViewsMethodName, parameters = listOf(KotlinVal("androidDatabase", "AndroidDatabase")), content = dropDatabaseViewsContent.toString())
+        myClass.addFun(dropDatabaseViewsMethodName, parameters = listOf(KotlinVal("androidDatabase", "AndroidDatabase")), content = dropDatabaseViewsContent.toString()).apply {
+            isOpen = true
+        }
     }
 
     private fun createDatabaseBasePackage(database: SchemaDatabase): String {

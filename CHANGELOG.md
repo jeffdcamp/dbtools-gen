@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+  Version 7.0.10 *(2016-07)*
+----------------------------
+* Fixed UniqueConstraint issues with JPA renderer
+* Improvements to Kotlin renderer
+
   Version 7.0.9 *(2016-07)*
 ---------------------------
 * Added copy constructor to XXXBaseRecord
