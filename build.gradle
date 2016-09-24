@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.0.3'
+    ext.kotlin_version = '1.0.4'
 
     repositories {
         mavenLocal()
@@ -26,5 +26,5 @@ task clean(type: Delete) {
 }
 
 ext {
-    supportLibVersion = '24'
+    supportLibVersion = '24.2.1'
 }
