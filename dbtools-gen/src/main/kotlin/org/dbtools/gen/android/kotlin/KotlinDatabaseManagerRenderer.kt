@@ -49,7 +49,7 @@ class KotlinDatabaseManagerRenderer(val genConfig: GenConfig, val outDir: String
     private fun createOnUpgrade() {
         val content = StringBuilder()
 
-        content.append("getLogger().i(TAG, \"Upgrading database [\$androidDatabase.name] from version \$oldVersion to \$newVersion\")\n")
+        content.append("getLogger().i(TAG, \"Upgrading database [\${androidDatabase.name}] from version \$oldVersion to \$newVersion\")\n")
 
         val params = listOf(KotlinVal("androidDatabase", "AndroidDatabase"),
                 KotlinVal("oldVersion", "Int"),
@@ -62,7 +62,7 @@ class KotlinDatabaseManagerRenderer(val genConfig: GenConfig, val outDir: String
     private fun createOnUpgradeViews() {
         val content = StringBuilder()
 
-        content.append("getLogger().i(TAG, \"Upgrading database [\$androidDatabase.name] VIEWS from version \$oldVersion to \$newVersion\")\n")
+        content.append("getLogger().i(TAG, \"Upgrading database [\${androidDatabase.name}] VIEWS from version \$oldVersion to \$newVersion\")\n")
         content.append("// automatically drop/create views\n")
         content.append("super.onUpgradeViews(androidDatabase, oldVersion, newVersion)\n")
 

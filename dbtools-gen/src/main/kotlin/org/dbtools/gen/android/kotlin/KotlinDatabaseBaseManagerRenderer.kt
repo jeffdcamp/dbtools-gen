@@ -73,7 +73,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
 
     private fun createOnCreate(databaseSchema: DatabaseSchema) {
         val content = StringBuilder()
-        content.append("getLogger().i(TAG, \"Creating database: \$androidDatabase.name\")\n")
+        content.append("getLogger().i(TAG, \"Creating database: \${androidDatabase.name}\")\n")
 
         for (database in databaseSchema.databases) {
             var databaseName = database.name
@@ -136,8 +136,8 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         val createContent = StringBuilder()
         val dropContent = StringBuilder()
 
-        createContent.append("getLogger().i(TAG, \"Creating database views: \$androidDatabase.name\")\n")
-        dropContent.append("getLogger().i(TAG, \"Dropping database views: \$androidDatabase.name\")\n")
+        createContent.append("getLogger().i(TAG, \"Creating database views: \${androidDatabase.name}\")\n")
+        dropContent.append("getLogger().i(TAG, \"Dropping database views: \${androidDatabase.name}\")\n")
 
         for (database in databaseSchema.databases) {
             var databaseName = database.name
