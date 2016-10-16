@@ -15,6 +15,7 @@ class KotlinVar(val name: String, val dataType: String, var defaultValue: String
     var variableType = KotlinVarType.CLASS_VARIABLE
     var access = KotlinAccess.PUBLIC
     var inline = false
+    var open = false
     var lateInit = false
     val annotations = ArrayList<String>()
 
@@ -52,6 +53,10 @@ class KotlinVar(val name: String, val dataType: String, var defaultValue: String
             val accessText = KotlinClass.getAccessString(access) + " "
             text += KotlinClass.tab
             text += accessText
+        }
+
+        if (open) {
+            text += "open "
         }
 
         if (inline) {

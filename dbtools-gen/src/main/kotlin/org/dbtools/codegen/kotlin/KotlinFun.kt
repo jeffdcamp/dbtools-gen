@@ -75,12 +75,12 @@ class KotlinFun {
         }
 
         // modifiers
-        if (isOverride) {
-            text += "override "
-        }
-
         if (isOpen) {
             text += "open "
+        }
+
+        if (isOverride) {
+            text += "override "
         }
 
         if (isAbstract) {

@@ -129,6 +129,8 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 newVariable = generateFieldVariable(fieldNameJavaStyle, field)
             }
 
+            newVariable.open = true
+
             // Primary key / not enum methods
             if (primaryKey && !recordClass.isEnum()) {
                 recordClass.addFun("getIdColumnName", "String", content = "return $fullFieldColumn").apply {
