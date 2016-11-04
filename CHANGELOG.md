@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+  Version 7.1.1 *(2016-11)*
+---------------------------
+* Updated versions of dependencies 
+
   Version 7.1.0 *(2016-10)*
 ---------------------------
 * Changed all generated Kotlin vars to be open
