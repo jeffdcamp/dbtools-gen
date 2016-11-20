@@ -47,7 +47,9 @@ public class AndroidBaseRecordRenderer {
     public AndroidBaseRecordRenderer() {
     }
 
-    public void generate(SchemaDatabase database, SchemaEntity entity, String packageName, DatabaseMapping databaseMapping) {
+    public AndroidGeneratedEntityInfo generate(SchemaDatabase database, SchemaEntity entity, String packageName, DatabaseMapping databaseMapping) {
+        AndroidGeneratedEntityInfo generatedEntityInfo = new AndroidGeneratedEntityInfo();
+
         // reset data
         bindInsertStatementContentIndex = 1;
         bindUpdateStatementContentIndex = 1;
@@ -165,14 +167,7 @@ public class AndroidBaseRecordRenderer {
 
             // Primary key / not enum methods
             if (primaryKey && !recordClass.isEnum()) {
-                recordClass.addMethod(Access.PUBLIC, "String", "getIdColumnName", "return " + fullFieldColumn + ";").addAnnotation("Override");
-
-                // add vanilla getPrimaryKeyId() / setPrimaryKeyId(...) for the primary key
-                recordClass.addMethod(Access.PUBLIC, field.getJavaTypeText(), "getPrimaryKeyId", "return " + fieldNameJavaStyle + ";").addAnnotation("Override");
-
-                List<JavaVariable> setIdParams = new ArrayList<>();
-                setIdParams.add(new JavaVariable(newVariable.getDataType(), "id"));
-                recordClass.addMethod(Access.PUBLIC, "void", "setPrimaryKeyId", setIdParams, "this." + fieldNameJavaStyle + " = id;").addAnnotation("Override");
+                addPrimaryKeyFunctions(newVariable.getDataType(), fullFieldColumn, fieldNameJavaStyle);
             }
 
             if (!recordClass.isEnum()) {
@@ -405,6 +400,14 @@ public class AndroidBaseRecordRenderer {
             // new record check
             recordClass.addMethod(Access.PUBLIC, "boolean", "isNewRecord", "return getPrimaryKeyId() <= 0;");
         }
+
+        if (!primaryKeyAdded && entityType == SchemaEntityType.TABLE) {
+            // make sure that overridden methods are
+            addPrimaryKeyFunctions("long", "\"NO_PRIMARY_KEY\"", "0");
+        }
+
+        generatedEntityInfo.setPrimaryKeyAdded(primaryKeyAdded);
+        return generatedEntityInfo;
     }
 
     private void addHeader(JavaClass someClass, String className) {
@@ -421,6 +424,21 @@ public class AndroidBaseRecordRenderer {
 
         // Since this is generated code.... suppress all warnings
         someClass.addAnnotation("@SuppressWarnings(\"all\")");
+    }
+
+    private void addPrimaryKeyFunctions(String dataType, String fullFieldColumn, String fieldNameJavaStyle) {
+        recordClass.addMethod(Access.PUBLIC, "String", "getIdColumnName", "return " + fullFieldColumn + ";").addAnnotation("Override");
+
+        // add vanilla getPrimaryKeyId() / setPrimaryKeyId(...) for the primary key
+        recordClass.addMethod(Access.PUBLIC, dataType, "getPrimaryKeyId", "return " + fieldNameJavaStyle + ";").addAnnotation("Override");
+
+        List<JavaVariable> setIdParams = new ArrayList<>();
+        setIdParams.add(new JavaVariable(dataType, "id"));
+        if (!fieldNameJavaStyle.equals("0")) {
+            recordClass.addMethod(Access.PUBLIC, "void", "setPrimaryKeyId", setIdParams, "this." + fieldNameJavaStyle + " = id;").addAnnotation("Override");
+        } else {
+            recordClass.addMethod(Access.PUBLIC, "void", "setPrimaryKeyId", setIdParams, "// NO_PRIMARY_KEY").addAnnotation("Override");
+        }
     }
 
     private void initClassAsEnum(String packageName, String enumClassName, SchemaEntity entity) {

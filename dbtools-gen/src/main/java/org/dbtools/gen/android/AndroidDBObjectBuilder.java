@@ -69,24 +69,6 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
 
         DatabaseMapping databaseMapping = SchemaRenderer.readXMLTypes(this.getClass(), SchemaRenderer.DEFAULT_TYPE_MAPPING_FILENAME, "sqlite");
 
-        // Managers
-        if (!entity.isEnumerationTable()) {
-            String managerFileName = outDir + AndroidManagerRenderer.getClassName(entity) + ".java";
-            File managerFile = new File(managerFileName);
-
-            // Base Manager
-            baseManagerClass.generate(entity, packageName);
-            baseManagerClass.writeToFile(outDir);
-            filesGeneratedCount++;
-
-            // Manager
-            if (!managerFile.exists()) {
-                managerClass.generate(entity, packageName);
-                managerClass.writeToFile(outDir);
-                filesGeneratedCount++;
-            }
-        }
-
         // Entities
         String baseRecordFileName = outDir + AndroidRecordRenderer.createClassName(entity) + ".java";
         String recordFileName = outDir + AndroidRecordRenderer.createClassName(entity) + ".java";
@@ -94,7 +76,7 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
         File recordFile = new File(recordFileName);
 
         // BaseRecord
-        baseRecordClass.generate(database, entity, packageName, databaseMapping);
+        AndroidGeneratedEntityInfo generatedEntityInfo = baseRecordClass.generate(database, entity, packageName, databaseMapping);
         baseRecordClass.writeToFile(outDir);
 
         filesGenerated.add(baseRecordFile.getPath());
@@ -110,6 +92,25 @@ public class AndroidDBObjectBuilder implements DBObjectBuilder {
                 filesGeneratedCount++;
             }
         }
+
+        // Managers
+        if (!entity.isEnumerationTable()) {
+            String managerFileName = outDir + AndroidManagerRenderer.getClassName(entity) + ".java";
+            File managerFile = new File(managerFileName);
+
+            // Base Manager
+            baseManagerClass.generate(entity, packageName, generatedEntityInfo);
+            baseManagerClass.writeToFile(outDir);
+            filesGeneratedCount++;
+
+            // Manager
+            if (!managerFile.exists()) {
+                managerClass.generate(entity, packageName);
+                managerClass.writeToFile(outDir);
+                filesGeneratedCount++;
+            }
+        }
+
         return true;
     }
 

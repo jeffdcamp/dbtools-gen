@@ -52,7 +52,7 @@ public class DatabaseSchema {
             schema = serializer.read(DatabaseSchema.class, source);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new IllegalStateException("Failure reading schema file [" + path + "] Error: [" + e.getMessage() + "]");
+            throw new IllegalStateException("Failure reading schema file [" + new File(path).getAbsolutePath() + "] Error: [" + e.getMessage() + "]");
         }
 
         // validate

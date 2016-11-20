@@ -38,26 +38,6 @@ class KotlinAndroidDBObjectBuilder() : DBObjectBuilder {
 
         val databaseMapping = SchemaRenderer.readXMLTypes(this.javaClass, SchemaRenderer.DEFAULT_TYPE_MAPPING_FILENAME, "sqlite")
 
-        // Managers
-        if (!entity.isEnumerationTable) {
-            val managerFileName = workingOutDir + AndroidManagerRenderer.getClassName(entity) + ".kt"
-            val managerFile = File(managerFileName)
-
-            // Base Manager
-            val baseManagerClass = KotlinAndroidBaseManagerRenderer(genConfig)
-            baseManagerClass.generate(entity, packageName)
-            baseManagerClass.writeToFile(workingOutDir)
-            filesGeneratedCount++
-
-            // Manager
-            if (!managerFile.exists()) {
-                val managerClass = KotlinAndroidManagerRenderer(genConfig)
-                managerClass.generate(entity, packageName)
-                managerClass.writeToFile(workingOutDir)
-                filesGeneratedCount++
-            }
-        }
-
         // Entities
         val baseRecordFileName = workingOutDir + AndroidRecordRenderer.createClassName(entity) + ".kt"
         val recordFileName = workingOutDir + AndroidRecordRenderer.createClassName(entity) + ".kt"
@@ -66,7 +46,7 @@ class KotlinAndroidDBObjectBuilder() : DBObjectBuilder {
 
         // BaseRecord
         val baseRecordClass = KotlinAndroidBaseRecordRenderer(genConfig)
-        baseRecordClass.generate(database, entity, packageName, databaseMapping)
+        val generatedEntityInfo = baseRecordClass.generate(database, entity, packageName, databaseMapping)
         baseRecordClass.writeToFile(workingOutDir)
 
         filesGenerated.add(baseRecordFile.path)
@@ -80,6 +60,26 @@ class KotlinAndroidDBObjectBuilder() : DBObjectBuilder {
                 recordClass.writeToFile(workingOutDir)
 
                 filesGenerated.add(recordFile.path)
+                filesGeneratedCount++
+            }
+        }
+
+        // Managers
+        if (!entity.isEnumerationTable) {
+            val managerFileName = workingOutDir + AndroidManagerRenderer.getClassName(entity) + ".kt"
+            val managerFile = File(managerFileName)
+
+            // Base Manager
+            val baseManagerClass = KotlinAndroidBaseManagerRenderer(genConfig)
+            baseManagerClass.generate(entity, packageName, generatedEntityInfo)
+            baseManagerClass.writeToFile(workingOutDir)
+            filesGeneratedCount++
+
+            // Manager
+            if (!managerFile.exists()) {
+                val managerClass = KotlinAndroidManagerRenderer(genConfig)
+                managerClass.generate(entity, packageName)
+                managerClass.writeToFile(workingOutDir)
                 filesGeneratedCount++
             }
         }

@@ -14,6 +14,7 @@ import org.dbtools.codegen.kotlin.KotlinClass
 import org.dbtools.codegen.kotlin.KotlinVal
 import org.dbtools.gen.AnnotationConsts
 import org.dbtools.gen.GenConfig
+import org.dbtools.gen.android.AndroidGeneratedEntityInfo
 import org.dbtools.gen.android.AndroidRecordRenderer
 import org.dbtools.schema.schemafile.SchemaEntity
 import org.dbtools.schema.schemafile.SchemaEntityType
@@ -22,7 +23,7 @@ import org.dbtools.schema.schemafile.SchemaTable
 class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
     private val myClass = KotlinClass()
 
-    fun generate(entity: SchemaEntity, packageName: String) {
+    fun generate(entity: SchemaEntity, packageName: String, generatedEntityInfo: AndroidGeneratedEntityInfo) {
         val recordClassName = AndroidRecordRenderer.createClassName(entity)
         val className = getClassName(entity)
         myClass.apply {
@@ -39,10 +40,10 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
         myClass.addAnnotation("@SuppressWarnings(\"all\")")
 
         // generate all of the main methods
-        createManager(entity, packageName, recordClassName)
+        createManager(entity, packageName, recordClassName, generatedEntityInfo)
     }
 
-    private fun createManager(entity: SchemaEntity, packageName: String, recordClassName: String) {
+    private fun createManager(entity: SchemaEntity, packageName: String, recordClassName: String, generatedEntityInfo: AndroidGeneratedEntityInfo) {
         val recordConstClassName = "${recordClassName}Const"
         val type = entity.type
 
@@ -118,7 +119,11 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
 
         when (type) {
             SchemaEntityType.TABLE -> {
-                myClass.addFun("getPrimaryKey", "String", content =  "return $recordConstClassName.PRIMARY_KEY_COLUMN").apply { isOverride = true }
+                if (generatedEntityInfo.isPrimaryKeyAdded) {
+                    myClass.addFun("getPrimaryKey", "String", content = "return $recordConstClassName.PRIMARY_KEY_COLUMN").apply { isOverride = true }
+                } else {
+                    myClass.addFun("getPrimaryKey", "String", content = "return \"NO_PRIMARY_KEY\"").apply { isOverride = true }
+                }
                 myClass.addFun("getDropSql", "String", content =  "return $recordConstClassName.DROP_TABLE").apply { isOverride = true }
                 myClass.addFun("getCreateSql", "String", content =  "return $recordConstClassName.CREATE_TABLE").apply { isOverride = true }
                 myClass.addFun("getInsertSql", "String", content =  "return $recordConstClassName.INSERT_STATEMENT").apply { isOverride = true }

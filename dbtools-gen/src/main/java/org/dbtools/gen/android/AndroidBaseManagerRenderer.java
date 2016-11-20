@@ -30,7 +30,7 @@ public class AndroidBaseManagerRenderer {
     private JavaClass myClass;
     private GenConfig genConfig;
 
-    public void generate(SchemaEntity entity, String packageName) {
+    public void generate(SchemaEntity entity, String packageName, AndroidGeneratedEntityInfo generatedEntityInfo) {
         String recordClassName = AndroidRecordRenderer.createClassName(entity);
         String className = getClassName(entity);
         myClass = new JavaClass(packageName, className);
@@ -51,10 +51,10 @@ public class AndroidBaseManagerRenderer {
         myClass.addAnnotation("@SuppressWarnings(\"all\")");
 
         // generate all of the main methods
-        createManager(entity, packageName, recordClassName);
+        createManager(entity, packageName, recordClassName, generatedEntityInfo);
     }
 
-    private void createManager(SchemaEntity entity, String packageName, String recordClassName) {
+    private void createManager(SchemaEntity entity, String packageName, String recordClassName, AndroidGeneratedEntityInfo generatedEntityInfo) {
         String recordConstClassName = recordClassName + "Const";
         SchemaEntityType type = entity.getType();
 
@@ -117,7 +117,11 @@ public class AndroidBaseManagerRenderer {
         switch (type) {
             default:
             case TABLE:
-                addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return " + recordConstClassName + "." + AndroidBaseRecordRenderer.PRIMARY_KEY_COLUMN + ";"));
+                if (generatedEntityInfo.isPrimaryKeyAdded()) {
+                    addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return " + recordConstClassName + "." + AndroidBaseRecordRenderer.PRIMARY_KEY_COLUMN + ";"));
+                } else {
+                    addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return \"NO_PRIMARY_KEY\";"));
+                }
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getDropSql", "return " + recordConstClassName + ".DROP_TABLE;"));
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getCreateSql", "return " + recordConstClassName + ".CREATE_TABLE;"));
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getInsertSql", "return " + recordConstClassName + ".INSERT_STATEMENT;"));

@@ -13,6 +13,7 @@ import org.dbtools.codegen.java.JavaClass
 import org.dbtools.codegen.java.JavaVariable
 import org.dbtools.codegen.kotlin.*
 import org.dbtools.gen.GenConfig
+import org.dbtools.gen.android.AndroidGeneratedEntityInfo
 import org.dbtools.renderer.SchemaRenderer
 import org.dbtools.renderer.SqliteRenderer
 import org.dbtools.schema.dbmappings.DatabaseMapping
@@ -29,7 +30,9 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
     private var bindInsertStatementContentIndex = 1 // 1 based
     private var bindUpdateStatementContentIndex = 1 // 1 based
 
-    fun generate(database: SchemaDatabase, entity: SchemaEntity, packageName: String, databaseMapping: DatabaseMapping) {
+    fun generate(database: SchemaDatabase, entity: SchemaEntity, packageName: String, databaseMapping: DatabaseMapping): AndroidGeneratedEntityInfo {
+        val generatedEntityInfo = AndroidGeneratedEntityInfo()
+
         // reset data
         bindInsertStatementContentIndex = 1
         bindUpdateStatementContentIndex = 1
@@ -133,18 +136,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
 
             // Primary key / not enum methods
             if (primaryKey && !recordClass.isEnum()) {
-                recordClass.addFun("getIdColumnName", "String", content = "return $fullFieldColumn").apply {
-                    isOverride = true
-                }
-
-                // add vanilla getPrimaryKeyId() / setPrimaryKeyId(...) for the primary key
-                recordClass.addFun("getPrimaryKeyId", field.kotlinTypeText, content = "return $fieldNameJavaStyle").apply {
-                    isOverride = true
-                }
-
-                recordClass.addFun("setPrimaryKeyId", parameters = listOf(KotlinVal("id", newVariable.dataType)), content = "this.$fieldNameJavaStyle = id").apply {
-                    isOverride = true
-                }
+                addPrimaryKeyFunctions(newVariable.dataType, fullFieldColumn, fieldNameJavaStyle)
             }
 
             if (!recordClass.isEnum()) {
@@ -380,6 +372,14 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 isOverride = true
             }
         }
+
+        if (!primaryKeyAdded && entityType == SchemaEntityType.TABLE) {
+            // make sure that overridden methods are
+            addPrimaryKeyFunctions("Long", "\"NO_PRIMARY_KEY\"", "0")
+        }
+
+        generatedEntityInfo.setPrimaryKeyAdded(primaryKeyAdded)
+        return generatedEntityInfo
     }
 
     private fun addHeader(someClass: KotlinClass, className: String) {
@@ -394,6 +394,27 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
 
         // Since this is generated code.... suppress all warnings
         someClass.addAnnotation("@SuppressWarnings(\"all\")")
+    }
+
+    private fun addPrimaryKeyFunctions(dataType: String, fullFieldColumn: String, fieldNameJavaStyle: String) {
+        recordClass.addFun("getIdColumnName", "String", content = "return $fullFieldColumn").apply {
+            isOverride = true
+        }
+
+        // add vanilla getPrimaryKeyId() / setPrimaryKeyId(...) for the primary key
+        recordClass.addFun("getPrimaryKeyId", dataType, content = "return $fieldNameJavaStyle").apply {
+            isOverride = true
+        }
+
+        if (!fieldNameJavaStyle.equals("0")) {
+            recordClass.addFun("setPrimaryKeyId", parameters = listOf(KotlinVal("id", dataType)), content = "this.$fieldNameJavaStyle = id").apply {
+                isOverride = true
+            }
+        } else {
+            recordClass.addFun("setPrimaryKeyId", parameters = listOf(KotlinVal("id", dataType)), content = "// NO_PRIMARY_KEY").apply {
+                isOverride = true
+            }
+        }
     }
 
     private fun initClassAsEnum(packageName: String, enumClassName: String, entity: SchemaEntity) {

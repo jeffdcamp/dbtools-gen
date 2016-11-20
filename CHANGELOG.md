@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+  Version 7.2.0 *(2016-11)*
+---------------------------
+* Added support for no primary key on a table
+
   Version 7.1.1 *(2016-11)*
 ---------------------------
 * Updated versions of dependencies 
