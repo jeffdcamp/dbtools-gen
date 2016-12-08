@@ -162,7 +162,10 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 var value = fieldNameJavaStyle
 
                 if (field.isEnumeration) {
-                    value = newVariable.name + ".ordinal.toLong()"
+                    value = when(notNullField) {
+                        true -> "${newVariable.name}.ordinal.toLong()"
+                        else -> "${newVariable.name}?.ordinal?.toLong()"
+                    }
                 } else if (dateTypeField) {
                     val dateValue = genConfig.dateType.getValuesValue(field, fieldNameJavaStyle)
                     if (notNullField) {
@@ -171,14 +174,19 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                         value = dateValue
                     }
                 } else if (fieldType == SchemaFieldType.INTEGER) {
-                    value = "($fieldNameJavaStyle as Int).toLong()"
+                    value = when(notNullField) {
+                        true -> "$fieldNameJavaStyle.toLong()"
+                        else -> "$fieldNameJavaStyle?.toLong()"
+                    }
                 } else if (fieldType == SchemaFieldType.FLOAT) {
-                    value = "($fieldNameJavaStyle as Float).toDouble()"
+                    value = when(notNullField) {
+                        true -> "$fieldNameJavaStyle.toDouble()"
+                        else -> "$fieldNameJavaStyle?.toDouble()"
+                    }
                 } else if (fieldType == SchemaFieldType.BOOLEAN) {
-                    if (field.isNotNull) {
-                        value = "if ($fieldNameJavaStyle) 1L else 0L"
-                    } else {
-                        value = "if ($fieldNameJavaStyle != null) (if ($fieldNameJavaStyle as Boolean) 1L else 0L) else 0L"
+                    value = when (notNullField) {
+                        true -> "if ($fieldNameJavaStyle) 1L else 0L"
+                        else -> "if ($fieldNameJavaStyle ?: false) 1L else 0L"
                     }
                 }
 
