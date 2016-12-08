@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+  Version 7.2.1 *(2016-12)*
+---------------------------
+* Improvements to Kotlin rendered code
+
   Version 7.2.0 *(2016-11)*
 ---------------------------
 * Added support for no primary key on a table
