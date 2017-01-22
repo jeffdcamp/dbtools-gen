@@ -33,7 +33,7 @@ object KotlinSourceUtil {
     }
 
     private fun replaceText(sourceText: String, search: String, replace: String): String {
-        //String replacedText = Matcher.quoteReplacement(sourceText).replaceAll(search, replace);
+        //String replacedText = Matcher.quoteReplacement(sourceText).replaceAll(search, replace)
         var replaceText = ""
         val pos = sourceText.indexOf(search)
         val len = search.length

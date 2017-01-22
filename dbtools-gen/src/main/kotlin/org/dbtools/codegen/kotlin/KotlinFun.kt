@@ -27,8 +27,8 @@ class KotlinFun {
     val exceptions = ArrayList<String>()
     var content = ""
     var tab = KotlinClass.tab
-    var startEndTab = ""; // some cases there needs to be an extra tab (such as companion object)
-    var constructorDelegate = "";
+    var startEndTab = "" // some cases there needs to be an extra tab (such as companion object)
+    var constructorDelegate = ""
 
     constructor(name: String, parameters: List<KotlinVal> = ArrayList<KotlinVal>(), returnType: String = "", content: String = "", funAccess: KotlinAccess = KotlinAccess.PUBLIC, funType: KotlinFunType = KotlinFunType.STANDARD) {
         for (parameter in parameters) {
@@ -144,7 +144,7 @@ class KotlinFun {
         }
 
         if (interfaceOnly || isAbstract) {
-            text += ";\n"
+            text += "\n"
             return text
         } else {
             // content

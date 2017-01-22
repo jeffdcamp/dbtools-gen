@@ -61,6 +61,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         someClass.fileHeaderComment = fileHeaderComment
 
         // Since this is generated code.... suppress all warnings
+        someClass.addAnnotation("@Suppress(\"unused\", \"ConvertSecondaryConstructorToPrimary\", \"RemoveEmptySecondaryConstructorBody\")") // kotlin specific
         someClass.addAnnotation("@SuppressWarnings(\"all\")")
     }
 
@@ -73,7 +74,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
 
     private fun createOnCreate(databaseSchema: DatabaseSchema) {
         val content = StringBuilder()
-        content.append("getLogger().i(TAG, \"Creating database: \${androidDatabase.name}\")\n")
+        content.append("logger.i(TAG, \"Creating database: \${androidDatabase.name}\")\n")
 
         for (database in databaseSchema.databases) {
             var databaseName = database.name
@@ -94,7 +95,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         val varName = JavaUtil.sqlNameToJavaVariableName(databaseMethodName)
         val createDatabaseMethodName = "create" + Character.toUpperCase(varName[0]) + varName.substring(1)
 
-        content.append("if (androidDatabase.name.equals($constClassName.$databaseConstName)) {\n")
+        content.append("if (androidDatabase.name == $constClassName.$databaseConstName) {\n")
         content.append(TAB).append(createDatabaseMethodName).append("(androidDatabase)\n")
         content.append("}\n")
 
@@ -136,8 +137,8 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         val createContent = StringBuilder()
         val dropContent = StringBuilder()
 
-        createContent.append("getLogger().i(TAG, \"Creating database views: \${androidDatabase.name}\")\n")
-        dropContent.append("getLogger().i(TAG, \"Dropping database views: \${androidDatabase.name}\")\n")
+        createContent.append("logger.i(TAG, \"Creating database views: \${androidDatabase.name}\")\n")
+        dropContent.append("logger.i(TAG, \"Dropping database views: \${androidDatabase.name}\")\n")
 
         for (database in databaseSchema.databases) {
             var databaseName = database.name
@@ -166,7 +167,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         val varName = JavaUtil.sqlNameToJavaVariableName(databaseMethodName)
         val createDatabaseViewsMethodName = "create" + Character.toUpperCase(varName[0]) + varName.substring(1)
 
-        content.append("if (androidDatabase.name.equals($constClassName.$databaseConstName)) {\n")
+        content.append("if (androidDatabase.name == $constClassName.$databaseConstName) {\n")
         content.append(TAB).append(createDatabaseViewsMethodName).append("(androidDatabase)\n")
         content.append("}\n")
 
@@ -202,7 +203,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         val varName = JavaUtil.sqlNameToJavaVariableName(databaseMethodName)
         val dropDatabaseViewsMethodName = "drop" + Character.toUpperCase(varName[0]) + varName.substring(1)
 
-        content.append("if (androidDatabase.name.equals($constClassName.$databaseConstName)) {\n")
+        content.append("if (androidDatabase.name == $constClassName.$databaseConstName) {\n")
         content.append(TAB).append(dropDatabaseViewsMethodName).append("(androidDatabase)\n")
         content.append("}\n")
 

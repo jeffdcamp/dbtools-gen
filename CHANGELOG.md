@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+  Version 7.2.2 *(2017-01)*
+---------------------------
+* More improvements to Kotlin rendered code
+
   Version 7.2.1 *(2016-12)*
 ---------------------------
 * Improvements to Kotlin rendered code

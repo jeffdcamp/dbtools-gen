@@ -37,6 +37,7 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
         myClass.fileHeaderComment = "/*\n * $className.kt\n *\n * GENERATED FILE - DO NOT EDIT\n * \n */\n"
 
         // Since this is generated code.... suppress all warnings
+        myClass.addAnnotation("@Suppress(\"unused\", \"ConvertSecondaryConstructorToPrimary\")") // kotlin specific
         myClass.addAnnotation("@SuppressWarnings(\"all\")")
 
         // generate all of the main methods
@@ -113,7 +114,7 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
 //            addAnnotation("javax.inject.Inject")
         }
 
-        myClass.addFun("getDatabaseConfig", "org.dbtools.android.domain.config.DatabaseConfig", content = "return databaseManager.getDatabaseConfig()").apply {
+        myClass.addFun("getDatabaseConfig", "org.dbtools.android.domain.config.DatabaseConfig", content = "return databaseManager.databaseConfig").apply {
             isOverride = true
         }
 

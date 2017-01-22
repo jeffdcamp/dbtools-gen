@@ -145,7 +145,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
 
             if (!primaryKey) {
                 copyConstructorContent.append("this.").append(newVariable.name).append(" = ")
-                copyConstructorContent.append("record.").append(newVariable.name).append("\n");
+                copyConstructorContent.append("record.").append(newVariable.name).append("\n")
             }
 
             // copy (include primary key)
@@ -371,7 +371,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         if (!recordClass.isEnum()) {
             val orphanParams = ArrayList<JavaVariable>()
 
-            if (cleanupOrphansContent.length > 0) {
+            if (cleanupOrphansContent.isNotEmpty()) {
                 recordClass.addFun(CLEANUP_ORPHANS_METHOD_NAME, content = cleanupOrphansContent.toString())
             }
 
@@ -401,6 +401,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 " */\n"
 
         // Since this is generated code.... suppress all warnings
+        someClass.addAnnotation("@Suppress(\"LeakingThis\", \"unused\", \"RemoveEmptySecondaryConstructorBody\")") // kotlin specific
         someClass.addAnnotation("@SuppressWarnings(\"all\")")
     }
 
@@ -491,7 +492,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         } else if (type == Long::class.java || type == java.lang.Long::class.java) {
             return "if (!cursor.isNull(cursor.getColumnIndexOrThrow($paramValue))) cursor.getLong(cursor.getColumnIndexOrThrow($paramValue)) else null"
         } else if (type == java.lang.Boolean.TYPE) {
-            return "if (cursor.getInt(cursor.getColumnIndexOrThrow($paramValue)) != 0) true else false"
+            return "cursor.getInt(cursor.getColumnIndexOrThrow($paramValue)) != 0"
         } else if (type == Boolean::class.java || type == java.lang.Boolean::class.java) {
             return "if (!cursor.isNull(cursor.getColumnIndexOrThrow($paramValue))) (if (cursor.getInt(cursor.getColumnIndexOrThrow($paramValue)) != 0) true else false) else null"
         } else if (type == Date::class.java) {

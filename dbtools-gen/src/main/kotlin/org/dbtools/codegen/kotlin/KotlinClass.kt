@@ -24,7 +24,7 @@ open class KotlinClass(var name: String = "", var packageName:String = "", val c
     var abstract = false
     var isFinal = false
     var extends = ""
-    var staticInit = "";
+    var staticInit = ""
     val annotations = ArrayList<String>()
     val implementsInterfaces = ArrayList<String>()
     val imports = ArrayList<String>()
@@ -116,11 +116,11 @@ open class KotlinClass(var name: String = "", var packageName:String = "", val c
             dataType == "Double" ||
             dataType == "Char" ||
             dataType == "Short" ||
-            dataType == "Byte";
+            dataType == "Byte"
 
     fun addStaticFun(function: KotlinFun) {
-        function.startEndTab = tab;
-//        function.tab = tab + tab;
+        function.startEndTab = tab
+//        function.tab = tab + tab
         constantFuns.add(function)
     }
 
@@ -262,7 +262,7 @@ open class KotlinClass(var name: String = "", var packageName:String = "", val c
                 out.append(constantVal.toString()).append("\n")
             }
             for (constantFun in constantFuns) {
-                out.append(constantFun.toString()).append("\n");
+                out.append(constantFun.toString()).append("\n")
             }
 
             // static initializer
@@ -271,7 +271,7 @@ open class KotlinClass(var name: String = "", var packageName:String = "", val c
                         .append("init {\n")
                         .append("$tab$tab")
                         .append(staticInit)
-                        .append("\n$tab$tab}\n");
+                        .append("\n$tab$tab}\n")
             }
         } else {
             // standard class
@@ -280,7 +280,7 @@ open class KotlinClass(var name: String = "", var packageName:String = "", val c
                 out.append(tab).append(constantVal.toString()).append("\n")
             }
             for (constantFun in constantFuns) {
-                out.append(constantFun.toString()).append("\n");
+                out.append(constantFun.toString()).append("\n")
             }
 
             // static initializer
@@ -289,7 +289,7 @@ open class KotlinClass(var name: String = "", var packageName:String = "", val c
                         .append("init {\n")
                         .append("$tab$tab")
                         .append(staticInit)
-                        .append("\n$tab$tab}\n");
+                        .append("\n$tab$tab}\n")
             }
             out.append(tab).append("}").append("\n")
         }
@@ -392,7 +392,7 @@ open class KotlinClass(var name: String = "", var packageName:String = "", val c
     }
 
     fun appendStaticInitializer(code: String) {
-        staticInit += code;
+        staticInit += code
     }
 
     companion object {

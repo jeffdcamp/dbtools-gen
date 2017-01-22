@@ -15,7 +15,7 @@ import java.util.*
 @SuppressWarnings("PMD.UseStringBufferForStringAppends")
 class KotlinEnum : KotlinClass {
 
-    private val enums = ArrayList<String>();
+    private val enums = ArrayList<String>()
 
     constructor(name: String, enums: List<String>) : super(name, classType = KotlinClassType.ENUM) {
         setEnums(enums)
