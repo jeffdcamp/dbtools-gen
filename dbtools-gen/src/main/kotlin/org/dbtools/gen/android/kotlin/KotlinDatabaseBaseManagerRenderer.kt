@@ -69,7 +69,6 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         myClass.addImport("org.dbtools.android.domain.AndroidDatabase")
         myClass.addImport("org.dbtools.android.domain.AndroidBaseManager")
         myClass.addImport("org.dbtools.android.domain.AndroidDatabaseManager")
-        myClass.addImport("org.dbtools.android.domain.database.DatabaseWrapper")
     }
 
     private fun createOnCreate(databaseSchema: DatabaseSchema) {

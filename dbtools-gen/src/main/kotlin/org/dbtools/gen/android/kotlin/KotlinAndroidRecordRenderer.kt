@@ -10,13 +10,12 @@
 package org.dbtools.gen.android.kotlin
 
 import org.dbtools.codegen.kotlin.KotlinClass
-import org.dbtools.codegen.kotlin.KotlinVal
 import org.dbtools.gen.GenConfig
 import org.dbtools.gen.android.AndroidBaseRecordRenderer
 import org.dbtools.schema.schemafile.SchemaEntity
 import org.dbtools.schema.schemafile.SchemaEntityType
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 
 class KotlinAndroidRecordRenderer(val genConfig: GenConfig) {
 
@@ -28,7 +27,7 @@ class KotlinAndroidRecordRenderer(val genConfig: GenConfig) {
         myClass.apply {
             name = className
             this.packageName = packageName
-            extends = baseClassName
+            extends = baseClassName + "()" // call super default constructor
         }
         // header comment
         val now = Date()
@@ -44,10 +43,7 @@ class KotlinAndroidRecordRenderer(val genConfig: GenConfig) {
         if (!myClass.isEnum()) {
             myClass.addImport("android.database.Cursor")
             myClass.addImport("org.dbtools.android.domain.database.contentvalues.DBToolsContentValues")
-            myClass.addConstructor()
-            myClass.addConstructor(listOf(KotlinVal("record", entity.className)), returnType = "super(record)")
-            myClass.addConstructor(listOf(KotlinVal("cursor", "Cursor")), "setContent(cursor)")
-            myClass.addConstructor(listOf(KotlinVal("values", "DBToolsContentValues<*>")), "setContent(values)")
+//            myClass.addConstructor()
         }
 
         if (entity.type == SchemaEntityType.VIEW) {
@@ -187,10 +183,6 @@ class KotlinAndroidRecordRenderer(val genConfig: GenConfig) {
 
         myClass.addConstant("CREATE_VIEW", dataType = "String", formatDefaultValue = false)
         myClass.appendStaticInitializer("\nCREATE_VIEW = " + createContent.toString())
-
-        myClass.addFun("getDropSql", "String", content = "return DROP_VIEW")
-        myClass.addFun("getCreateSql", "String", content = "return CREATE_VIEW")
-
     }
 
     private fun createSQLBuilderQuery(entity: SchemaEntity) {

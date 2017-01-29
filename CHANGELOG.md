@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+  Version 8.0.0 *(2017-01)*
+---------------------------
+* Removed default constructors of Record classes
+* More improvements to Kotlin rendered code
+
   Version 7.2.2 *(2017-01)*
 ---------------------------
 * More improvements to Kotlin rendered code

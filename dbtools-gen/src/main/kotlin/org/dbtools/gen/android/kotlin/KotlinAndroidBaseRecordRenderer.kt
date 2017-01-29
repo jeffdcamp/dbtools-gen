@@ -10,15 +10,25 @@
 package org.dbtools.gen.android.kotlin
 
 import org.dbtools.codegen.java.JavaClass
-import org.dbtools.codegen.java.JavaVariable
-import org.dbtools.codegen.kotlin.*
+import org.dbtools.codegen.kotlin.KotlinClass
+import org.dbtools.codegen.kotlin.KotlinEnum
+import org.dbtools.codegen.kotlin.KotlinObjectClass
+import org.dbtools.codegen.kotlin.KotlinVal
+import org.dbtools.codegen.kotlin.KotlinVar
 import org.dbtools.gen.GenConfig
 import org.dbtools.gen.android.AndroidGeneratedEntityInfo
 import org.dbtools.renderer.SchemaRenderer
 import org.dbtools.renderer.SqliteRenderer
 import org.dbtools.schema.dbmappings.DatabaseMapping
-import org.dbtools.schema.schemafile.*
-import java.util.*
+import org.dbtools.schema.schemafile.SchemaDatabase
+import org.dbtools.schema.schemafile.SchemaEntity
+import org.dbtools.schema.schemafile.SchemaEntityType
+import org.dbtools.schema.schemafile.SchemaField
+import org.dbtools.schema.schemafile.SchemaFieldType
+import org.dbtools.schema.schemafile.SchemaTable
+import java.util.ArrayList
+import java.util.Date
+
 
 class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
 
@@ -79,7 +89,6 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         // post field method content
         val contentValuesContent = StringBuilder()
         val valuesContent = StringBuilder("return arrayOf(\n")
-        val copyConstructorContent = StringBuilder()
         val copyContent = StringBuilder("val copy = $entityClassName()\n")
         val bindInsertStatementContent = StringBuilder()
         val bindUpdateStatementContent = StringBuilder()
@@ -143,11 +152,6 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 recordClass.addVar(newVariable)
             }
 
-            if (!primaryKey) {
-                copyConstructorContent.append("this.").append(newVariable.name).append(" = ")
-                copyConstructorContent.append("record.").append(newVariable.name).append("\n")
-            }
-
             // copy (include primary key)
             copyContent.append("copy.").append(newVariable.name).append(" = ")
             if (dateTypeField) {
@@ -209,6 +213,9 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                     SchemaFieldType.BLOB -> {
                         addBindInsert(bindInsertStatementContent, "bindBlob", fieldNameJavaStyle, value, primitiveField, notNullField)
                         addBindUpdate(bindUpdateStatementContent, "bindBlob", fieldNameJavaStyle, value, primitiveField, notNullField)
+                    }
+                    else -> {
+                        // do nothing
                     }
                 }
 
@@ -345,17 +352,17 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 isOverride = true
             }
 
-            recordClass.addConstructor(listOf(KotlinVal("record", entityClassName)), copyConstructorContent.toString())
-
             copyContent.append("return copy")
             recordClass.addFun("copy", entityClassName, content = copyContent.toString()).apply {
                 isOpen = true
             }
 
             recordClass.addFun("bindInsertStatement", parameters = listOf(KotlinVal("statement", "StatementWrapper")), content = bindInsertStatementContent.toString()).apply {
+                addAnnotation("""@Suppress("UNNECESSARY_NOT_NULL_ASSERTION")""")
                 isOverride = true
             }
             recordClass.addFun("bindUpdateStatement", parameters = listOf(KotlinVal("statement", "StatementWrapper")), content = bindUpdateStatementContent.toString()).apply {
+                addAnnotation("""@Suppress("UNNECESSARY_NOT_NULL_ASSERTION")""")
                 isOverride = true
             }
 
@@ -369,8 +376,6 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
 
         // add method to cleanup many-to-one left-overs
         if (!recordClass.isEnum()) {
-            val orphanParams = ArrayList<JavaVariable>()
-
             if (cleanupOrphansContent.isNotEmpty()) {
                 recordClass.addFun(CLEANUP_ORPHANS_METHOD_NAME, content = cleanupOrphansContent.toString())
             }
@@ -386,7 +391,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             addPrimaryKeyFunctions("Long", "\"NO_PRIMARY_KEY\"", "0")
         }
 
-        generatedEntityInfo.setPrimaryKeyAdded(primaryKeyAdded)
+        generatedEntityInfo.isPrimaryKeyAdded = primaryKeyAdded
         return generatedEntityInfo
     }
 
@@ -400,9 +405,11 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 " * \n" +
                 " */\n"
 
-        // Since this is generated code.... suppress all warnings
-        someClass.addAnnotation("@Suppress(\"LeakingThis\", \"unused\", \"RemoveEmptySecondaryConstructorBody\")") // kotlin specific
-        someClass.addAnnotation("@SuppressWarnings(\"all\")")
+        if (!someClass.isEnum()) {
+            // Since this is generated code.... suppress all warnings
+            someClass.addAnnotation("""@Suppress("LeakingThis", "unused", "RemoveEmptySecondaryConstructorBody", "ConvertSecondaryConstructorToPrimary")""") // kotlin specific
+            someClass.addAnnotation("""@SuppressWarnings("all")""")
+        }
     }
 
     private fun addPrimaryKeyFunctions(dataType: String, fullFieldColumn: String, fieldNameJavaStyle: String) {
@@ -415,7 +422,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             isOverride = true
         }
 
-        if (!fieldNameJavaStyle.equals("0")) {
+        if (fieldNameJavaStyle != "0") {
             recordClass.addFun("setPrimaryKeyId", parameters = listOf(KotlinVal("id", dataType)), content = "this.$fieldNameJavaStyle = id").apply {
                 isOverride = true
             }
@@ -438,9 +445,11 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
     /**
      * For method setContent(ContentValues values).
      */
+    @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     private fun getContentValuesGetterMethod(field: SchemaField, paramValue: String, newVariable: KotlinVar): String {
         if (field.isEnumeration) {
-            return newVariable.dataType + ".values()[values.getAsInteger(" + paramValue + ")]"
+            return "org.dbtools.android.domain.util.EnumUtil.ordinalToEnum(${newVariable.dataType}::class.java, values.getAsInteger($paramValue), ${newVariable.defaultValue})"
+
         }
 
         val type = field.javaClassType
@@ -473,9 +482,10 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
     /**
      * For method setContent(Cursor cursor).
      */
+    @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     private fun getContentValuesCursorGetterMethod(field: SchemaField, paramValue: String, newVariable: KotlinVar): String {
         if (field.isEnumeration) {
-            return newVariable.dataType + ".values()[cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + "))]"
+            return "org.dbtools.android.domain.util.EnumUtil.ordinalToEnum(${newVariable.dataType}::class.java, cursor.getInt(cursor.getColumnIndexOrThrow($paramValue)), ${newVariable.defaultValue})"
         }
 
         val type = field.javaClassType
@@ -494,7 +504,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         } else if (type == java.lang.Boolean.TYPE) {
             return "cursor.getInt(cursor.getColumnIndexOrThrow($paramValue)) != 0"
         } else if (type == Boolean::class.java || type == java.lang.Boolean::class.java) {
-            return "if (!cursor.isNull(cursor.getColumnIndexOrThrow($paramValue))) (if (cursor.getInt(cursor.getColumnIndexOrThrow($paramValue)) != 0) true else false) else null"
+            return "if (!cursor.isNull(cursor.getColumnIndexOrThrow($paramValue))) (cursor.getInt(cursor.getColumnIndexOrThrow($paramValue)) != 0) else null"
         } else if (type == Date::class.java) {
             return genConfig.dateType.getCursorDbStringToObjectMethod(field, paramValue, true)
         } else if (type == java.lang.Float.TYPE) {
@@ -586,7 +596,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         }
 
         if (fieldDefaultValue.isBlank()) {
-            fieldDefaultValue = field.getJdbcDataType().kotlinDefaultValue
+            fieldDefaultValue = field.jdbcDataType.kotlinDefaultValue
         }
 
         return KotlinVar(fieldNameJavaStyle, typeText).apply {

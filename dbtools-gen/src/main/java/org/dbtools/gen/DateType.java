@@ -262,9 +262,9 @@ public enum DateType {
             case JAVA_DATE:
                 if (kotlin) {
                     if (notNull) {
-                        return "java.util.Date(" + fieldName + ".getTime())";
+                        return "java.util.Date(" + fieldName + ".time)";
                     } else {
-                        return "if (" + fieldName + " != null) java.util.Date((" + fieldName + " as java.util.Date).getTime()) else null ";
+                        return "if (" + fieldName + " != null) java.util.Date((" + fieldName + " as java.util.Date).time) else null ";
                     }
                 } else {
                     if (notNull) {

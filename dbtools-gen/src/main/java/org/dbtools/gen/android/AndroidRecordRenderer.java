@@ -11,16 +11,13 @@ package org.dbtools.gen.android;
 
 import org.dbtools.codegen.java.Access;
 import org.dbtools.codegen.java.JavaClass;
-import org.dbtools.codegen.java.JavaVariable;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.schema.schemafile.SchemaEntity;
 import org.dbtools.schema.schemafile.SchemaEntityType;
 import org.dbtools.schema.schemafile.SchemaField;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author Jeff
@@ -57,18 +54,7 @@ public class AndroidRecordRenderer {
         if (!myClass.isEnum()) {
             myClass.addImport("android.database.Cursor");
             myClass.addImport("org.dbtools.android.domain.database.contentvalues.DBToolsContentValues");
-
-            List<JavaVariable> constructorVarsCopy = new ArrayList<>();
-            constructorVarsCopy.add(new JavaVariable(entity.getClassName(), "record"));
-            myClass.addConstructor(Access.PUBLIC, constructorVarsCopy, "super(record);");
-
-            List<JavaVariable> constructorVarsCursor = new ArrayList<>();
-            constructorVarsCursor.add(new JavaVariable("Cursor", "cursor"));
-            myClass.addConstructor(Access.PUBLIC, constructorVarsCursor, "setContent(cursor);");
-
-            List<JavaVariable> constructorVarsValues = new ArrayList<>();
-            constructorVarsValues.add(new JavaVariable("DBToolsContentValues", "values"));
-            myClass.addConstructor(Access.PUBLIC, constructorVarsValues, "setContent(values);");
+            myClass.setCreateDefaultConstructor(false);
         }
 
         if (entity.getType() == SchemaEntityType.VIEW) {
@@ -124,9 +110,6 @@ public class AndroidRecordRenderer {
         createContent.append("\" FROM \" + ").append(entityClassName).append(".TABLE");
 
         myClass.addConstant("String", "CREATE_VIEW", createContent.toString(), false);
-
-        myClass.addMethod(Access.PUBLIC, "String", "getDropSql", "return DROP_VIEW;");
-        myClass.addMethod(Access.PUBLIC, "String", "getCreateSql", "return CREATE_VIEW;");
     }
 
     private void createQuery(SchemaEntity entity) {

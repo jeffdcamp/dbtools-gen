@@ -14,7 +14,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.PrintStream
-import java.util.*
+import java.util.ArrayList
 
 @SuppressWarnings("PMD.UseStringBufferForStringAppends")
 open class KotlinClass(var name: String = "", var packageName:String = "", val classType: KotlinClassType = KotlinClassType.CLASS) {

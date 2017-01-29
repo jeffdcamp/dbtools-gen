@@ -99,7 +99,6 @@ public class AndroidBaseRecordRenderer {
         // post field method content
         StringBuilder contentValuesContent = new StringBuilder();
         StringBuilder valuesContent = new StringBuilder("Object[] values = new Object[]{\n");
-        StringBuilder copyConstructorContent = new StringBuilder();
         StringBuilder copyContent = new StringBuilder(entityClassName + " copy = new " + entityClassName + "();\n");
         StringBuilder bindInsertStatementContent = new StringBuilder();
         StringBuilder bindUpdateStatementContent = new StringBuilder();
@@ -172,12 +171,6 @@ public class AndroidBaseRecordRenderer {
 
             if (!recordClass.isEnum()) {
                 recordClass.addVariable(newVariable);
-            }
-
-            // copy constructor (exclude primary key)
-            if (!primaryKey) {
-                copyConstructorContent.append("this.").append(newVariable.getName()).append(" = ");
-                copyConstructorContent.append("record.").append(newVariable.getGetterMethodName()).append("();\n");
             }
 
             // copy (include primary key)
@@ -365,10 +358,6 @@ public class AndroidBaseRecordRenderer {
             valuesContent.append("return values;");
             recordClass.addMethod(Access.PUBLIC, "Object[]", "getValues", valuesContent.toString()).addAnnotation("Override");
 
-            List<JavaVariable> copyConstructorParams = new ArrayList<>();
-            copyConstructorParams.add(new JavaVariable(entityClassName, "record"));
-            recordClass.addConstructor(Access.PUBLIC, copyConstructorParams, copyConstructorContent.toString());
-
             copyContent.append("return copy;");
             recordClass.addMethod(Access.PUBLIC, entityClassName, "copy", copyContent.toString());
 
@@ -488,7 +477,8 @@ public class AndroidBaseRecordRenderer {
      */
     private String getContentValuesGetterMethod(SchemaField field, String paramValue, JavaVariable newVariable) {
         if (field.isEnumeration()) {
-            return newVariable.getDataType() + ".values()[values.getAsInteger(" + paramValue + ")]";
+
+            return "org.dbtools.android.domain.util.EnumUtil.ordinalToEnum(" + newVariable.getDataType() + ".class, values.getAsInteger(" + paramValue + "), " + newVariable.getDefaultValue() + ")";
         }
 
         Class<?> type = field.getJavaClassType();
@@ -518,7 +508,7 @@ public class AndroidBaseRecordRenderer {
      */
     private String getContentValuesCursorGetterMethod(SchemaField field, String paramValue, JavaVariable newVariable) {
         if (field.isEnumeration()) {
-            return newVariable.getDataType() + ".values()[cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + "))]";
+            return "org.dbtools.android.domain.util.EnumUtil.ordinalToEnum(" + newVariable.getDataType() + ".class, cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + ")), " + newVariable.getDefaultValue() + ")";
         }
 
         Class<?> type = field.getJavaClassType();
