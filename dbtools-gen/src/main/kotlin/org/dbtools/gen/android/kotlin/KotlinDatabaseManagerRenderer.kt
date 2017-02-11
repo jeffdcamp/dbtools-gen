@@ -55,7 +55,7 @@ class KotlinDatabaseManagerRenderer(val genConfig: GenConfig, val outDir: String
                 KotlinVal("oldVersion", "Int"),
                 KotlinVal("newVersion", "Int"))
         myClass.addFun("onUpgrade", parameters = params, content = content.toString()).apply {
-            isOverride = true
+            override = true
         }
     }
 
@@ -70,7 +70,7 @@ class KotlinDatabaseManagerRenderer(val genConfig: GenConfig, val outDir: String
                 KotlinVal("oldVersion", "Int"),
                 KotlinVal("newVersion", "Int"))
         myClass.addFun("onUpgradeViews", parameters = params, content = content.toString()).apply {
-            isOverride = true
+            override = true
         }
     }
 

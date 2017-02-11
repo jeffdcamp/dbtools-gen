@@ -50,7 +50,7 @@ class KotlinAppDatabaseConfigRenderer(val genConfig: GenConfig, val outDir: Stri
         }
 
         myClass.addFun("identifyDatabases", parameters = listOf(KotlinVal("databaseManager", "AndroidDatabaseBaseManager")), content = content.toString()).apply {
-            isOverride = true
+            override = true
         }
     }
 
@@ -59,7 +59,7 @@ class KotlinAppDatabaseConfigRenderer(val genConfig: GenConfig, val outDir: Stri
         myClass.addImport("org.dbtools.android.domain.database.AndroidDatabaseWrapper")
 
         myClass.addFun("createNewDatabaseWrapper", "DatabaseWrapper<*, *>", listOf(KotlinVal("androidDatabase", "AndroidDatabase")), "return AndroidDatabaseWrapper(androidDatabase.path)").apply {
-            isOverride = true
+            override = true
         }
     }
 
@@ -67,7 +67,7 @@ class KotlinAppDatabaseConfigRenderer(val genConfig: GenConfig, val outDir: Stri
         myClass.addImport("org.dbtools.android.domain.log.DBToolsAndroidLogger")
         myClass.addImport("org.dbtools.android.domain.log.DBToolsLogger")
         myClass.addFun("createNewDBToolsLogger", "DBToolsLogger", content = "return DBToolsAndroidLogger()").apply {
-            isOverride = true
+            override = true
         }
     }
 
@@ -75,7 +75,7 @@ class KotlinAppDatabaseConfigRenderer(val genConfig: GenConfig, val outDir: Stri
         myClass.addImport("org.dbtools.android.domain.database.contentvalues.AndroidDBToolsContentValues")
         myClass.addImport("org.dbtools.android.domain.database.contentvalues.DBToolsContentValues")
         myClass.addFun("createNewDBToolsContentValues", "DBToolsContentValues<*>", content = "return AndroidDBToolsContentValues()").apply {
-            isOverride = true
+            override = true
         }
     }
 

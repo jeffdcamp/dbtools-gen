@@ -86,7 +86,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         }
 
         myClass.addFun("onCreate", parameters = listOf(KotlinVal("androidDatabase", "AndroidDatabase")), content = content.toString()).apply {
-            isOverride = true
+            override = true
         }
     }
 
@@ -128,7 +128,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         createDatabaseContent.append("database.endTransaction()\n")
 
         myClass.addFun(createDatabaseMethodName, parameters = listOf(KotlinVal("androidDatabase", "AndroidDatabase")), content = createDatabaseContent.toString()).apply {
-            isOpen = true
+            open = true
         }
     }
 
@@ -151,10 +151,10 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
 
         val params = listOf(KotlinVal("androidDatabase", "AndroidDatabase"))
         myClass.addFun("onCreateViews", parameters = params, content = createContent.toString()).apply {
-            isOverride = true
+            override = true
         }
         myClass.addFun("onDropViews", parameters = params, content = dropContent.toString()).apply {
-            isOverride = true
+            override = true
         }
     }
 
@@ -190,7 +190,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         createDatabaseViewsContent.append("database.endTransaction()\n")
 
         myClass.addFun(createDatabaseViewsMethodName, parameters = listOf(KotlinVal("androidDatabase", "AndroidDatabase")), content = createDatabaseViewsContent.toString()).apply {
-            isOpen = true
+            open = true
         }
     }
 
@@ -225,7 +225,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         dropDatabaseViewsContent.append("database.endTransaction()\n")
 
         myClass.addFun(dropDatabaseViewsMethodName, parameters = listOf(KotlinVal("androidDatabase", "AndroidDatabase")), content = dropDatabaseViewsContent.toString()).apply {
-            isOpen = true
+            open = true
         }
     }
 

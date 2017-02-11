@@ -17,9 +17,12 @@ import java.io.PrintStream
 import java.util.ArrayList
 
 @SuppressWarnings("PMD.UseStringBufferForStringAppends")
-open class KotlinClass(var name: String = "", var packageName:String = "", val classType: KotlinClassType = KotlinClassType.CLASS) {
+open class KotlinClass(var name: String = "",
+                       var packageName:String = "",
+                       val classType: KotlinClassType = KotlinClassType.CLASS) {
     var fileHeaderComment = ""
     var classHeaderComment = ""
+    var primaryConstructor = ""
     var access = KotlinAccess.PUBLIC
     var abstract = false
     var isFinal = false
@@ -225,11 +228,11 @@ open class KotlinClass(var name: String = "", var packageName:String = "", val c
         }
 
         when (classType) {
-            KotlinClassType.CLASS -> classHeader.append("class ").append(name).append(genericsVar)
-            KotlinClassType.INTERFACE -> classHeader.append("interface ").append(name).append(genericsVar)
-            KotlinClassType.ENUM -> classHeader.append("enum class ").append(name).append(genericsVar)
-            KotlinClassType.OBJECT -> classHeader.append("object ").append(name).append(genericsVar)
-            KotlinClassType.DATA -> classHeader.append("data class ").append(name).append(genericsVar)
+            KotlinClassType.CLASS -> classHeader.append("class ").append(name).append(genericsVar).append(" ").append(primaryConstructor)
+            KotlinClassType.INTERFACE -> classHeader.append("interface ").append(name).append(genericsVar).append(" ").append(primaryConstructor)
+            KotlinClassType.ENUM -> classHeader.append("enum class ").append(name).append(genericsVar).append(" ").append(primaryConstructor)
+            KotlinClassType.OBJECT -> classHeader.append("object ").append(name).append(genericsVar).append(" ").append(primaryConstructor)
+            KotlinClassType.DATA -> classHeader.append("data class ").append(name).append(genericsVar).append(" ").append(primaryConstructor)
         }
 
         classHeader.append(extendsNameString)

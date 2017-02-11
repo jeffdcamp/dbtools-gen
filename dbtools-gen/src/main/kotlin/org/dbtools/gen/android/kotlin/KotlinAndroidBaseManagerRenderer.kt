@@ -74,20 +74,20 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
         }
 
         myClass.addFun("getDatabaseName", "String", content = "return $recordConstClassName.DATABASE").apply {
-            isOverride = true
+            override = true
         }
         myClass.addFun("newRecord", recordClassName, content = "return $recordClassName()").apply {
-            isOverride = true
+            override = true
         }
 
         if (type != SchemaEntityType.QUERY) {
-            myClass.addFun("getTableName", "String", content = "return $recordConstClassName.TABLE").apply {
-                isOverride = true
+            myClass.addVal("tableName", defaultValue = "$recordConstClassName.TABLE").apply {
+                override = true
             }
         }
 
-        myClass.addFun("getAllColumns", "Array<String>", content = "return $recordConstClassName.ALL_COLUMNS").apply {
-            isOverride = true
+        myClass.addVal("allColumns", "Array<String>", defaultValue = "$recordConstClassName.ALL_COLUMNS").apply {
+            override = true
         }
 
         val databaseNameParam = KotlinVal("databaseName", "String")
@@ -95,59 +95,58 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
             databaseNameParam.addAnnotation(AnnotationConsts.NONNULL)
         }
 
-        myClass.addFun("getReadableDatabase", "DatabaseWrapper<*, *>", listOf(databaseNameParam), "return databaseManager.getReadableDatabase(databaseName)").apply {
-            isOverride = true
-        }
-        myClass.addFun("getReadableDatabase", "DatabaseWrapper<*, *>", content = "return databaseManager.getReadableDatabase(databaseName)")
+        myClass.addImport("org.dbtools.android.domain.database.contentvalues.DBToolsContentValues")
+        myClass.addImport("org.dbtools.android.domain.AndroidBaseRecord")
 
-        myClass.addFun("getWritableDatabase", "DatabaseWrapper<*, *>", listOf(databaseNameParam), "return databaseManager.getWritableDatabase(databaseName)").apply {
-            isOverride = true
+        myClass.addFun("getReadableDatabase", "DatabaseWrapper<in AndroidBaseRecord, in DBToolsContentValues<*>>", listOf(databaseNameParam), "return databaseManager.getReadableDatabase(databaseName)").apply {
+            override = true
         }
-        myClass.addFun("getWritableDatabase", "DatabaseWrapper<*, *>", content = "return databaseManager.getWritableDatabase(databaseName)")
+
+        myClass.addFun("getWritableDatabase", "DatabaseWrapper<in AndroidBaseRecord, in DBToolsContentValues<*>>", listOf(databaseNameParam), "return databaseManager.getWritableDatabase(databaseName)").apply {
+            override = true
+        }
 
         myClass.addFun("getAndroidDatabase", "org.dbtools.android.domain.AndroidDatabase?", listOf(databaseNameParam), "return databaseManager.getDatabase(databaseName)").apply {
-            isOverride = true
+            override = true
         }
 
         myClass.addVar("databaseManager", "DatabaseManager")
-        myClass.addConstructor(listOf(KotlinVal("databaseManager", "DatabaseManager")), "this.databaseManager = databaseManager").apply {
-//            addAnnotation("javax.inject.Inject")
-        }
+        myClass.addConstructor(listOf(KotlinVal("databaseManager", "DatabaseManager")), "this.databaseManager = databaseManager")
 
         myClass.addFun("getDatabaseConfig", "org.dbtools.android.domain.config.DatabaseConfig", content = "return databaseManager.databaseConfig").apply {
-            isOverride = true
+            override = true
         }
 
         when (type) {
             SchemaEntityType.TABLE -> {
                 if (generatedEntityInfo.isPrimaryKeyAdded) {
-                    myClass.addFun("getPrimaryKey", "String", content = "return $recordConstClassName.PRIMARY_KEY_COLUMN").apply { isOverride = true }
+                    myClass.addVal("primaryKey", defaultValue = "$recordConstClassName.PRIMARY_KEY_COLUMN").apply { override = true }
                 } else {
-                    myClass.addFun("getPrimaryKey", "String", content = "return \"NO_PRIMARY_KEY\"").apply { isOverride = true }
+                    myClass.addVal("primaryKey", defaultValue = "\"NO_PRIMARY_KEY\"").apply { override = true }
                 }
-                myClass.addFun("getDropSql", "String", content =  "return $recordConstClassName.DROP_TABLE").apply { isOverride = true }
-                myClass.addFun("getCreateSql", "String", content =  "return $recordConstClassName.CREATE_TABLE").apply { isOverride = true }
-                myClass.addFun("getInsertSql", "String", content =  "return $recordConstClassName.INSERT_STATEMENT").apply { isOverride = true }
-                myClass.addFun("getUpdateSql", "String", content =  "return $recordConstClassName.UPDATE_STATEMENT").apply { isOverride = true }
+                myClass.addVal("dropSql", defaultValue =  "$recordConstClassName.DROP_TABLE").apply { override = true }
+                myClass.addVal("createSql", defaultValue =  "$recordConstClassName.CREATE_TABLE").apply { override = true }
+                myClass.addVal("insertSql", defaultValue =  "$recordConstClassName.INSERT_STATEMENT").apply { override = true }
+                myClass.addVal("updateSql", defaultValue =  "$recordConstClassName.UPDATE_STATEMENT").apply { override = true }
             }
             SchemaEntityType.VIEW -> {
-                myClass.addFun("getPrimaryKey", "String", content =  "return \"\"").apply { isOverride = true }
-                myClass.addFun("getDropSql", "String", content =  "return $recordClassName.DROP_VIEW").apply { isOverride = true }
-                myClass.addFun("getCreateSql", "String", content =  "return $recordClassName.CREATE_VIEW").apply { isOverride = true }
-                myClass.addFun("getInsertSql", "String", content =  "return \"\"").apply { isOverride = true }
-                myClass.addFun("getUpdateSql", "String", content =  "return \"\"").apply { isOverride = true }
+                myClass.addVal("primaryKey", defaultValue =  """""""").apply { override = true }
+                myClass.addVal("dropSql", defaultValue =  "$recordClassName.DROP_VIEW").apply { override = true }
+                myClass.addVal("createSql", defaultValue =  "$recordClassName.CREATE_VIEW").apply { override = true }
+                myClass.addVal("insertSql", defaultValue =  """""""").apply { override = true }
+                myClass.addVal("updateSql", defaultValue =  """""""").apply { override = true }
             }
             SchemaEntityType.QUERY -> {
                 myClass.addFun("getQuery", "String").apply {
-                    isAbstract = true
+                    abstract = true
                 }
 
-                myClass.addFun("getTableName", "String", content =  "return getQuery()").apply { isOverride = true }
-                myClass.addFun("getPrimaryKey", "String", content =  "return \"\"").apply { isOverride = true }
-                myClass.addFun("getDropSql", "String", content =  "return \"\"").apply { isOverride = true }
-                myClass.addFun("getCreateSql", "String", content =  "return \"\"").apply { isOverride = true }
-                myClass.addFun("getInsertSql", "String", content =  "return \"\"").apply { isOverride = true }
-                myClass.addFun("getUpdateSql", "String", content =  "return \"\"").apply { isOverride = true }
+                myClass.addVal("tableName", defaultValue =  "getQuery()").apply { override = true }
+                myClass.addVal("primaryKey", defaultValue =  """""""").apply { override = true }
+                myClass.addVal("dropSql", defaultValue =  """""""").apply { override = true }
+                myClass.addVal("createSql", defaultValue =  """""""").apply { override = true }
+                myClass.addVal("insertSql", defaultValue =  """""""").apply { override = true }
+                myClass.addVal("updateSql", defaultValue =  """""""").apply { override = true }
             }
         }
     }

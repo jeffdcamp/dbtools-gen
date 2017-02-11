@@ -10,13 +10,12 @@
 package org.dbtools.gen.android.kotlin
 
 import org.dbtools.codegen.kotlin.KotlinClass
-import org.dbtools.codegen.kotlin.KotlinVal
 import org.dbtools.gen.GenConfig
 import org.dbtools.gen.android.AndroidRecordRenderer
 import org.dbtools.schema.schemafile.SchemaEntity
 import org.dbtools.schema.schemafile.SchemaEntityType
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 
 class KotlinAndroidManagerRenderer(val genConfig: GenConfig) {
 
@@ -29,8 +28,17 @@ class KotlinAndroidManagerRenderer(val genConfig: GenConfig) {
         val className = getClassName(entity)
         myClass.apply {
             this.packageName = packageName
+
             name = className
-            extends = KotlinAndroidBaseManagerRenderer.getClassName(entity)
+
+            // primary constructor
+            if (genConfig.isInjectionSupport) {
+                primaryConstructor = "@Inject constructor(databaseManager: DatabaseManager)"
+            } else {
+                primaryConstructor = "constructor(databaseManager: DatabaseManager)"
+            }
+
+            extends = KotlinAndroidBaseManagerRenderer.getClassName(entity) + "(databaseManager)"
         }
 
         // header comment
@@ -47,26 +55,21 @@ class KotlinAndroidManagerRenderer(val genConfig: GenConfig) {
 
         // Injection support
         if (genConfig.isInjectionSupport) {
+            myClass.addImport("javax.inject.Inject")
             myClass.addAnnotation("javax.inject.Singleton")
         }
 
-        // constructor
+        // constructor DatabaseManager import
         var databaseManagerPackage = packageName.substring(0, packageName.lastIndexOf('.'))
         if (genConfig.isIncludeDatabaseNameInPackage) {
             databaseManagerPackage = databaseManagerPackage.substring(0, databaseManagerPackage.lastIndexOf('.'))
         }
         myClass.addImport(databaseManagerPackage + ".DatabaseManager")
-        val defaultConstructor = myClass.addConstructor(listOf(KotlinVal("databaseManager", "DatabaseManager"))).apply {
-            constructorDelegate = "super(databaseManager)"
-        }
-        if (genConfig.isInjectionSupport) {
-            defaultConstructor.addAnnotation("javax.inject.Inject")
-        }
 
         if (entity.type == SchemaEntityType.QUERY) {
             val recordClassName = AndroidRecordRenderer.createClassName(entity)
             myClass.addFun("getQuery", "String", content = "return $recordClassName.QUERY").apply {
-                isOverride = true
+                override = true
             }
         }
     }

@@ -9,19 +9,19 @@
  */
 package org.dbtools.codegen.kotlin
 
-import java.util.*
+import java.util.ArrayList
 
 class KotlinFun {
 
     var funType = KotlinFunType.STANDARD
     var returnType = "" // void / Unit
     var name = ""
-    var funAccess = KotlinAccess.PRIVATE
-    var isAbstract = false
-    var isInline = false
-    var isLateInit = false
-    var isOverride = false
-    var isOpen = false
+    var access = KotlinAccess.PRIVATE
+    var abstract = false
+    var inline = false
+    var lateInit = false
+    var override = false
+    var open = false
     val parameters = ArrayList<KotlinVal>()
     val annotations = ArrayList<String>()
     val exceptions = ArrayList<String>()
@@ -36,7 +36,7 @@ class KotlinFun {
         }
         this.parameters.addAll(parameters)
 
-        this.funAccess = funAccess
+        this.access = funAccess
         this.funType = funType
         this.returnType = returnType
         this.name = name
@@ -67,7 +67,7 @@ class KotlinFun {
         }
 
         // access
-        val access = KotlinClass.getAccessString(funAccess)
+        val access = KotlinClass.getAccessString(access)
         if (!access.isEmpty()) {
             text += tab + access
         } else {
@@ -75,23 +75,23 @@ class KotlinFun {
         }
 
         // modifiers
-        if (isOpen) {
+        if (open) {
             text += "open "
         }
 
-        if (isOverride) {
+        if (override) {
             text += "override "
         }
 
-        if (isAbstract) {
+        if (abstract) {
             text += "abstract "
         }
 
-        if (isInline) {
+        if (inline) {
             text += "inline "
         }
 
-        if (isLateInit) {
+        if (lateInit) {
             text += "isLateinit "
         }
 
@@ -143,7 +143,7 @@ class KotlinFun {
             }
         }
 
-        if (interfaceOnly || isAbstract) {
+        if (interfaceOnly || abstract) {
             text += "\n"
             return text
         } else {

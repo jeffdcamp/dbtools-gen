@@ -250,15 +250,15 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
 
         if (!primaryKeyAdded && (entityType == SchemaEntityType.VIEW || entityType == SchemaEntityType.QUERY)) {
             recordClass.addFun("getIdColumnName", "String", content = "return \"\"").apply {
-                isOverride = true
+                override = true
             }
 
             // add vanilla getPrimaryKeyId() / setPrimaryKeyId() for the primary key
             recordClass.addFun("getPrimaryKeyId", "Long", content = "return 0").apply {
-                isOverride = true
+                override = true
             }
             recordClass.addFun("setPrimaryKeyId", parameters = listOf(KotlinVal("id", "Long")), content = "").apply {
-                isOverride = true
+                override = true
             }
         }
 
@@ -336,7 +336,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             // columns
             constClass.addConstant(ALL_COLUMNS_VAR_NAME, defaultValue = allColumnsDefaultValue)
             recordClass.addFun("getAllColumns", "Array<String>", content = "return $constClassName.$ALL_COLUMNS_VAR_NAME.clone()").apply {
-                isOverride = true
+                override = true
             }
 
             // columns full
@@ -344,33 +344,33 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             recordClass.addFun("getAllColumnsFull", "Array<String>", content = "return $constClassName.$ALL_COLUMNS_FULL_VAR_NAME.clone()")
 
             recordClass.addFun("getContentValues", parameters = listOf(KotlinVal("values", "DBToolsContentValues<*>")), content = contentValuesContent.toString()).apply {
-                isOverride = true
+                override = true
             }
 
             valuesContent.append(")\n")
             recordClass.addFun("getValues", "Array<Any?>", content = valuesContent.toString()).apply {
-                isOverride = true
+                override = true
             }
 
             copyContent.append("return copy")
             recordClass.addFun("copy", entityClassName, content = copyContent.toString()).apply {
-                isOpen = true
+                open = true
             }
 
             recordClass.addFun("bindInsertStatement", parameters = listOf(KotlinVal("statement", "StatementWrapper")), content = bindInsertStatementContent.toString()).apply {
                 addAnnotation("""@Suppress("UNNECESSARY_NOT_NULL_ASSERTION")""")
-                isOverride = true
+                override = true
             }
             recordClass.addFun("bindUpdateStatement", parameters = listOf(KotlinVal("statement", "StatementWrapper")), content = bindUpdateStatementContent.toString()).apply {
                 addAnnotation("""@Suppress("UNNECESSARY_NOT_NULL_ASSERTION")""")
-                isOverride = true
+                override = true
             }
 
             recordClass.addFun("setContent", parameters = listOf(KotlinVal("values", "DBToolsContentValues<*>")), content = setContentValuesContent).apply {
-                isOverride = true
+                override = true
             }
             recordClass.addFun("setContent", parameters = listOf(KotlinVal("cursor", "Cursor")), content = setContentCursorContent).apply {
-                isOverride = true
+                override = true
             }
         }
 
@@ -382,7 +382,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
 
             // new record check
             recordClass.addFun("isNewRecord", "Boolean", content = "return primaryKeyId <= 0").apply {
-                isOverride = true
+                override = true
             }
         }
 
@@ -414,21 +414,21 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
 
     private fun addPrimaryKeyFunctions(dataType: String, fullFieldColumn: String, fieldNameJavaStyle: String) {
         recordClass.addFun("getIdColumnName", "String", content = "return $fullFieldColumn").apply {
-            isOverride = true
+            override = true
         }
 
         // add vanilla getPrimaryKeyId() / setPrimaryKeyId(...) for the primary key
         recordClass.addFun("getPrimaryKeyId", dataType, content = "return $fieldNameJavaStyle").apply {
-            isOverride = true
+            override = true
         }
 
         if (fieldNameJavaStyle != "0") {
             recordClass.addFun("setPrimaryKeyId", parameters = listOf(KotlinVal("id", dataType)), content = "this.$fieldNameJavaStyle = id").apply {
-                isOverride = true
+                override = true
             }
         } else {
             recordClass.addFun("setPrimaryKeyId", parameters = listOf(KotlinVal("id", dataType)), content = "// NO_PRIMARY_KEY").apply {
-                isOverride = true
+                override = true
             }
         }
     }
