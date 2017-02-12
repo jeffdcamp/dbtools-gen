@@ -46,6 +46,7 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
 
     private fun createManager(entity: SchemaEntity, packageName: String, recordClassName: String, generatedEntityInfo: AndroidGeneratedEntityInfo) {
         val recordConstClassName = "${recordClassName}Const"
+        val managerClassName = "${recordClassName}Manager"
         val type = entity.type
 
         var databaseManagerPackage = packageName.substring(0, packageName.lastIndexOf('.'))
@@ -122,7 +123,7 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
                 if (generatedEntityInfo.isPrimaryKeyAdded) {
                     myClass.addVal("primaryKey", defaultValue = "$recordConstClassName.PRIMARY_KEY_COLUMN").apply { override = true }
                 } else {
-                    myClass.addVal("primaryKey", defaultValue = "\"NO_PRIMARY_KEY\"").apply { override = true }
+                    myClass.addVal("primaryKey", defaultValue = """"NO_PRIMARY_KEY"""").apply { override = true }
                 }
                 myClass.addVal("dropSql", defaultValue =  "$recordConstClassName.DROP_TABLE").apply { override = true }
                 myClass.addVal("createSql", defaultValue =  "$recordConstClassName.CREATE_TABLE").apply { override = true }
@@ -130,9 +131,9 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
                 myClass.addVal("updateSql", defaultValue =  "$recordConstClassName.UPDATE_STATEMENT").apply { override = true }
             }
             SchemaEntityType.VIEW -> {
-                myClass.addVal("primaryKey", defaultValue =  """""""").apply { override = true }
-                myClass.addVal("dropSql", defaultValue =  "$recordClassName.DROP_VIEW").apply { override = true }
-                myClass.addVal("createSql", defaultValue =  "$recordClassName.CREATE_VIEW").apply { override = true }
+                myClass.addVal("primaryKey", defaultValue =  """"<NO_PRIMARY_KEY_ON_VIEWS>"""").apply { override = true }
+                myClass.addVal("dropSql", defaultValue =  "$managerClassName.DROP_VIEW").apply { override = true }
+                myClass.addVal("createSql", defaultValue =  "$managerClassName.CREATE_VIEW").apply { override = true }
                 myClass.addVal("insertSql", defaultValue =  """""""").apply { override = true }
                 myClass.addVal("updateSql", defaultValue =  """""""").apply { override = true }
             }
@@ -142,7 +143,7 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
                 }
 
                 myClass.addVal("tableName", defaultValue =  "getQuery()").apply { override = true }
-                myClass.addVal("primaryKey", defaultValue =  """""""").apply { override = true }
+                myClass.addVal("primaryKey", defaultValue =  """"<NO_PRIMARY_KEY_ON_QUERIES>"""").apply { override = true }
                 myClass.addVal("dropSql", defaultValue =  """""""").apply { override = true }
                 myClass.addVal("createSql", defaultValue =  """""""").apply { override = true }
                 myClass.addVal("insertSql", defaultValue =  """""""").apply { override = true }

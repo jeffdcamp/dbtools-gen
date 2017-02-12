@@ -191,7 +191,7 @@ public class DatabaseBaseManagerRenderer {
         createDatabaseViewsContent.append("\n// Views\n");
         for (SchemaView view : database.getViews()) {
             createDatabaseViewsContent.append("AndroidBaseManager.createTable(database, ")
-                    .append(JavaUtil.createTableImport(databaseBasePackage, view.getClassName()))
+                    .append(JavaUtil.createTableImport(databaseBasePackage, view.getClassName()) + "Manager")
                     .append(".CREATE_VIEW);\n");
         }
 
@@ -229,7 +229,7 @@ public class DatabaseBaseManagerRenderer {
         dropDatabaseViewsContent.append("\n// Views\n");
         for (SchemaView view : database.getViews()) {
             dropDatabaseViewsContent.append("AndroidBaseManager.dropTable(database, ")
-                    .append(JavaUtil.createTableImport(databaseBasePackage, view.getClassName()))
+                    .append(JavaUtil.createTableImport(databaseBasePackage, view.getClassName()) + "Manager")
                     .append(".DROP_VIEW);\n");
         }
 

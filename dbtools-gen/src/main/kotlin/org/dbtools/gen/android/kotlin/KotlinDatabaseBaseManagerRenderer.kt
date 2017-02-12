@@ -4,10 +4,8 @@ import org.dbtools.codegen.kotlin.KotlinClass
 import org.dbtools.codegen.kotlin.KotlinObjectClass
 import org.dbtools.codegen.kotlin.KotlinVal
 import org.dbtools.gen.GenConfig
-import org.dbtools.gen.android.AndroidRecordRenderer
 import org.dbtools.schema.schemafile.DatabaseSchema
 import org.dbtools.schema.schemafile.SchemaDatabase
-import org.dbtools.schema.schemafile.SchemaEntity
 import org.dbtools.util.JavaUtil
 
 class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: String = "") {
@@ -181,7 +179,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         createDatabaseViewsContent.append("\n// Views\n")
         for (view in database.views) {
             createDatabaseViewsContent.append("AndroidBaseManager.createTable(database, ")
-                    .append(JavaUtil.createTableImport(databaseBasePackage, view.className))
+                    .append(JavaUtil.createTableImport(databaseBasePackage, view.className) + "Manager")
                     .append(".CREATE_VIEW)\n")
         }
 
@@ -216,7 +214,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         dropDatabaseViewsContent.append("\n// Views\n")
         for (view in database.views) {
             dropDatabaseViewsContent.append("AndroidBaseManager.dropTable(database, ")
-                    .append(JavaUtil.createTableImport(databaseBasePackage, view.className))
+                    .append(JavaUtil.createTableImport(databaseBasePackage, view.className) + "Manager")
                     .append(".DROP_VIEW)\n")
         }
 
@@ -239,10 +237,5 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
 
     companion object {
         private val TAB = KotlinClass.tab
-
-        fun getClassName(table: SchemaEntity): String {
-            val recordClassName = AndroidRecordRenderer.createClassName(table)
-            return recordClassName + "Manager"
-        }
     }
 }

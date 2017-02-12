@@ -56,6 +56,7 @@ public class AndroidBaseManagerRenderer {
 
     private void createManager(SchemaEntity entity, String packageName, String recordClassName, AndroidGeneratedEntityInfo generatedEntityInfo) {
         String recordConstClassName = recordClassName + "Const";
+        String managerClassName = recordClassName + "Manager";
         SchemaEntityType type = entity.getType();
 
         String databaseManagerPackage = packageName.substring(0, packageName.lastIndexOf('.'));
@@ -128,9 +129,9 @@ public class AndroidBaseManagerRenderer {
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getUpdateSql", "return " + recordConstClassName + ".UPDATE_STATEMENT;"));
                 break;
             case VIEW:
-                addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return null;"));
-                addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getDropSql", "return " + recordClassName + ".DROP_VIEW;"));
-                addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getCreateSql", "return " + recordClassName + ".CREATE_VIEW;"));
+                addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return \"<NO_PRIMARY_KEY_ON_VIEWS>\";"));
+                addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getDropSql", "return " + managerClassName + ".DROP_VIEW;"));
+                addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getCreateSql", "return " + managerClassName + ".CREATE_VIEW;"));
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getInsertSql", "return \"\";"));
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getUpdateSql", "return \"\";"));
                 break;
@@ -139,7 +140,7 @@ public class AndroidBaseManagerRenderer {
                 getQueryMethod.setAbstract(true);
 
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getTableName", "return getQuery();"));
-                addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return null;"));
+                addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getPrimaryKey", "return \"<NO_PRIMARY_KEY_ON_QUERIES>\";"));
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getDropSql", "return \"\";"));
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getCreateSql", "return \"\";"));
                 addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "String", "getInsertSql", "return \"\";"));
