@@ -451,25 +451,31 @@ open class KotlinClass(var name: String = "",
                 } else {
                     newDefaultValue = "\"" + defaultValue + "\""
                 }
-            } else if (fieldType == "int" || fieldType == "long" || fieldType == "float" || fieldType == "double") {
+            } else if (fieldType == "String?") {
+                if (defaultValue == null) {
+                    newDefaultValue = "null"
+                } else {
+                    newDefaultValue = "\"" + defaultValue + "\""
+                }
+            } else if (fieldType == "Int" || fieldType == "Long" || fieldType == "Float" || fieldType == "Double") {
                 if (defaultValue == null || defaultValue == "") {
                     newDefaultValue = "0"
                 } else {
                     newDefaultValue = defaultValue
                 }
-            } else if (fieldType == "Integer" || fieldType == "Long" || fieldType == "Float" || fieldType == "Double") {
+            } else if (fieldType == "Int?" || fieldType == "Long?" || fieldType == "Float?" || fieldType == "Double?") {
                 if (defaultValue == null || defaultValue == "") {
                     newDefaultValue = "null"
                 } else {
                     newDefaultValue = defaultValue
                 }
-            } else if (fieldType == "char" || fieldType == "Character") {
+            } else if (fieldType == "Char" || fieldType == "Char?") {
                 if (defaultValue == null || defaultValue == "") {
                     newDefaultValue = "''"
                 } else {
-                    defaultValue = "'$defaultValue'"
+                    newDefaultValue = "'$defaultValue'"
                 }
-            } else if (fieldType == "boolean" || fieldType == "Boolean") {
+            } else if (fieldType == "Boolean" || fieldType == "Boolean?") {
                 if (defaultValue == null || defaultValue == "") {
                     newDefaultValue = "false"
                 } else {
@@ -481,7 +487,7 @@ open class KotlinClass(var name: String = "",
                         newDefaultValue = defaultValue
                     }
                 }
-            } else if (fieldType == "Date" && defaultValue != null && defaultValue.equals("NOW", ignoreCase = true)) {
+            } else if ((fieldType == "Date" || fieldType == "Date?") && defaultValue != null && defaultValue.equals("NOW", ignoreCase = true)) {
                 newDefaultValue = "new Date()"
             } else if (fieldType == "BigInteger") {
                 if (defaultValue != null) {

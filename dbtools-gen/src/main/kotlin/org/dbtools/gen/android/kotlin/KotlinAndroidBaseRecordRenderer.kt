@@ -551,13 +551,13 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 }
 
                 newVar = KotlinVar(fieldNameJavaStyle, enumName)
-                newVar.setDefaultValue(enumName + "." + field.enumerationDefault, false)
+                newVar.defaultValue = enumName + "." + field.enumerationDefault
             } else if (!field.enumerationClass.isEmpty()) {
                 // use user defined class
                 val enumClassName = field.enumerationClass
 
                 newVar = KotlinVar(fieldNameJavaStyle, enumClassName)
-                newVar.setDefaultValue(enumClassName + "." + field.enumerationDefault, false)
+                newVar.defaultValue = enumClassName + "." + field.enumerationDefault
             } else {
                 // ENUM without a foreign key table
                 val javaStyleFieldName = field.getName(true)
@@ -571,7 +571,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 }
 
                 newVar = KotlinVar(enumName, fieldNameJavaStyle)
-                newVar.setDefaultValue(enumName + "." + field.enumerationDefault, false)
+                newVar.defaultValue = enumName + "." + field.enumerationDefault
             }
         } else {
             newVar = KotlinVar(field.kotlinTypeText, fieldNameJavaStyle)
@@ -595,13 +595,27 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             fieldDefaultValue = "null"
         }
 
-        if (fieldDefaultValue.isBlank()) {
-            fieldDefaultValue = field.jdbcDataType.kotlinDefaultValue
+        // create the variable object
+        val newVar = KotlinVar(fieldNameJavaStyle, typeText)
+
+        // set the default value
+        if (field.isNotNull) {
+            // NOT NULL
+            if (fieldDefaultValue.isNotBlank()) {
+                newVar.defaultValue = KotlinClass.formatDefaultValue(newVar.dataType, fieldDefaultValue)
+            } else {
+                newVar.defaultValue = field.jdbcDataType.kotlinDefaultValue
+            }
+        } else {
+            // NULLABLE
+            if (fieldDefaultValue.isNotBlank()) {
+                newVar.defaultValue = KotlinClass.formatDefaultValue(newVar.dataType, fieldDefaultValue)
+            } else {
+                newVar.defaultValue = "null"
+            }
         }
 
-        return KotlinVar(fieldNameJavaStyle, typeText).apply {
-            defaultValue = fieldDefaultValue
-        }
+        return newVar
     }
 
     private fun addBindInsert(bindStatementContent: StringBuilder, bindMethodName: String, fieldNameJavaStyle: String, value: String, primitive: Boolean, notNull: Boolean) {

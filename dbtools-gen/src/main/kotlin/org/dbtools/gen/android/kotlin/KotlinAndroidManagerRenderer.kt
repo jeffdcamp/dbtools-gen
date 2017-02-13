@@ -79,7 +79,7 @@ class KotlinAndroidManagerRenderer(val genConfig: GenConfig) {
 
         myClass.addConstant("DROP_VIEW", dataType = "String",
                 defaultValue = "\"DROP VIEW IF EXISTS \" + $entityClassName.TABLE",
-                formatDefaultValue = false)
+                formatDefaultValue = false).apply { const = true }
 
         // begin header
         val headerComment = StringBuilder()
@@ -122,7 +122,7 @@ class KotlinAndroidManagerRenderer(val genConfig: GenConfig) {
         createContent.append(TAB).append(TAB).append(TAB)
         createContent.append("\" FROM \" + ").append(entityClassName).append(".TABLE")
 
-        myClass.addConstant("CREATE_VIEW", createContent.toString(), formatDefaultValue = false)
+        myClass.addConstant("CREATE_VIEW", createContent.toString(), formatDefaultValue = false).apply { const = true }
     }
 
     private fun createQuery(entity: SchemaEntity) {
@@ -165,7 +165,7 @@ class KotlinAndroidManagerRenderer(val genConfig: GenConfig) {
         createContent.append(TAB).append(TAB).append(TAB)
         createContent.append("\" FROM SOME TABLE(S)\"")
 
-        myClass.addConstant("QUERY", defaultValue = createContent.toString(), formatDefaultValue = false)
+        myClass.addConstant("QUERY", defaultValue = createContent.toString(), formatDefaultValue = false).apply { const = true }
     }
 
     private fun createSqlBuilderView(entity: SchemaEntity) {
@@ -203,7 +203,7 @@ class KotlinAndroidManagerRenderer(val genConfig: GenConfig) {
         createContent.append(TAB).append(TAB).append(TAB)
         createContent.append(".buildQuery()")
 
-        myClass.addConstant("CREATE_VIEW", dataType = "String", defaultValue = createContent.toString(), formatDefaultValue = false)
+        myClass.addConstant("CREATE_VIEW", dataType = "String", defaultValue = createContent.toString(), formatDefaultValue = false).apply { const = true }
     }
 
     private fun createSQLBuilderQuery(entity: SchemaEntity) {
@@ -241,7 +241,7 @@ class KotlinAndroidManagerRenderer(val genConfig: GenConfig) {
         createContent.append(TAB).append(TAB).append(TAB)
         createContent.append(".buildQuery()\n")
 
-        myClass.addConstant("QUERY", dataType = "String", defaultValue = createContent.toString(), formatDefaultValue = false)
+        myClass.addConstant("QUERY", dataType = "String", defaultValue = createContent.toString(), formatDefaultValue = false).apply { const = true }
     }
 
 

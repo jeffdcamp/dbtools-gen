@@ -9,13 +9,24 @@
  */
 package org.dbtools.gen.android;
 
-import org.dbtools.codegen.java.*;
+import org.dbtools.codegen.java.Access;
+import org.dbtools.codegen.java.JavaClass;
+import org.dbtools.codegen.java.JavaEnum;
+import org.dbtools.codegen.java.JavaMethod;
+import org.dbtools.codegen.java.JavaVariable;
 import org.dbtools.gen.GenConfig;
 import org.dbtools.renderer.SchemaRenderer;
 import org.dbtools.renderer.SqliteRenderer;
 import org.dbtools.schema.ClassInfo;
 import org.dbtools.schema.dbmappings.DatabaseMapping;
-import org.dbtools.schema.schemafile.*;
+import org.dbtools.schema.schemafile.SchemaDatabase;
+import org.dbtools.schema.schemafile.SchemaEntity;
+import org.dbtools.schema.schemafile.SchemaEntityType;
+import org.dbtools.schema.schemafile.SchemaField;
+import org.dbtools.schema.schemafile.SchemaFieldType;
+import org.dbtools.schema.schemafile.SchemaTable;
+import org.dbtools.schema.schemafile.SchemaTableField;
+import org.dbtools.schema.schemafile.TableEnum;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -618,18 +629,23 @@ public class AndroidBaseRecordRenderer {
     }
 
     private JavaVariable generateFieldVariable(String fieldNameJavaStyle, SchemaField field) {
-        JavaVariable newVariable;
-
         String typeText = field.getJavaTypeText();
-        String defaultValue = field.getFormattedClassDefaultValue();
+        String fieldDefaultValue = field.getFormattedClassDefaultValue();
 
-        boolean dateType = typeText.endsWith("Date");
-        if (dateType && genConfig.getDateType().isAlternative()) {
-            String dateDataType = genConfig.getDateType().getJavaClassDataType(field);
-            newVariable =  new JavaVariable(dateDataType, fieldNameJavaStyle);
-        } else {
-            newVariable = new JavaVariable(typeText, fieldNameJavaStyle);
+        // check to see if we need to override the Date type
+        if (typeText.endsWith("Date") && genConfig.getDateType().isAlternative()) {
+            typeText = genConfig.getDateType().getJavaClassDataType(field);
+
+            if (field.isNotNull()) {
+                fieldDefaultValue = genConfig.getDateType().getJavaClassDataTypeDefaultValue(field);
+            } else {
+                fieldDefaultValue = "null";
+            }
         }
+
+        // create the variable object
+        JavaVariable newVariable = new JavaVariable(typeText, fieldNameJavaStyle);
+
 
         SchemaFieldType fieldType = field.getJdbcDataType();
         boolean immutableDate = field.getJavaClassType() == Date.class && genConfig.getDateType().isMutable();
@@ -638,13 +654,28 @@ public class AndroidBaseRecordRenderer {
             newVariable.setSetterClonesParam(true); // always allow setter to support copy()
         }
 
+        // create setter and getter
         Class varClass = field.getJavaClassType();
         boolean jsr305SupportedField = !varClass.isPrimitive() || varClass.isEnum();
-
         newVariable.setGenerateGetter(true, field.isNotNull(), jsr305SupportedField && genConfig.isJsr305Support());
         newVariable.setGenerateSetter(true, field.isNotNull(), jsr305SupportedField && genConfig.isJsr305Support()); // always allow setter to support copy()
 
-        newVariable.setDefaultValue(defaultValue);
+        // set the default value
+        if (field.isNotNull()) {
+            // NOT NULL
+            if (fieldDefaultValue != null && !fieldDefaultValue.isEmpty()) {
+                newVariable.setDefaultValue(JavaClass.formatDefaultValue(newVariable.getDataType(), fieldDefaultValue), false);
+            } else {
+                newVariable.setDefaultValue(field.getJdbcDataType().getJavaDefaultValue(), false);
+            }
+        } else {
+            // NULLABLE
+            if (fieldDefaultValue != null && !fieldDefaultValue.isEmpty()) {
+                newVariable.setDefaultValue(JavaClass.formatDefaultValue(newVariable.getDataType(), fieldDefaultValue), false);
+            } else {
+                newVariable.setDefaultValue("null", false);
+            }
+        }
 
         return newVariable;
     }

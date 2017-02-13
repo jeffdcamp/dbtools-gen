@@ -81,22 +81,18 @@ class KotlinVar(val name: String, val dataType: String, var defaultValue: String
 //            text += " "
 //        }
 
-        text += "$name: $dataType"
+        if (dataType.isNotBlank()) {
+            text += "$name: $dataType"
+        } else {
+            text += name
+        }
 
         // set default value
-        if (!defaultValue.isEmpty()) {
+        if (defaultValue.isNotBlank()) {
             text += " = " + defaultValue
         }
 
         return text
-    }
-
-    fun setDefaultValue(defaultValue: String, formatDefaultValue: Boolean) {
-        if (formatDefaultValue) {
-            this.defaultValue = KotlinClass.formatDefaultValue(dataType, defaultValue)
-        } else {
-            this.defaultValue = defaultValue
-        }
     }
 
     fun getGetterMethodName(): String {

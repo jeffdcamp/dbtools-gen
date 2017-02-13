@@ -8,11 +8,12 @@
             <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true" unique="true"/>
         </table>
 
-        <table name="INDIVIDUAL">
+        <table name="INDIVIDUAL" fieldsDefaultNotNull="true">
             <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
             <field name="INDIVIDUAL_TYPE_ID" jdbcDataType="INTEGER" varName="individualType" foreignKeyTable="INDIVIDUAL_TYPE" foreignKeyField="_id" foreignKeyType="ENUM" enumerationDefault="HEAD"/>
             <!--<field name="INDIVIDUAL_TYPE" jdbcDataType="INTEGER" enumerationClass="IndividualType" enumerationDefault="HEAD"/>--> <!-- recommended: replace above field with this field AND your own custom enum class -->
             <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true"/>
+            <field name="DEFAULT_DEVICE" jdbcDataType="VARCHAR" size="255" notNull="false" defaultValue="android"/> <!-- text with a default value -->
             <field name="SAMPLE_DATE_TIME" jdbcDataType="DATETIME"/> <!-- text -->
             <field name="BIRTH_DATE" jdbcDataType="DATE"/> <!-- text -->
             <field name="ALARM_TIME" jdbcDataType="TIME"/> <!-- text -->

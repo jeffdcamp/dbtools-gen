@@ -687,7 +687,7 @@ public class JavaClass {
             if (defaultValue == null || defaultValue.equals("")) {
                 newDefaultValue = "''";
             } else {
-                defaultValue = "'" + defaultValue + "'";
+                newDefaultValue = "'" + defaultValue + "'";
             }
         } else if (fieldType.equals("boolean") || fieldType.equals("Boolean")) {
             if (defaultValue == null || defaultValue.equals("")) {

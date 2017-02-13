@@ -12,33 +12,33 @@ import java.util.Date;
  */
 public enum SchemaFieldType {
     UNKNOWN(null),
-    BOOLEAN(new JavaType("boolean", true, true, boolean.class, Boolean.class, "Boolean", "Boolean", "false")),
-    BIT(new JavaType("boolean", true, true, boolean.class, Boolean.class, "Boolean", "Boolean", "false")),
-    TINYINT(new JavaType("boolean", true, true, boolean.class, Boolean.class, "Boolean", "Boolean", "false")),
-    SMALLINT(new JavaType("int", true, true, int.class, Integer.class, "Integer", "Int", "0")),
-    INTEGER(new JavaType("int", true, true, int.class, Integer.class, "Integer", "Int", "0")),
-    BIGINT(new JavaType("long", true, true, long.class, Long.class, "Long", "Long", "0")),
-    REAL(new JavaType("float", true, true, float.class, Float.class, "Float", "Float", "0.0f")),
-    FLOAT(new JavaType("float", true, true, float.class, Float.class, "Float", "Float", "0.0f")),
-    DOUBLE(new JavaType("double", true, true, double.class, Double.class, "Double", "Double", "0.0")),
-    CHAR(new JavaType("char", true, true, char.class, Character.class, "Character", "Char", "''")),
-    VARCHAR(new JavaType("String", false, true, String.class, String.class, "String", "String", "\"\"")),
-    LONGVARCHAR(new JavaType("String", false, true, String.class, String.class, "String", "String", "")),
-    DATETIME(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date", "java.util.Date", "java.util.Date()")),
-    DATE(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date", "java.util.Date", "java.util.Date()")),
-    TIME(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date", "java.util.Date", "java.util.Date()")),
-    TIMESTAMP(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date", "java.util.Date", "java.util.Date()")),
-    JAVA_OBJECT(new JavaType("Object", false, false, Object.class, Object.class, "Object", "Object", "null")),
-    DECIMAL(new JavaType("float", true, true, float.class, Float.class, "Float", "Float", "0.0f")),
-    NUMERIC(new JavaType("float", true, true, float.class, Float.class, "Float", "Float", "0.0f")),
-    BIGDECIMAL(new JavaType("java.math.BigDecimal", false, true, BigDecimal.class, BigDecimal.class, "java.math.BigDecimal", "java.math.BigDecimal", "0.0")),
-    BIGINTEGER(new JavaType("java.math.BigInteger", false, true, BigInteger.class, BigInteger.class, "java.math.BigInteger", "java.math.BigInteger", "0")),
-    BLOB(new JavaType("byte[]", true, true, byte[].class, byte[].class, "byte[]", "ByteArray", "null")),
-    CLOB(new JavaType("String", false, true, String.class, String.class, "String", "String", "null")),
+    BOOLEAN(new JavaType("boolean", true, true, boolean.class, Boolean.class, "Boolean", "false", "Boolean", "false")),
+    BIT(new JavaType("boolean", true, true, boolean.class, Boolean.class, "Boolean", "false", "Boolean", "false")),
+    TINYINT(new JavaType("boolean", true, true, boolean.class, Boolean.class, "Boolean", "false", "Boolean", "false")),
+    SMALLINT(new JavaType("int", true, true, int.class, Integer.class, "Integer", "0", "Int", "0")),
+    INTEGER(new JavaType("int", true, true, int.class, Integer.class, "Integer", "0", "Int", "0")),
+    BIGINT(new JavaType("long", true, true, long.class, Long.class, "Long", "0", "Long", "0")),
+    REAL(new JavaType("float", true, true, float.class, Float.class, "Float", "0.0f", "Float", "0.0f")),
+    FLOAT(new JavaType("float", true, true, float.class, Float.class, "Float", "0.0f", "Float", "0.0f")),
+    DOUBLE(new JavaType("double", true, true, double.class, Double.class, "Double", "0.0", "Double", "0.0")),
+    CHAR(new JavaType("char", true, true, char.class, Character.class, "Character", "''", "Char", "''")),
+    VARCHAR(new JavaType("String", false, true, String.class, String.class, "String", "\"\"", "String", "\"\"")),
+    LONGVARCHAR(new JavaType("String", false, true, String.class, String.class, "String", "\"\"", "String", "\"\"")),
+    DATETIME(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date", "java.util.Date()", "java.util.Date", "java.util.Date()")),
+    DATE(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date", "java.util.Date()", "java.util.Date", "java.util.Date()")),
+    TIME(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date", "java.util.Date()", "java.util.Date", "java.util.Date()")),
+    TIMESTAMP(new JavaType("java.util.Date", false, false, Date.class, Date.class, "java.util.Date", "java.util.Date()", "java.util.Date", "java.util.Date()")),
+    JAVA_OBJECT(new JavaType("Object", false, false, Object.class, Object.class, "Object", "null", "Object", "null")),
+    DECIMAL(new JavaType("float", true, true, float.class, Float.class, "Float", "0.0f", "Float", "0.0f")),
+    NUMERIC(new JavaType("float", true, true, float.class, Float.class, "Float", "0.0f", "Float", "0.0f")),
+    BIGDECIMAL(new JavaType("java.math.BigDecimal", false, true, BigDecimal.class, BigDecimal.class, "java.math.BigDecimal", "0.0", "java.math.BigDecimal", "0.0")),
+    BIGINTEGER(new JavaType("java.math.BigInteger", false, true, BigInteger.class, BigInteger.class, "java.math.BigInteger", "0", "java.math.BigInteger", "0")),
+    BLOB(new JavaType("byte[]", true, true, byte[].class, byte[].class, "byte[]", "new byte[]{}", "ByteArray", "byteArrayOf()")),
+    CLOB(new JavaType("String", false, true, String.class, String.class, "String", "null", "String", "null")),
 
     // not currently supported
-    MONEY(new JavaType("com.jdc.datatypes.Money", false, true, Void.class, Void.class, "com.jdc.datatypes.Money", "com.jdc.datatypes.Money", "null")), // Money.class
-    FRACTION(new JavaType("com.jdc.datatypes.Fraction", false, true, Void.class, Void.class, "com.jdc.datatypes.Fraction", "com.jdc.datatypes.Fraction", "null")); // Fraction.class
+    MONEY(new JavaType("com.jdc.datatypes.Money", false, true, Void.class, Void.class, "com.jdc.datatypes.Money", "null", "com.jdc.datatypes.Money", "null")), // Money.class
+    FRACTION(new JavaType("com.jdc.datatypes.Fraction", false, true, Void.class, Void.class, "com.jdc.datatypes.Fraction", "null", "com.jdc.datatypes.Fraction", "null")); // Fraction.class
 
 
     private JavaType javaType;
@@ -106,6 +106,10 @@ public enum SchemaFieldType {
 
     public String getKotlinDefaultValue() {
         return javaType.getKotlinClassDefaultValueText();
+    }
+
+    public String getJavaDefaultValue() {
+        return javaType.getJavaClassDefaultValueText();
     }
 
     public boolean isJavaTypePrimitive() {

@@ -52,7 +52,7 @@ class KotlinVal(val name: String, val dataType: String, var defaultValue: String
 
         // access
         if (variableType == KotlinVarType.CLASS_VARIABLE) {
-            val accessText = KotlinClass.getAccessString(access)
+            val accessText = KotlinClass.getAccessString(access) + " "
             text += KotlinClass.tab
             text += accessText
         }
@@ -86,14 +86,14 @@ class KotlinVal(val name: String, val dataType: String, var defaultValue: String
 //            text += " "
 //        }
 
-        if (!dataType.isBlank()) {
+        if (dataType.isNotBlank()) {
             text += "$name: $dataType"
         } else {
             text += name
         }
 
         // set default value
-        if (!defaultValue.isBlank()) {
+        if (defaultValue.isNotBlank()) {
             text += " = " + defaultValue
         }
 

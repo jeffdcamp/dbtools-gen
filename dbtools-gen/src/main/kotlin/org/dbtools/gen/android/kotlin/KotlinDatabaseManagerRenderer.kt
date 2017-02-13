@@ -41,8 +41,8 @@ class KotlinDatabaseManagerRenderer(val genConfig: GenConfig, val outDir: String
             val databaseVersion = database.name + "TablesVersion"
             val databaseViewsVersion = database.name + "ViewsVersion"
 
-            myClass.addConstant(databaseVersion, defaultValue = "1")
-            myClass.addConstant(databaseViewsVersion, defaultValue = "1")
+            myClass.addConstant(databaseVersion, defaultValue = "1").apply { const = true }
+            myClass.addConstant(databaseViewsVersion, defaultValue = "1").apply { const = true }
         }
     }
 
