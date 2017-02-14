@@ -25,7 +25,7 @@ open class KotlinClass(var name: String = "",
     var primaryConstructor = ""
     var access = KotlinAccess.PUBLIC
     var abstract = false
-    var isFinal = false
+    var open = false
     var extends = ""
     var staticInit = ""
     val annotations = ArrayList<String>()
@@ -223,8 +223,8 @@ open class KotlinClass(var name: String = "",
             classHeader.append("abstract ")
         }
 
-        if (isFinal) {
-            classHeader.append("final ")
+        if (open) {
+            classHeader.append("open ")
         }
 
         when (classType) {
