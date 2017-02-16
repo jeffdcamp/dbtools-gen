@@ -6,6 +6,7 @@ Change Log
 * Removed default constructors of Record classes
 * More improvements to Kotlin rendered code
 * Fixed issues with defaultValues on fields that are nullable/notnull
+* Fixed issues with nullable Double and Byte[]
 
   Version 7.2.2 *(2017-01)*
 ---------------------------

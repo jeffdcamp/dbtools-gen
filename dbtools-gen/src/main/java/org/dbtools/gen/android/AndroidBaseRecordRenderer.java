@@ -523,34 +523,50 @@ public class AndroidBaseRecordRenderer {
         }
 
         Class<?> type = field.getJavaClassType();
-        if (type == int.class) {
-            return "cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + "))";
-        } else if (type == Integer.class) {
-            return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + ")) : null";
-        } else if (type == String.class && field.isNotNull()) {
-            return "cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + "))";
+        if (type == int.class || type == Integer.class) {
+            if (field.isNotNull()) {
+                return "cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + "))";
+            } else {
+                return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + ")) : null";
+            }
         } else if (type == String.class) {
-            return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")) : null";
-        } else if (type == long.class) {
-            return "cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))";
-        } else if (type == Long.class) {
-            return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + ")) : null";
-        } else if (type == boolean.class) {
-            return "cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + ")) != 0 ? true : false";
-        } else if (type == Boolean.class) {
-            return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + ")) != 0 ? true : false : null";
+            if (field.isNotNull()) {
+                return "cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + "))";
+            } else {
+                return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")) : null";
+            }
+        } else if (type == long.class || type == Long.class) {
+            if (field.isNotNull()) {
+                return "cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + "))";
+            } else {
+                return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? cursor.getLong(cursor.getColumnIndexOrThrow(" + paramValue + ")) : null";
+            }
+        } else if (type == boolean.class || type == Boolean.class) {
+            if (field.isNotNull()) {
+                return "cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + ")) != 0 ? true : false";
+            } else {
+                return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + ")) != 0 ? true : false : null";
+            }
         } else if (type == Date.class) {
             return genConfig.getDateType().getCursorDbStringToObjectMethod(field, paramValue, false);
-        } else if (type == float.class) {
-            return "cursor.getFloat(cursor.getColumnIndexOrThrow(" + paramValue + "))";
-        } else if (type == Float.class) {
-            return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? cursor.getFloat(cursor.getColumnIndexOrThrow(" + paramValue + ")) : null";
+        } else if (type == float.class || type == Float.class) {
+            if (field.isNotNull()) {
+                return "cursor.getFloat(cursor.getColumnIndexOrThrow(" + paramValue + "))";
+            } else {
+                return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? cursor.getFloat(cursor.getColumnIndexOrThrow(" + paramValue + ")) : null";
+            }
         } else if (type == double.class || type == Double.class) {
-            return "cursor.getDouble(cursor.getColumnIndexOrThrow(" + paramValue + "))";
-        } else if (type == Double.class) {
-            return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? cursor.getDouble(cursor.getColumnIndexOrThrow(" + paramValue + ")) : null";
+            if (field.isNotNull()) {
+                return "cursor.getDouble(cursor.getColumnIndexOrThrow(" + paramValue + "))";
+            } else {
+                return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? cursor.getDouble(cursor.getColumnIndexOrThrow(" + paramValue + ")) : null";
+            }
         } else if (type == byte[].class || type == Byte[].class) {
-            return "cursor.getBlob(cursor.getColumnIndexOrThrow(" + paramValue + "))";
+            if (field.isNotNull()) {
+                return "cursor.getBlob(cursor.getColumnIndexOrThrow(" + paramValue + "))";
+            } else {
+                return "!cursor.isNull(cursor.getColumnIndexOrThrow(" + paramValue + ")) ? cursor.getBlob(cursor.getColumnIndexOrThrow(" + paramValue + ")) : null";
+            }
         } else {
             return "[[UNHANDLED FIELD TYPE: " + type + "]]";
         }
