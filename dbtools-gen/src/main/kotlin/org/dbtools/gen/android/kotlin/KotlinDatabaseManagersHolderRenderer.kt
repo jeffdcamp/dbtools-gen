@@ -3,7 +3,11 @@ package org.dbtools.gen.android.kotlin
 import org.dbtools.codegen.kotlin.KotlinObjectClass
 import org.dbtools.codegen.kotlin.KotlinVal
 import org.dbtools.gen.android.AndroidManagerRenderer
-import org.dbtools.schema.schemafile.*
+import org.dbtools.schema.schemafile.SchemaDatabase
+import org.dbtools.schema.schemafile.SchemaEntity
+import org.dbtools.schema.schemafile.SchemaQuery
+import org.dbtools.schema.schemafile.SchemaTable
+import org.dbtools.schema.schemafile.SchemaView
 import org.dbtools.util.JavaUtil
 
 class KotlinDatabaseManagersHolderRenderer {
@@ -41,7 +45,7 @@ class KotlinDatabaseManagersHolderRenderer {
             addSchemaEntityToInit(initContent, query)
         }
 
-        myClass.addImport(packageBase + ".DatabaseManager")
+        myClass.addImport("$packageBase.DatabaseManager")
 
         myClass.addFun("init", parameters = listOf(KotlinVal("databaseManager", "DatabaseManager")), content = initContent.toString())
 
@@ -52,7 +56,9 @@ class KotlinDatabaseManagersHolderRenderer {
         val managerClassName = AndroidManagerRenderer.getClassName(entity)
         val managerVarName = Character.toString(managerClassName[0]).toLowerCase() + managerClassName.substring(1)
 
-        myClass.addVar(managerVarName, managerClassName + "?", "null")
+        myClass.addVar(managerVarName, "$managerClassName private set").apply {
+            lateInit = true
+        }
 
         initContent.append(managerVarName).append(" = ").append(AndroidManagerRenderer.getClassName(entity)).append("(databaseManager);\n")
 
