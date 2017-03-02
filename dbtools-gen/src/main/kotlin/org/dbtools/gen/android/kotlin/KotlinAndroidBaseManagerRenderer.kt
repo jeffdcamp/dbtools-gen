@@ -82,7 +82,7 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
         }
 
         if (type != SchemaEntityType.QUERY) {
-            myClass.addVal("tableName", defaultValue = "$recordConstClassName.TABLE").apply {
+            myClass.addFun("getTableName", "String", content = "return $recordConstClassName.TABLE").apply {
                 override = true
             }
         }
@@ -142,7 +142,7 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
                     abstract = true
                 }
 
-                myClass.addVal("tableName", defaultValue =  "getQuery()").apply { override = true }
+                myClass.addFun("getTableName", returnType = "String", content = "return getQuery()").apply { override = true }
                 myClass.addVal("primaryKey", defaultValue =  """"<NO_PRIMARY_KEY_ON_QUERIES>"""").apply { override = true }
                 myClass.addVal("dropSql", defaultValue =  """""""").apply { override = true }
                 myClass.addVal("createSql", defaultValue =  """""""").apply { override = true }

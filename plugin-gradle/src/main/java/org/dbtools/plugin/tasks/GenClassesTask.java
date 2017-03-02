@@ -51,8 +51,11 @@ public class GenClassesTask extends DefaultTask {
                 builder = new JPAObjectsBuilder(genConfig);
         }
 
-        builder.setXmlFilename(dbExt.getSchemaFullFilename());
-        builder.setOutputBaseDir(dbExt.getOutputSrcDir());
+        String projectDirPath = getProject().getProjectDir().getAbsolutePath();
+        System.out.println("DBTOOLS-GEN working project dir [" + projectDirPath + "]");
+
+        builder.setXmlFilename(projectDirPath + "/" + dbExt.getSchemaFullFilename());
+        builder.setOutputBaseDir(projectDirPath + "/" + dbExt.getOutputSrcDir());
         builder.setPackageBase(dbExt.getBasePackageName());
         builder.setGenConfig(genConfig);
         builder.build();

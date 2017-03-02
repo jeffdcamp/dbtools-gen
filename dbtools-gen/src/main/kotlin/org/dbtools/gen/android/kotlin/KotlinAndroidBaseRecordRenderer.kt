@@ -182,7 +182,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                         true -> "$fieldNameJavaStyle.toLong()"
                         else -> "$fieldNameJavaStyle?.toLong()"
                     }
-                } else if (fieldType == SchemaFieldType.FLOAT) {
+                } else if (fieldType == SchemaFieldType.FLOAT || fieldType == SchemaFieldType.REAL || fieldType == SchemaFieldType.DECIMAL) {
                     value = when(notNullField) {
                         true -> "$fieldNameJavaStyle.toDouble()"
                         else -> "$fieldNameJavaStyle?.toDouble()"
