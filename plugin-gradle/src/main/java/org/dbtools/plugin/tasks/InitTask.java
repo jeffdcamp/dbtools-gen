@@ -10,7 +10,10 @@ public class InitTask extends DefaultTask {
     public void init() {
         DBToolsExtension dbExt = (DBToolsExtension) getProject().getExtensions().findByName("dbtools");
 
+        String projectDirPath = getProject().getProjectDir().getAbsolutePath();
+        System.out.println("DBTOOLS-INIT working project dir [" + projectDirPath + "]");
+
         DBToolsInit dbToolsInit = new DBToolsInit();
-        dbToolsInit.initDBTools(dbExt.getSchemaDir());
+        dbToolsInit.initDBTools(projectDirPath + "/" + dbExt.getSchemaDir());
     }
 }
