@@ -65,7 +65,6 @@ public class AndroidBaseManagerRenderer {
         }
 
         myClass.addImport(databaseManagerPackage + ".DatabaseManager");
-        myClass.addImport("org.dbtools.android.domain.database.DatabaseWrapper");
 
         switch (type) {
             case TABLE:
@@ -99,21 +98,10 @@ public class AndroidBaseManagerRenderer {
             databaseNameParam.addAnnotation(AnnotationConsts.NONNULL);
         }
 
-        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "DatabaseWrapper", "getReadableDatabase", Arrays.asList(databaseNameParam), "return databaseManager.getReadableDatabase(databaseName);"));
-        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "DatabaseWrapper", "getReadableDatabase", null, "return databaseManager.getReadableDatabase(getDatabaseName());"));
-
-        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "DatabaseWrapper", "getWritableDatabase", Arrays.asList(databaseNameParam), "return databaseManager.getWritableDatabase(databaseName);"));
-        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "DatabaseWrapper", "getWritableDatabase", null, "return databaseManager.getWritableDatabase(getDatabaseName());"));
-
-        addMethodAnnotations(AnnotationConsts.NONNULL, myClass.addMethod(Access.PUBLIC, "org.dbtools.android.domain.AndroidDatabase", "getAndroidDatabase", Arrays.asList(databaseNameParam), "return databaseManager.getDatabase(databaseName);"));
-
         // constructor
         myClass.setCreateDefaultConstructor(false);
-        myClass.addVariable("DatabaseManager", "databaseManager");
         JavaVariable constructorParam = new JavaVariable("DatabaseManager", "databaseManager");
-        myClass.addConstructor(Access.PUBLIC, Arrays.asList(constructorParam), "this.databaseManager = databaseManager;");
-
-        myClass.addMethod(Access.PUBLIC, "org.dbtools.android.domain.config.DatabaseConfig", "getDatabaseConfig", "return databaseManager.getDatabaseConfig();");
+        myClass.addConstructor(Access.PUBLIC, Arrays.asList(constructorParam), "super(databaseManager);");
 
         switch (type) {
             default:

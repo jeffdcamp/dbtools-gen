@@ -37,8 +37,8 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
         myClass.fileHeaderComment = "/*\n * $className.kt\n *\n * GENERATED FILE - DO NOT EDIT\n * \n */\n"
 
         // Since this is generated code.... suppress all warnings
-        myClass.addAnnotation("@Suppress(\"unused\", \"ConvertSecondaryConstructorToPrimary\")") // kotlin specific
-        myClass.addAnnotation("@SuppressWarnings(\"all\")")
+        myClass.addAnnotation("""@Suppress("unused")""") // kotlin specific
+        myClass.addAnnotation("""@SuppressWarnings("all")""")
 
         // generate all of the main methods
         createManager(entity, packageName, recordClassName, generatedEntityInfo)
@@ -55,7 +55,6 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
         }
 
         myClass.addImport(databaseManagerPackage + ".DatabaseManager")
-        myClass.addImport("org.dbtools.android.domain.database.DatabaseWrapper")
 
         when (type) {
             SchemaEntityType.TABLE -> {
@@ -96,27 +95,8 @@ class KotlinAndroidBaseManagerRenderer(val genConfig: GenConfig) {
             databaseNameParam.addAnnotation(AnnotationConsts.NONNULL)
         }
 
-        myClass.addImport("org.dbtools.android.domain.database.contentvalues.DBToolsContentValues")
-        myClass.addImport("org.dbtools.android.domain.AndroidBaseRecord")
-
-        myClass.addFun("getReadableDatabase", "DatabaseWrapper<in AndroidBaseRecord, in DBToolsContentValues<*>>", listOf(databaseNameParam), "return databaseManager.getReadableDatabase(databaseName)").apply {
-            override = true
-        }
-
-        myClass.addFun("getWritableDatabase", "DatabaseWrapper<in AndroidBaseRecord, in DBToolsContentValues<*>>", listOf(databaseNameParam), "return databaseManager.getWritableDatabase(databaseName)").apply {
-            override = true
-        }
-
-        myClass.addFun("getAndroidDatabase", "org.dbtools.android.domain.AndroidDatabase?", listOf(databaseNameParam), "return databaseManager.getDatabase(databaseName)").apply {
-            override = true
-        }
-
-        myClass.addVar("databaseManager", "DatabaseManager")
-        myClass.addConstructor(listOf(KotlinVal("databaseManager", "DatabaseManager")), "this.databaseManager = databaseManager")
-
-        myClass.addFun("getDatabaseConfig", "org.dbtools.android.domain.config.DatabaseConfig", content = "return databaseManager.databaseConfig").apply {
-            override = true
-        }
+        myClass.primaryConstructor = "(databaseManager: DatabaseManager)"
+        myClass.extends += "(databaseManager)"
 
         when (type) {
             SchemaEntityType.TABLE -> {
