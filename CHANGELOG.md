@@ -4,6 +4,7 @@ Change Log
   Version 8.2.0 *(2017-03)*
 ---------------------------
 * Improved table notifications and subscriptions across managers and multiple databases
+* Changed the variable name for versions to a proper const naming (in DatabaseManager)
 
   Version 8.1.1 *(2017-03)*
 ---------------------------
