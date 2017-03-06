@@ -4,6 +4,7 @@ import org.dbtools.codegen.kotlin.KotlinClass
 import org.dbtools.codegen.kotlin.KotlinVal
 import org.dbtools.gen.GenConfig
 import org.dbtools.schema.schemafile.DatabaseSchema
+import org.dbtools.util.JavaUtil
 
 class KotlinDatabaseManagerRenderer(val genConfig: GenConfig, val outDir: String = "") {
 
@@ -38,8 +39,8 @@ class KotlinDatabaseManagerRenderer(val genConfig: GenConfig, val outDir: String
 
     private fun createDatabaseVersions(databaseSchema: DatabaseSchema) {
         for (database in databaseSchema.databases) {
-            val databaseVersion = database.name + "TablesVersion"
-            val databaseViewsVersion = database.name + "ViewsVersion"
+            val databaseVersion = JavaUtil.nameToJavaConst("${database.name}TablesVersion")
+            val databaseViewsVersion = JavaUtil.nameToJavaConst("${database.name}ViewsVersion")
 
             myClass.addConstant(databaseVersion, defaultValue = "1").apply { const = true }
             myClass.addConstant(databaseViewsVersion, defaultValue = "1").apply { const = true }
