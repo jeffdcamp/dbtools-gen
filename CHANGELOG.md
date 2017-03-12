@@ -1,10 +1,16 @@
 Change Log
 ==========
 
+  Version 8.2.1 *(2017-03)*
+---------------------------
+* Added <index/> section to schema.xsd to support multiple column indexes 
+
+
   Version 8.2.0 *(2017-03)*
 ---------------------------
 * Improved table notifications and subscriptions across managers and multiple databases
 * Changed the variable name for versions to a proper const naming (in DatabaseManager)
+
 
   Version 8.1.1 *(2017-03)*
 ---------------------------
@@ -12,10 +18,12 @@ Change Log
 * Change Kotlin AndroidBaseRecord.tableName to AndroidBaseRecord.getTableName()
 * Fixed issues with dbtools-gen with sub projects (ex: ./gradlew app:dbtools-gen)
 
+
   Version 8.1.0 *(2017-02)*
 ---------------------------
 * Removed default constructors of Record classes
 * Improved rendering of Kotlin Manager classes 
+
 
   Version 8.0.0 *(2017-01)*
 ---------------------------
@@ -24,52 +32,64 @@ Change Log
 * Fixed issues with defaultValues on fields that are nullable/notnull
 * Fixed issues with nullable Double and Byte[]
 
+
   Version 7.2.2 *(2017-01)*
 ---------------------------
 * More improvements to Kotlin rendered code
+
 
   Version 7.2.1 *(2016-12)*
 ---------------------------
 * Improvements to Kotlin rendered code
 
+
   Version 7.2.0 *(2016-11)*
 ---------------------------
 * Added support for no primary key on a table
 
+
   Version 7.1.1 *(2016-11)*
 ---------------------------
 * Updated versions of dependencies 
+
 
   Version 7.1.0 *(2016-10)*
 ---------------------------
 * Changed all generated Kotlin vars to be open
 * Fixed issue with generated kotlin logging
 
+
   Version 7.0.11 *(2016-09)*
 ----------------------------
 * Updated versions of dependencies 
+
 
   Version 7.0.10 *(2016-07)*
 ----------------------------
 * Fixed UniqueConstraint issues with JPA renderer
 * Improvements to Kotlin renderer
 
+
   Version 7.0.9 *(2016-07)*
 ---------------------------
 * Added copy constructor to XXXBaseRecord
 
+
   Version 7.0.8 *(2016-06)*
 ---------------------------
 * Fixed dbtools-gen issues with Kotlin and Date type
+
 
   Version 7.0.7 *(2016-06)*
 ---------------------------
 * Fixed issues with schema rendering with Derby, FireBird, HSQLDB, iAnywhere, MySQL, Oracle, PostgreSQL
 * Added improvements to JPA and Unique constraints
  
+ 
   Version 7.0.5 *(2016-05)*
 ---------------------------
 * Support for dbtools-android 7.0.5
+
 
   Version 7.0.3 *(2016-05)*
 ---------------------------
@@ -89,6 +109,7 @@ Change Log
 
  * Kotlin generated files (better handling of nullable fields)
  * Remove generated setters for readonly tables / queries / views
+ 
  
    Version 5.0.1 *(2016-02)*
  ----------------------------

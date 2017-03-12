@@ -506,6 +506,28 @@ public class SchemaRenderer implements Runnable {
         }
     }
 
+    protected void generateIndexes(StringBuilder schema, SchemaTable table) {
+        List<SchemaTableIndex> indexDeclarations = table.getIndexDeclarations();
+        for (SchemaTableIndex indexDeclaration : indexDeclarations) {
+            String indexName = "";
+            String indexFieldString = "";
+
+            List<SchemaIndexField> indexFieldsCombo = indexDeclaration.getIndexFields();
+            for (int k = 0; k < indexFieldsCombo.size(); k++) {
+                SchemaIndexField schemaIndexField = indexFieldsCombo.get(k);
+
+                if (k > 0) {
+                    indexFieldString += ", ";
+                }
+
+                indexFieldString += schemaIndexField.getName();
+            }
+
+            schema.append("CREATE INDEX IF NOT EXISTS ").append(table.getName()).append("_").append(indexName).append("_IDX ON ").append(table.getName());
+            schema.append(" (").append(indexFieldString).append(");\n\n");
+        }
+    }
+
     /**
      * @param args the command line arguments
      */

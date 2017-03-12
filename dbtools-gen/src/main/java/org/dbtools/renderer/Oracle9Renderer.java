@@ -159,6 +159,9 @@ public class Oracle9Renderer extends SchemaRenderer {
             // check for uniqueDeclarations
             generateUniqueConstraints(schema, table);
 
+            // check for indexDeclarations
+            generateIndexes(schema, table);
+
             // add table footer
             schema.append("\n);");
 

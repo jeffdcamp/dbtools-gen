@@ -167,6 +167,9 @@ public class MySQLRenderer extends SchemaRenderer {
             // check for uniqueDeclarations
             generateUniqueConstraints(schema, table);
 
+            // check for indexDeclarations
+            generateIndexes(schema, table);
+
             String tableType = table.getParameter("tableType");
             // add table footer
             // add table type if needed

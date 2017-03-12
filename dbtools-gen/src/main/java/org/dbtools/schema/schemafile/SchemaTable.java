@@ -25,6 +25,9 @@ public class SchemaTable extends SchemaEntity {
     @Attribute(required = false)
     private Boolean readOnly = false;
 
+    @ElementList(entry = "index", inline = true, required = false)
+    private List<SchemaTableIndex> indexDeclarations = new ArrayList<>();
+
     @ElementList(entry = "unique", inline = true, required = false)
     private List<SchemaTableUnique> uniqueDeclarations = new ArrayList<>();
 
@@ -32,7 +35,7 @@ public class SchemaTable extends SchemaEntity {
     private List<SchemaTableParameter> tableParameters = new ArrayList<>();
 
     @ElementList(entry = "field", inline = true)
-    List<SchemaTableField> fields = new ArrayList<>();
+    private List<SchemaTableField> fields = new ArrayList<>();
 
     public SchemaTable() {
     }
@@ -248,6 +251,14 @@ public class SchemaTable extends SchemaEntity {
 
     public void setEnumerations(String enumerations) {
         this.enumerations = enumerations;
+    }
+
+    public List<SchemaTableIndex> getIndexDeclarations() {
+        return indexDeclarations;
+    }
+
+    public void setIndexDeclarations(List<SchemaTableIndex> indexDeclarations) {
+        this.indexDeclarations = indexDeclarations;
     }
 
     public List<SchemaTableUnique> getUniqueDeclarations() {

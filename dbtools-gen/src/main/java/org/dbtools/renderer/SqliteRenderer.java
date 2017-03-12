@@ -167,7 +167,7 @@ public class SqliteRenderer extends SchemaRenderer {
                 uniqueFields.add(field);
             }
             if (field.isIndex()) {
-                indexFields.add(field); // add foreign key
+                indexFields.add(field);
             }
             if (field.getSqliteCollate() != null) {
                 tableSchema.append(" COLLATE ").append(field.getSqliteCollate());
@@ -253,6 +253,29 @@ public class SqliteRenderer extends SchemaRenderer {
             tableSchema.append("CREATE INDEX IF NOT EXISTS ").append(table.getName()).append(iField.getName()).append("_IDX ON ").append(table.getName());
             tableSchema.append(" (").append(iField.getName()).append(");\n\n");
         }
+
+        List<SchemaTableIndex> indexDeclarations = table.getIndexDeclarations();
+        for (SchemaTableIndex indexDeclaration : indexDeclarations) {
+            String indexName = "";
+            String indexFieldString = "";
+
+            List<SchemaIndexField> indexFieldsCombo = indexDeclaration.getIndexFields();
+            for (int k = 0; k < indexFieldsCombo.size(); k++) {
+                SchemaIndexField schemaIndexField = indexFieldsCombo.get(k);
+
+                if (k > 0) {
+                    indexFieldString += ", ";
+                    indexName += "_";
+                }
+
+                indexFieldString += schemaIndexField.getName();
+                indexName += schemaIndexField.getName();
+            }
+
+            tableSchema.append("CREATE INDEX IF NOT EXISTS ").append(table.getName()).append("_").append(indexName).append("_IDX ON ").append(table.getName());
+            tableSchema.append(" (").append(indexFieldString).append(");\n\n");
+        }
+
 
         Map<String, SchemaTable> alreadyCreatedEnum = new HashMap<>();
         generateEnumSchema(tableSchema, table, alreadyCreatedEnum, enumPKField, enumValueField, true);

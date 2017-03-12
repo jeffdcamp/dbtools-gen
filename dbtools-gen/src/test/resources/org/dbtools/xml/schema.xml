@@ -33,6 +33,13 @@
             <unique>
                 <uniqueField name="ALARM_TIME"/>
             </unique>
+            <index>
+                <indexField name="NAME"/>
+            </index>
+            <index>
+                <indexField name="NUMBER"/>
+                <indexField name="PHONE"/>
+            </index>
         </table>
 
         <table name="HOUSEHOLD">
