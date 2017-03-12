@@ -28,7 +28,7 @@ public class DatabaseSchema {
 
     public SchemaDatabase getDatabase(String name) {
         for (SchemaDatabase database : databases) {
-            if (database.getName().equals(name)) {
+            if (database.getName(false).equals(name)) {
                 return database;
             }
         }

@@ -42,9 +42,11 @@ class KotlinAppDatabaseConfigRenderer(val genConfig: GenConfig, val outDir: Stri
         val content = StringBuilder()
 
         for (database in databaseSchema.databases) {
-            val databaseConstName = JavaUtil.nameToJavaConst(database.name) + "_DATABASE_NAME"
-            val databaseVersion = JavaUtil.nameToJavaConst("${database.name}TablesVersion")
-            val databaseViewsVersion = JavaUtil.nameToJavaConst("${database.name}ViewsVersion")
+            val databaseName = database.getName(true)
+
+            val databaseConstName = JavaUtil.nameToJavaConst(databaseName) + "_DATABASE_NAME"
+            val databaseVersion = JavaUtil.nameToJavaConst("${databaseName}TablesVersion")
+            val databaseViewsVersion = JavaUtil.nameToJavaConst("${databaseName}ViewsVersion")
 
             content.append("databaseManager.addDatabase(application, $dbConstClassName.$databaseConstName, DatabaseManager.$databaseVersion, DatabaseManager.$databaseViewsVersion)\n")
         }

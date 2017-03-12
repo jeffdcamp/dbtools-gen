@@ -50,8 +50,8 @@ public class DatabaseManagerRenderer {
 
     private void createDatabaseVersions(DatabaseSchema databaseSchema) {
         for (SchemaDatabase database : databaseSchema.getDatabases()) {
-            String databaseConstVersion = JavaUtil.nameToJavaConst(database.getName() + "TablesVersion");
-            String databaseViewsConstVersion = JavaUtil.nameToJavaConst(database.getName() + "ViewsVersion");
+            String databaseConstVersion = JavaUtil.nameToJavaConst(database.getName(true) + "TablesVersion");
+            String databaseViewsConstVersion = JavaUtil.nameToJavaConst(database.getName(true) + "ViewsVersion");
 
             myClass.addConstant("int", databaseConstVersion, "1").setFinal(true);
             myClass.addConstant("int", databaseViewsConstVersion, "1").setFinal(true);

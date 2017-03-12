@@ -39,8 +39,8 @@ class KotlinDatabaseManagerRenderer(val genConfig: GenConfig, val outDir: String
 
     private fun createDatabaseVersions(databaseSchema: DatabaseSchema) {
         for (database in databaseSchema.databases) {
-            val databaseVersion = JavaUtil.nameToJavaConst("${database.name}TablesVersion")
-            val databaseViewsVersion = JavaUtil.nameToJavaConst("${database.name}ViewsVersion")
+            val databaseVersion = JavaUtil.nameToJavaConst("${database.getName(true)}TablesVersion")
+            val databaseViewsVersion = JavaUtil.nameToJavaConst("${database.getName(true)}ViewsVersion")
 
             myClass.addConstant(databaseVersion, defaultValue = "1").apply { const = true }
             myClass.addConstant(databaseViewsVersion, defaultValue = "1").apply { const = true }

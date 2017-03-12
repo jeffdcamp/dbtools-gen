@@ -48,9 +48,11 @@ public class AppDatabaseConfigRenderer {
         StringBuilder content = new StringBuilder();
 
         for (SchemaDatabase database : databaseSchema.getDatabases()) {
-            String databaseConstName = JavaUtil.nameToJavaConst(database.getName()) + "_DATABASE_NAME";
-            String databaseConstVersion = "DatabaseManager." + JavaUtil.nameToJavaConst(database.getName() + "TablesVersion");
-            String databaseViewsConstVersion = "DatabaseManager." + JavaUtil.nameToJavaConst(database.getName() + "ViewsVersion");
+            String databaseName = database.getName(true);
+
+            String databaseConstName = JavaUtil.nameToJavaConst(databaseName) + "_DATABASE_NAME";
+            String databaseConstVersion = "DatabaseManager." + JavaUtil.nameToJavaConst(databaseName + "TablesVersion");
+            String databaseViewsConstVersion = "DatabaseManager." + JavaUtil.nameToJavaConst(databaseName + "ViewsVersion");
 
             content.append("databaseManager.addDatabase(application, " + dbConstClassName + "." + databaseConstName + ", " + databaseConstVersion + ", " + databaseViewsConstVersion + ");\n");
         }

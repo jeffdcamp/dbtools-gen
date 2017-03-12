@@ -74,12 +74,11 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         content.append("logger.i(TAG, \"Creating database: \${androidDatabase.name}\")\n")
 
         for (database in databaseSchema.databases) {
-            var databaseName = database.name
-            databaseName = databaseName.replace(".", "") // remove any periods (example: "mydb.sqlite")
+            var databaseName = database.getName(true)
 
             val databaseConstName = JavaUtil.nameToJavaConst(databaseName) + "_DATABASE_NAME"
             val databaseMethodName = JavaUtil.nameToJavaConst(databaseName) + "_TABLES"
-            myConstClass.addConstant(databaseConstName, "\"${database.name}\"" ).apply { const = true }
+            myConstClass.addConstant(databaseConstName, "\"${database.getName(false)}\"" ).apply { const = true }
             createCreateDatabase(content, databaseConstName, databaseMethodName, database)
         }
 
@@ -138,8 +137,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
         dropContent.append("logger.i(TAG, \"Dropping database views: \${androidDatabase.name}\")\n")
 
         for (database in databaseSchema.databases) {
-            var databaseName = database.name
-            databaseName = databaseName.replace(".", "") // remove any periods (example: "mydb.sqlite")
+            var databaseName = database.getName(true)
 
             val databaseConstName = JavaUtil.nameToJavaConst(databaseName) + "_DATABASE_NAME"
             val databaseMethodName = JavaUtil.nameToJavaConst(databaseName) + "_VIEWS"
@@ -228,7 +226,7 @@ class KotlinDatabaseBaseManagerRenderer(val genConfig: GenConfig, val outDir: St
     }
 
     private fun createDatabaseBasePackage(database: SchemaDatabase): String {
-        return packageBase + (if (genConfig.isIncludeDatabaseNameInPackage) "." + database.name.toLowerCase() else "")
+        return packageBase + (if (genConfig.isIncludeDatabaseNameInPackage) "." + database.getName(true) else "")
     }
 
     fun setPackageBase(packageBase: String) {

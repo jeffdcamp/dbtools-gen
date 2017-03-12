@@ -2,7 +2,7 @@
 <dbSchema xmlns='https://github.com/jeffdcamp/dbtools-gen'
           xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
           xsi:schemaLocation='https://github.com/jeffdcamp/dbtools-gen dbschema.xsd'>
-    <database name="main"> <!-- recommended: use fieldsDefaultNotNull="true" to make all table fields default notNull -->
+    <database name="main.db"> <!-- recommended: use fieldsDefaultNotNull="true" to make all table fields default notNull -->
         <table name="INDIVIDUAL_TYPE" className="IndividualType" enumerations="HEAD,SPOUSE,CHILD" readOnly="true">
             <field name="_id" jdbcDataType="BIGINT" increment="true" primaryKey="true" notNull="true"/>
             <field name="NAME" jdbcDataType="VARCHAR" size="255" notNull="true" unique="true"/>

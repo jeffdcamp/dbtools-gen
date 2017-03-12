@@ -95,7 +95,7 @@ public abstract class DBObjectsBuilder {
     private boolean build(SchemaDatabase database) {
         boolean success = true;
 
-        System.out.println("DATABASE: " + database.getName());
+        System.out.println("DATABASE: " + database.getName(false));
 
         // if tables is null... assume all tables
         if (tables == null) {
@@ -122,13 +122,13 @@ public abstract class DBObjectsBuilder {
                 String packageDir = table.getClassName().toLowerCase();
 
                 if (genConfig.isIncludeDatabaseNameInPackage()) {
-                    packageDir = database.getName().toLowerCase() + "/" + packageDir;
+                    packageDir = database.getName(true).toLowerCase() + "/" + packageDir;
                 }
 
                 String outDir = createOutputDir(outputBaseDir, packageDir);
 
                 // package
-                String packageName = packageBase + (genConfig.isIncludeDatabaseNameInPackage() ? '.' + database.getName().toLowerCase() : "");
+                String packageName = packageBase + (genConfig.isIncludeDatabaseNameInPackage() ? '.' + database.getName(true).toLowerCase() : "");
                 packageName = JavaUtil.createTablePackageName(packageName, table.getClassName());
 
                 success = objectBuilder.build(database, table, packageName, outDir, genConfig);
@@ -140,13 +140,13 @@ public abstract class DBObjectsBuilder {
                 String packageDir = view.getClassName().toLowerCase();
 
                 if (genConfig.isIncludeDatabaseNameInPackage()) {
-                    packageDir = database.getName().toLowerCase() + "/" + packageDir;
+                    packageDir = database.getName(true).toLowerCase() + "/" + packageDir;
                 }
 
                 String outDir = createOutputDir(outputBaseDir, packageDir);
 
                 // package
-                String packageName = packageBase + (genConfig.isIncludeDatabaseNameInPackage() ? '.' + database.getName().toLowerCase() : "");
+                String packageName = packageBase + (genConfig.isIncludeDatabaseNameInPackage() ? '.' + database.getName(true).toLowerCase() : "");
                 packageName = packageName + "." + view.getClassName().toLowerCase();
 
                 success = objectBuilder.build(database, view, packageName, outDir, genConfig);
@@ -158,13 +158,13 @@ public abstract class DBObjectsBuilder {
                 String packageDir = query.getClassName().toLowerCase();
 
                 if (genConfig.isIncludeDatabaseNameInPackage()) {
-                    packageDir = database.getName().toLowerCase() + "/" + packageDir;
+                    packageDir = database.getName(true).toLowerCase() + "/" + packageDir;
                 }
 
                 String outDir = createOutputDir(outputBaseDir, packageDir);
 
                 // package
-                String packageName = packageBase + (genConfig.isIncludeDatabaseNameInPackage() ? '.' + database.getName().toLowerCase() : "");
+                String packageName = packageBase + (genConfig.isIncludeDatabaseNameInPackage() ? '.' + database.getName(true).toLowerCase() : "");
                 packageName = packageName + "." + query.getClassName().toLowerCase();
 
                 success = objectBuilder.build(database, query, packageName, outDir, genConfig);
@@ -172,11 +172,11 @@ public abstract class DBObjectsBuilder {
             }
 
             if (!genConfig.isInjectionSupport()) {
-                String packageName = packageBase + (genConfig.isIncludeDatabaseNameInPackage() ? '.' + database.getName().toLowerCase() : "");
+                String packageName = packageBase + (genConfig.isIncludeDatabaseNameInPackage() ? '.' + database.getName(true).toLowerCase() : "");
 
                 String outDir = outputBaseDir;
                 if (genConfig.isIncludeDatabaseNameInPackage()) {
-                    outDir += "/" + database.getName().toLowerCase();
+                    outDir += "/" + database.getName(true).toLowerCase();
                 }
 
                 objectBuilder.buildDatabaseManagersHolder(database, packageBase, packageName, tables, views, queries, outDir);

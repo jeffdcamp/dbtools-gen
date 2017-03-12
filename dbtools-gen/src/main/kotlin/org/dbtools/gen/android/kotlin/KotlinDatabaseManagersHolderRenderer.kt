@@ -19,7 +19,7 @@ class KotlinDatabaseManagersHolderRenderer {
 
         this.packageName = packageName
 
-        var preName = database.name.toLowerCase()
+        var preName = database.getName(true).toLowerCase()
 
         // uppercase the first letter
         preName = Character.toString(preName[0]).toUpperCase() + preName.substring(1)

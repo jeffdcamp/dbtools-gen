@@ -80,12 +80,11 @@ public class DatabaseBaseManagerRenderer {
         content.append("getLogger().i(TAG, \"Creating database: \" + androidDatabase.getName());\n");
 
         for (SchemaDatabase database : databaseSchema.getDatabases()) {
-            String databaseName = database.getName();
-            databaseName = databaseName.replace(".", ""); // remove any periods (example: "mydb.sqlite")
+            String databaseName = database.getName(true);
 
             String databaseConstName = JavaUtil.nameToJavaConst(databaseName) + "_DATABASE_NAME";
             String databaseMethodName = JavaUtil.nameToJavaConst(databaseName) + "_TABLES";
-            myConstClass.addConstant("String", databaseConstName, database.getName());
+            myConstClass.addConstant("String", databaseConstName, database.getName(false));
             createCreateDatabase(content, databaseConstName, databaseMethodName, database);
         }
 
@@ -150,8 +149,7 @@ public class DatabaseBaseManagerRenderer {
         dropContent.append("getLogger().i(TAG, \"Dropping database views: \" + androidDatabase.getName());\n");
 
         for (SchemaDatabase database : databaseSchema.getDatabases()) {
-            String databaseName = database.getName();
-            databaseName = databaseName.replace(".", ""); // remove any periods (example: "mydb.sqlite")
+            String databaseName = database.getName(true);
 
             String databaseConstName = JavaUtil.nameToJavaConst(databaseName) + "_DATABASE_NAME";
             String databaseMethodName = JavaUtil.nameToJavaConst(databaseName) + "_VIEWS";
@@ -251,7 +249,7 @@ public class DatabaseBaseManagerRenderer {
     }
 
     private String createDatabaseBasePackage(SchemaDatabase database) {
-        return packageBase + (genConfig.isIncludeDatabaseNameInPackage() ? "." + database.getName().toLowerCase() : "");
+        return packageBase + (genConfig.isIncludeDatabaseNameInPackage() ? "." + database.getName(true).toLowerCase() : "");
     }
 
     public void setPackageBase(String packageBase) {

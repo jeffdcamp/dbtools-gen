@@ -77,9 +77,9 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         var primaryKeyField: SchemaField? = null
 
         // constants and variables
-        val databaseName = database.name
-        constClass.addConstant("DATABASE", "\"$databaseName\"").apply { const = true }
+        constClass.addConstant("DATABASE", "\"${database.getName(false)}\"").apply { const = true }
 
+        val databaseName = database.getName(false)
         val tableName = entity.name
         if (entityType != SchemaEntityType.QUERY) {
             constClass.addConstant("TABLE", "\"$tableName\"").apply { const = true }

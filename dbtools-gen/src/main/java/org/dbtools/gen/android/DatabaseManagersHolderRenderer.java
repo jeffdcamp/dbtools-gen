@@ -19,7 +19,7 @@ public class DatabaseManagersHolderRenderer {
 
         this.packageName = packageName;
 
-        String preName = database.getName().toLowerCase();
+        String preName = database.getName(true).toLowerCase();
 
         // uppercase the first letter
         preName = Character.toString(preName.charAt(0)).toUpperCase() + preName.substring(1);

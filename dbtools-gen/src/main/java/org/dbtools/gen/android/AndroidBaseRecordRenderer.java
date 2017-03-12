@@ -98,9 +98,9 @@ public class AndroidBaseRecordRenderer {
         SchemaField primaryKeyField = null;
 
         // constants and variables
-        String databaseName = database.getName();
-        constClass.addConstant("String", "DATABASE", databaseName);
+        constClass.addConstant("String", "DATABASE", database.getName(false));
 
+        String databaseName = database.getName(true);
         String tableName = entity.getName();
         if (entityType != SchemaEntityType.QUERY) {
             constClass.addConstant("String", "TABLE", tableName);

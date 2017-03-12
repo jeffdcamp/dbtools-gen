@@ -40,8 +40,12 @@ public class SchemaDatabase {
         this.name = name;
     }
 
-    public String getName() {
-        return name;
+    public String getName(boolean formatForConst) {
+        if (formatForConst) {
+            return name.replace(".", "_"); // remove any periods (example: "mydb.sqlite")
+        } else {
+            return name;
+        }
     }
 
     public void setName(String name) {
@@ -178,14 +182,14 @@ public class SchemaDatabase {
             // Check for duplicate table names
             String tableName = table.getName();
             if (existingTableViewNames.contains(tableName)) {
-                throw new IllegalStateException("Table named [" + tableName + "] already exists in database [" + getName() + "]");
+                throw new IllegalStateException("Table named [" + tableName + "] already exists in database [" + getName(false) + "]");
             }
             existingTableViewNames.add(tableName);
 
             // Check for duplicate sequence name
             for (String seqName : table.getSequenceNames()) {
                 if (existingSequences.contains(seqName)) {
-                    throw new IllegalStateException("Sequencer named [" + seqName + "] already exists in database [" + getName() + "]");
+                    throw new IllegalStateException("Sequencer named [" + seqName + "] already exists in database [" + getName(false) + "]");
                 }
                 existingSequences.add(seqName);
             }
@@ -194,7 +198,7 @@ public class SchemaDatabase {
         // Check for duplicate view names
         for (String viewName : getViewNames()) {
             if (existingTableViewNames.contains(viewName)) {
-                throw new IllegalStateException("View named [" + viewName + "] already exists in database [" + getName() + "]");
+                throw new IllegalStateException("View named [" + viewName + "] already exists in database [" + getName(false) + "]");
             }
             existingTableViewNames.add(viewName);
         }
