@@ -3,7 +3,8 @@ Change Log
 
   Version 8.2.1 *(2017-03)*
 ---------------------------
-* Added <index/> section to schema.xsd to support multiple column indexes 
+* Added <index/> section to schema.xsd to support multiple column indexes
+* Fix for Issue #15 (Database name cannot contain a `.`)
 
 
   Version 8.2.0 *(2017-03)*
