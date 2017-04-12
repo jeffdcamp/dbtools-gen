@@ -200,7 +200,18 @@ public class AndroidBaseRecordRenderer {
                 String value = fieldNameJavaStyle;
 
                 if (field.isEnumeration()) {
-                    value = newVariable.getName() + ".ordinal()";
+                    switch (fieldType) {
+                        case BIT:
+                        case TINYINT:
+                        case SMALLINT:
+                        case INTEGER:
+                        case NUMERIC:
+                        case BIGINT:
+                            value = newVariable.getName() + ".ordinal()";
+                            break;
+                        default:
+                            value = newVariable.getName() + ".toString()";
+                    }
                 } else if (dateTypeField) {
                     value = genConfig.getDateType().getValuesValue(field, fieldNameJavaStyle);
                 } else if (fieldType == SchemaFieldType.BOOLEAN) {
@@ -488,8 +499,17 @@ public class AndroidBaseRecordRenderer {
      */
     private String getContentValuesGetterMethod(SchemaField field, String paramValue, JavaVariable newVariable) {
         if (field.isEnumeration()) {
-
-            return "org.dbtools.android.domain.util.EnumUtil.ordinalToEnum(" + newVariable.getDataType() + ".class, values.getAsInteger(" + paramValue + "), " + newVariable.getDefaultValue() + ")";
+            switch (field.getJdbcDataType()) {
+                case BIT:
+                case TINYINT:
+                case SMALLINT:
+                case INTEGER:
+                case NUMERIC:
+                case BIGINT:
+                    return "org.dbtools.android.domain.util.EnumUtil.ordinalToEnum(" + newVariable.getDataType() + ".class, values.getAsInteger(" + paramValue + "), " + newVariable.getDefaultValue() + ")";
+                default:
+                    return "org.dbtools.android.domain.util.EnumUtil.stringToEnum(" + newVariable.getDataType() + ".class, values.getAsString(" + paramValue + "), " + newVariable.getDefaultValue() + ")";
+            }
         }
 
         Class<?> type = field.getJavaClassType();
@@ -519,7 +539,17 @@ public class AndroidBaseRecordRenderer {
      */
     private String getContentValuesCursorGetterMethod(SchemaField field, String paramValue, JavaVariable newVariable) {
         if (field.isEnumeration()) {
-            return "org.dbtools.android.domain.util.EnumUtil.ordinalToEnum(" + newVariable.getDataType() + ".class, cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + ")), " + newVariable.getDefaultValue() + ")";
+            switch (field.getJdbcDataType()) {
+                case BIT:
+                case TINYINT:
+                case SMALLINT:
+                case INTEGER:
+                case NUMERIC:
+                case BIGINT:
+                    return "org.dbtools.android.domain.util.EnumUtil.ordinalToEnum(" + newVariable.getDataType() + ".class, cursor.getInt(cursor.getColumnIndexOrThrow(" + paramValue + ")), " + newVariable.getDefaultValue() + ")";
+                default:
+                    return "org.dbtools.android.domain.util.EnumUtil.stringToEnum(" + newVariable.getDataType() + ".class, cursor.getString(cursor.getColumnIndexOrThrow(" + paramValue + ")), " + newVariable.getDefaultValue() + ")";
+            }
         }
 
         Class<?> type = field.getJavaClassType();
@@ -574,7 +604,6 @@ public class AndroidBaseRecordRenderer {
 
     private JavaVariable generateEnumeration(SchemaField field, String fieldNameJavaStyle, String packageName, SchemaDatabase database) {
         JavaVariable newVariable;
-        if (field.getJdbcDataType().isNumberDataType()) {
             if (!field.getForeignKeyTable().isEmpty()) {
                 // define name of enum
                 ClassInfo enumClassInfo = database.getTableClassInfo(field.getForeignKeyTable());
@@ -587,14 +616,6 @@ public class AndroidBaseRecordRenderer {
                 } else {
                     // we must import the enum
                     String enumPackage = enumClassInfo.getPackageName(packageName) + "." + enumName;
-
-                    // build foreign key packagename
-//                    String[] packageElements = packageName.split("\\.");
-//                    for (int i = 0; i < packageElements.length - 1; i++) {
-//                        enumPackage += packageElements[i] + ".";
-//                    }
-//                    enumPackage += enumName.toLowerCase() + "." + enumName;
-
 
                     recordClass.addImport(enumPackage);
                     constClass.addImport(enumPackage);
@@ -622,10 +643,12 @@ public class AndroidBaseRecordRenderer {
                 String firstChar = javaStyleFieldName.substring(0, 1).toUpperCase();
                 String enumName = firstChar + javaStyleFieldName.substring(1);
 
-                if (useInnerEnums) {
-                    recordClass.addEnum(enumName, field.getEnumValues());
-                } else {
-                    enumerationClasses.add(new JavaEnum(enumName, field.getEnumValues()));
+                if (field.getEnumValues() != null && !field.getEnumValues().isEmpty()) {
+                    if (useInnerEnums) {
+                        recordClass.addEnum(enumName, field.getEnumValues());
+                    } else {
+                        enumerationClasses.add(new JavaEnum(enumName, field.getEnumValues()));
+                    }
                 }
 
                 newVariable = new JavaVariable(enumName, fieldNameJavaStyle);
@@ -637,9 +660,6 @@ public class AndroidBaseRecordRenderer {
                 newVariable.setGenerateSetter(true, field.isNotNull(), jsr305SupportedField && genConfig.isJsr305Support()); // always allow setter to support copy()
                 newVariable.setDefaultValue(enumName + "." + field.getEnumerationDefault(), false);
             }
-        } else {
-            newVariable = new JavaVariable(field.getJavaTypeText(), fieldNameJavaStyle);
-        }
 
         return newVariable;
     }

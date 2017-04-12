@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+Version 9.0.0 *(2017-04)*
+---------------------------
+* Added support text enums (use VARCHAR as field jdbcDataType)
+
 Version 8.2.1 *(2017-03)*
 ---------------------------
 * Added <index/> section to schema.xsd to support multiple column indexes

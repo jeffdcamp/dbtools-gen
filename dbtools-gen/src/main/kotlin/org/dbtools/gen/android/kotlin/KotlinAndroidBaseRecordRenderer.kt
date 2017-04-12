@@ -101,7 +101,7 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             val primaryKey = field.isPrimaryKey
             val fieldName = field.name
             val fieldType = field.jdbcDataType
-            val notNullField = field.isNotNull!!
+            val notNullField = field.isNotNull
             val primitiveField = fieldType.isJavaTypePrimitive(!field.isNotNull)
             val dateTypeField = fieldType == SchemaFieldType.DATETIME || fieldType == SchemaFieldType.DATE || fieldType == SchemaFieldType.TIMESTAMP || fieldType == SchemaFieldType.TIME
 
@@ -166,10 +166,22 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 var value = fieldNameJavaStyle
 
                 if (field.isEnumeration) {
-                    value = when(notNullField) {
-                        true -> "${newVariable.name}.ordinal.toLong()"
-                        else -> "${newVariable.name}?.ordinal?.toLong()"
+                    when(fieldType) {
+                        SchemaFieldType.BIT, SchemaFieldType.TINYINT, SchemaFieldType.SMALLINT,
+                        SchemaFieldType.INTEGER, SchemaFieldType.NUMERIC, SchemaFieldType.BIGINT -> {
+                            value = when(notNullField) {
+                                true -> "${newVariable.name}.ordinal.toLong()"
+                                else -> "${newVariable.name}?.ordinal?.toLong()"
+                            }
+                        }
+                        else -> {
+                            value = when(notNullField) {
+                                true -> "${newVariable.name}.toString()"
+                                else -> "${newVariable.name}?.toString()"
+                            }
+                        }
                     }
+
                 } else if (dateTypeField) {
                     val dateValue = genConfig.dateType.getValuesValue(field, fieldNameJavaStyle)
                     if (notNullField) {
@@ -448,8 +460,15 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     private fun getContentValuesGetterMethod(field: SchemaField, paramValue: String, newVariable: KotlinVar): String {
         if (field.isEnumeration) {
-            return "org.dbtools.android.domain.util.EnumUtil.ordinalToEnum(${newVariable.dataType}::class.java, values.getAsInteger($paramValue), ${newVariable.defaultValue})"
-
+            when(field.jdbcDataType) {
+                SchemaFieldType.BIT, SchemaFieldType.TINYINT, SchemaFieldType.SMALLINT,
+                SchemaFieldType.INTEGER, SchemaFieldType.NUMERIC, SchemaFieldType.BIGINT -> {
+                    return "org.dbtools.android.domain.util.EnumUtil.ordinalToEnum(${newVariable.dataType}::class.java, values.getAsInteger($paramValue), ${newVariable.defaultValue})"
+                }
+                else -> {
+                    return "org.dbtools.android.domain.util.EnumUtil.stringToEnum(${newVariable.dataType}::class.java, values.getAsString($paramValue), ${newVariable.defaultValue})"
+                }
+            }
         }
 
         val type = field.javaClassType
@@ -485,7 +504,15 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     private fun getContentValuesCursorGetterMethod(field: SchemaField, paramValue: String, newVariable: KotlinVar): String {
         if (field.isEnumeration) {
-            return "org.dbtools.android.domain.util.EnumUtil.ordinalToEnum(${newVariable.dataType}::class.java, cursor.getInt(cursor.getColumnIndexOrThrow($paramValue)), ${newVariable.defaultValue})"
+            when(field.jdbcDataType) {
+                SchemaFieldType.BIT, SchemaFieldType.TINYINT, SchemaFieldType.SMALLINT,
+                SchemaFieldType.INTEGER, SchemaFieldType.NUMERIC, SchemaFieldType.BIGINT -> {
+                    return "org.dbtools.android.domain.util.EnumUtil.ordinalToEnum(${newVariable.dataType}::class.java, cursor.getInt(cursor.getColumnIndexOrThrow($paramValue)), ${newVariable.defaultValue})"
+                }
+                else -> {
+                    return "org.dbtools.android.domain.util.EnumUtil.stringToEnum(${newVariable.dataType}::class.java, cursor.getString(cursor.getColumnIndexOrThrow($paramValue)), ${newVariable.defaultValue})"
+                }
+            }
         }
 
         val type = field.javaClassType
@@ -542,7 +569,6 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
 
     private fun generateEnumeration(field: SchemaField, fieldNameJavaStyle: String, packageName: String, database: SchemaDatabase): KotlinVar {
         val newVar: KotlinVar
-        if (field.jdbcDataType.isNumberDataType) {
             if (!field.foreignKeyTable.isEmpty()) {
                 // define name of enum
                 val enumClassInfo = database.getTableClassInfo(field.foreignKeyTable)
@@ -555,14 +581,6 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 } else {
                     // we must import the enum
                     val enumPackage = enumClassInfo.getPackageName(packageName) + "." + enumName
-
-                    // build foreign key packagename
-                    //                    String[] packageElements = packageName.split("\\.")
-                    //                    for (int i = 0 i < packageElements.length - 1 i++) {
-                    //                        enumPackage += packageElements[i] + "."
-                    //                    }
-                    //                    enumPackage += enumName.toLowerCase() + "." + enumName
-
 
                     constClass.addImport(enumPackage)
                     recordClass.addImport(enumPackage)
@@ -582,18 +600,17 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
                 val firstChar = javaStyleFieldName.substring(0, 1).toUpperCase()
                 val enumName = firstChar + javaStyleFieldName.substring(1)
 
-                if (useInnerEnums) {
-                    recordClass.addEnum(enumName, field.enumValues)
-                } else {
-                    enumerationClasses.add(KotlinEnum(enumName, field.enumValues))
+                if (field.enumValues != null && !field.enumValues.isEmpty()) {
+                    if (useInnerEnums) {
+                        recordClass.addEnum(enumName, field.enumValues)
+                    } else {
+                        enumerationClasses.add(KotlinEnum(enumName, field.enumValues))
+                    }
                 }
 
                 newVar = KotlinVar(enumName, fieldNameJavaStyle)
                 newVar.defaultValue = enumName + "." + field.enumerationDefault
             }
-        } else {
-            newVar = KotlinVar(field.kotlinTypeText, fieldNameJavaStyle)
-        }
 
         return newVar
     }
