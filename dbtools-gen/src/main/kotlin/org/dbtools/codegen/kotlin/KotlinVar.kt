@@ -11,7 +11,7 @@ package org.dbtools.codegen.kotlin
 
 import java.util.ArrayList
 
-class KotlinVar(val name: String, val dataType: String, var defaultValue: String = "") {
+class KotlinVar(val name: String, var dataType: String, var defaultValue: String = "") {
     var variableType = KotlinVarType.CLASS_VARIABLE
     var access = KotlinAccess.PUBLIC
     var inline = false
@@ -53,7 +53,7 @@ class KotlinVar(val name: String, val dataType: String, var defaultValue: String
         if (variableType == KotlinVarType.CLASS_VARIABLE) {
             val accessText = KotlinClass.getAccessString(access) + " "
             text += KotlinClass.tab
-            text += accessText
+            text += if (accessText.isNotBlank()) accessText else ""
         }
 
         if (override) {
@@ -106,6 +106,19 @@ class KotlinVar(val name: String, val dataType: String, var defaultValue: String
 
     fun createBeanMethodName(varName: String): String {
         return varName.substring(0, 1).toUpperCase() + varName.substring(1)
+    }
+
+    fun clone(): KotlinVar {
+        val clone = KotlinVar(name, dataType, defaultValue)
+        clone.variableType = variableType
+        clone.access = access
+        clone.inline = inline
+        clone.open = open
+        clone.override = override
+        clone.lateInit = lateInit
+        clone.annotations.addAll(annotations)
+
+        return clone
     }
 
 }

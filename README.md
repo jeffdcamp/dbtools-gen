@@ -53,7 +53,7 @@ Plugin Options
 
 | Key | Values | Description |
 | ---  | ----- | ----------- |
-| type | `'ANDROID-JAVA'`, `'ANDROID-KOTLIN'`, or `'JPA'` | The type of DAO and ORM files to generate.  Defaults to `'JPA'` |
+| type | `'ANDROID-JAVA'`, `'ANDROID-KOTLIN'`, `'JPA'`, `'ANDROID-KOTLIN-ROOM'` | The type of DAO and ORM files to generate.  Defaults to `'JPA'` |
 | schemaDir | e.x. `'src/main/database'` | The directory the database schema file resides (or will be created with `dbtools-init`).  Defaults to `'src/main/database'` |
 | schemaXMLFilename | e.x. `'schema.xml'` | The name of the database schema file.  Defaults to `'schema.xml'` |
 | basePackageDir | e.x. `'com.dbtools.demo.database'` | The root package the generated DAO and ORM files have |

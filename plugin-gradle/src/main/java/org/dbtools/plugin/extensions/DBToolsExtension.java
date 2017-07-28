@@ -7,6 +7,12 @@ public class DBToolsExtension extends BaseDBToolsExtension {
     private String outputSrcDir;
 
     /**
+     * Based directory where the source files will be generated.
+     */
+    private String roomOutputSrcDir;
+    private String roomBasePackageName;
+
+    /**
      * Type of application: JPA, ANDROID
      */
     private String type = "JPA";
@@ -139,5 +145,21 @@ public class DBToolsExtension extends BaseDBToolsExtension {
 
     public void sqlQueryBuilderSupport(boolean sqlQueryBuilderSupport) {
         this.sqlQueryBuilderSupport = sqlQueryBuilderSupport;
+    }
+
+    public String getRoomOutputSrcDir() {
+        return roomOutputSrcDir;
+    }
+
+    public void roomOutputSrcDir(String roomOutputSrcDir) {
+        this.roomOutputSrcDir = roomOutputSrcDir;
+    }
+
+    public String getRoomBasePackageName() {
+        return roomBasePackageName;
+    }
+
+    public void roomBasePackageName(String roomBasePackageName) {
+        this.roomBasePackageName = roomBasePackageName;
     }
 }

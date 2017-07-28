@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+Version 10.0.0 *(2017-07)*
+---------------------------
+* Added initial support for generating ROOM Entities, Daos, and Databases
+
 Version 9.0.0 *(2017-04)*
 ---------------------------
 * Added support text enums (use VARCHAR as field jdbcDataType)

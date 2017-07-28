@@ -34,11 +34,15 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
 
     private var constClass = KotlinObjectClass()
     private var recordClass = KotlinClass()
+    private var roomDaoClass = KotlinClass()
+    private var roomEntityClass = KotlinClass()
     private val enumerationClasses = ArrayList<KotlinEnum>()
     private val cleanupOrphansContent = StringBuilder()
     private val useInnerEnums = true
     private var bindInsertStatementContentIndex = 1 // 1 based
     private var bindUpdateStatementContentIndex = 1 // 1 based
+
+    private var classNameLower = ""
 
     fun generate(database: SchemaDatabase, entity: SchemaEntity, packageName: String, databaseMapping: DatabaseMapping): AndroidGeneratedEntityInfo {
         val generatedEntityInfo = AndroidGeneratedEntityInfo()
@@ -55,6 +59,13 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
 
         val constClassName = entityClassName + "Const"
         constClass = KotlinObjectClass(constClassName, packageName)
+
+        classNameLower = entityClassName.toLowerCase()
+        roomDaoClass.packageName = packageName + ".room." + classNameLower
+        roomDaoClass.name = entityClassName + "Dao"
+
+        roomEntityClass.packageName = packageName + ".room." + classNameLower
+        roomEntityClass.name = entityClassName
 
         if (enumTable) {
             initClassAsEnum(packageName, className, entity)
@@ -84,6 +95,12 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
         if (entityType != SchemaEntityType.QUERY) {
             constClass.addConstant("TABLE", "\"$tableName\"").apply { const = true }
             constClass.addConstant("FULL_TABLE", "\"$databaseName.$tableName\"").apply { const = true }
+
+            roomDaoClass.addImport("android.arch.persistence.room.Dao")
+            roomDaoClass.addAnnotation("@Dao")
+
+            roomEntityClass.addImport("android.arch.persistence.room.Entity")
+            roomEntityClass.addAnnotation("@Entity(tableName = \"$tableName\")")
         }
 
         // post field method content
@@ -140,6 +157,45 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
             } else {
                 newVariable = generateFieldVariable(fieldNameJavaStyle, field)
             }
+
+            // ====== ROOM START ======
+            val newRoomVariable = newVariable.clone()
+
+            // use default value for datatype... if possible
+            if (!newRoomVariable.defaultValue.isNullOrBlank()) {
+                when (newRoomVariable.dataType) {
+                    "String", "Int", "Boolean" -> {newRoomVariable.dataType = ""}
+                    "Long" -> {
+                        newRoomVariable.dataType = ""
+
+                        val defaultValue = newRoomVariable.defaultValue
+                        if (!defaultValue.endsWith("L", ignoreCase = true)) {
+                            newRoomVariable.defaultValue = defaultValue + "L"
+                        }
+                    }
+                }
+
+                if (field.isEnumeration) {
+                    newRoomVariable.dataType = ""
+                }
+            }
+
+            if (primaryKey) {
+                roomEntityClass.addImport("android.arch.persistence.room.PrimaryKey")
+                if (field.isIncrement) {
+                    newRoomVariable.addAnnotation("@PrimaryKey(autoGenerate = true)")
+                } else {
+                    newRoomVariable.addAnnotation("@PrimaryKey()")
+                }
+            }
+
+            if (newVariable.name != fieldName) {
+                roomEntityClass.addImport("android.arch.persistence.room.ColumnInfo")
+                newRoomVariable.addAnnotation("@ColumnInfo(name = \"$fieldName\")")
+            }
+
+            roomEntityClass.addVar(newRoomVariable)
+            // ====== ROOM END ======
 
             newVariable.open = true
 
@@ -678,6 +734,8 @@ class KotlinAndroidBaseRecordRenderer(val genConfig: GenConfig) {
     fun writeToFile(directoryName: String) {
         constClass.writeToDisk(directoryName)
         recordClass.writeToDisk(directoryName)
+        roomDaoClass.writeToDisk(directoryName + "/room/" + classNameLower)
+        roomEntityClass.writeToDisk(directoryName + "/room/" + classNameLower)
 
         for (enumClass in enumerationClasses) {
             enumClass.writeToDisk(directoryName)

@@ -54,7 +54,7 @@ class KotlinVal(val name: String, val dataType: String, var defaultValue: String
         if (variableType == KotlinVarType.CLASS_VARIABLE) {
             val accessText = KotlinClass.getAccessString(access) + " "
             text += KotlinClass.tab
-            text += accessText
+            text += if (accessText.isNotBlank()) accessText else ""
         }
 
         if (override) {
