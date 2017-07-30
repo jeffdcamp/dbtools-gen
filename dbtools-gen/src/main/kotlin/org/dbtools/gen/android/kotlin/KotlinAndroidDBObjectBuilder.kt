@@ -15,9 +15,14 @@ import org.dbtools.gen.GenConfig
 import org.dbtools.gen.android.AndroidManagerRenderer
 import org.dbtools.gen.android.AndroidRecordRenderer
 import org.dbtools.renderer.SchemaRenderer
-import org.dbtools.schema.schemafile.*
+import org.dbtools.schema.schemafile.SchemaDatabase
+import org.dbtools.schema.schemafile.SchemaEntity
+import org.dbtools.schema.schemafile.SchemaQuery
+import org.dbtools.schema.schemafile.SchemaTable
+import org.dbtools.schema.schemafile.SchemaView
 import java.io.File
-import java.util.*
+import java.util.ArrayList
+import java.util.Collections
 
 class KotlinAndroidDBObjectBuilder() : DBObjectBuilder {
     private var filesGeneratedCount = 0

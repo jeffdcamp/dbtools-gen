@@ -3,6 +3,7 @@ package org.dbtools.plugin.tasks;
 import org.dbtools.gen.DBObjectsBuilder;
 import org.dbtools.gen.DateType;
 import org.dbtools.gen.android.AndroidObjectsBuilder;
+import org.dbtools.gen.android.kotlin.KotlinAndroidObjectsBuilder;
 import org.dbtools.gen.android.kotlinroom.KotlinAndroidRoomObjectsBuilder;
 import org.dbtools.gen.jpa.JPAObjectsBuilder;
 import org.dbtools.plugin.extensions.DBToolsExtension;
@@ -44,7 +45,7 @@ public class GenClassesTask extends DefaultTask {
                 builder = new AndroidObjectsBuilder(genConfig);
                 break;
             case "ANDROID-KOTLIN":
-                builder = new KotlinAndroidRoomObjectsBuilder(genConfig);
+                builder = new KotlinAndroidObjectsBuilder(genConfig);
                 break;
             case "ANDROID-KOTLIN-ROOM":
                 builder = new KotlinAndroidRoomObjectsBuilder(genConfig);

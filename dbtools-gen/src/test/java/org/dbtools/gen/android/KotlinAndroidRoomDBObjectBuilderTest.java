@@ -2,10 +2,10 @@ package org.dbtools.gen.android;
 
 import org.dbtools.gen.DateType;
 import org.dbtools.gen.GenConfig;
-import org.dbtools.gen.android.kotlin.KotlinAndroidObjectsBuilder;
+import org.dbtools.gen.android.kotlinroom.KotlinAndroidRoomObjectsBuilder;
 import org.junit.Test;
 
-public class KotlinAndroidDBObjectBuilderTest {
+public class KotlinAndroidRoomDBObjectBuilderTest {
     @Test
     public void testBasicGen() {
         String userDir = System.getProperty("user.dir");
@@ -20,7 +20,7 @@ public class KotlinAndroidDBObjectBuilderTest {
         genConfig.setInjectionSupport(injectionSupport);
         genConfig.setDateType(DateType.JSR_310);
 
-        KotlinAndroidObjectsBuilder objectsBuilder = new KotlinAndroidObjectsBuilder(genConfig);
+        KotlinAndroidRoomObjectsBuilder objectsBuilder = new KotlinAndroidRoomObjectsBuilder(genConfig);
         objectsBuilder.buildAll(schemaFilename, baseOutputDir, basePackageName);
     }
 }
