@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+Version 10.0.2 *(2017-09)*
+---------------------------
+* Minor fixes to dbtools-android
+
 Version 10.0.0 *(2017-07)*
 ---------------------------
 * Added initial support for generating ROOM Entities, Daos, and Databases
