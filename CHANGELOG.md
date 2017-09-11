@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+Version 10.1.0 *(2017-09)*
+---------------------------
+* Match version with dbtools-android
+
 Version 10.0.2 *(2017-09)*
 ---------------------------
 * Minor fixes to dbtools-android
