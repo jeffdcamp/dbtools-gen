@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-Version 10.1.2 *(2017-09)*
+Version 10.1.3 *(2017-09)*
 ---------------------------
 * Match version with dbtools-android
 
