@@ -1,6 +1,10 @@
 Change Log
 ==========
 
+Version 10.7.0 *(2018-03)*
+---------------------------
+* Match version with dbtools-android
+
 Version 10.6.0 *(2018-03)*
 ---------------------------
 * Kotlin 1.2.30
